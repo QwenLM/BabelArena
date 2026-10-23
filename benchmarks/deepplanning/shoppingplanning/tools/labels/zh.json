@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "购物车总额 {base_total} 不足以使用该优惠券组合（至少需要 {total_threshold_required}）",
+    "coupon_name_required": "缺少 coupon_name 参数",
+    "quantity_positive": "quantity 必须为正数",
+    "coupon_not_found": "未找到优惠券：'{coupon_name}'。可用优惠券：{valid_coupons_str}",
+    "insufficient_coupon_quantity": "优惠券数量不足：用户拥有 {user_coupon_count} 张 '{coupon_name}'，购物车已使用 {existing_cart_count} 张，无法再添加 {quantity} 张",
+    "vip_coupon_required": "VIP 优惠券 '{coupon_name}' 需要 VIP 身份，但当前用户不是 VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "缺少 product_id 参数",
+    "quantity_positive": "quantity 必须为正数",
+    "product_not_found": "未找到商品：product_id '{product_id}'",
+    "insufficient_stock": "库存不足：商品 '{product_name}' (ID: {product_id}) 当前库存 {stock_quantity}，购物车已有 {existing_quantity}，无法再添加 {quantity} 件",
+    "save_cart_failed": "购物车保存失败：{err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "参数必须是有效的 JSON 字符串！错误：{err}",
+    "missing_required_arg": "缺少必需参数：{name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "未找到 ID 为 '{product_id}' 的商品。",
+    "shipping_origin_not_found": "商品 '{product_id}' 未设置发货地址。",
+    "cannot_determine_province": "无法从发货地址 '{address}' 中识别出有效的省份。",
+    "cannot_determine_destination_province": "无法从收货地址 '{address}' 中识别出有效的省份。",
+    "valid_province_required": "请提供有效的中国省份名称。",
+    "cannot_map_to_region": "无法将省份映射到地理区域。"
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "缺少 coupon_name 参数",
+    "quantity_positive": "quantity 必须为正数",
+    "invalid_coupon_name": "无效的优惠券名称：'{coupon_name}'。可用优惠券：{valid_coupons_str}",
+    "coupon_not_in_cart": "购物车中不存在该优惠券：'{coupon_name}'",
+    "insufficient_coupon_in_cart": "购物车中优惠券数量不足：当前有 {cart_count} 张 '{coupon_name}'，无法移除 {quantity} 张",
+    "save_cart_failed": "购物车保存失败：{err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "缺少 product_id 参数",
+    "quantity_positive": "quantity 必须为正数",
+    "product_not_found": "未找到商品：product_id '{product_id}'",
+    "product_not_in_cart": "商品不在购物车中：product_id '{product_id}'",
+    "save_cart_failed": "购物车保存失败：{err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "以下 product_ids 在数据库中未找到：{missing_ids}",
+    "invalid_coupon_names": "无效的优惠券名称：{coupon_names}。可用优惠券：{valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "以下 product_ids 在数据库中未找到：{missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "以下 product_ids 在数据库中未找到：{missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "以下 product_ids 在数据库中未找到：{missing_ids}",
+    "missing_range_params": "缺少必需参数：condition_key、operator 或 value。",
+    "condition_key_not_found": "condition_key 在商品数据中不存在，请检查。"
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "以下 product_ids 在数据库中未找到：{missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "未找到 user_id 为 '{user_id}' 的用户"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 索引不可用，请检查数据库加载。"
+  },
+  "SortProductsTool": {
+    "sort_by_required": "缺少必需参数：sort_by。",
+    "invalid_order": "无效的 'order' 取值：'{order}'。必须为 'asc' 或 'desc'。",
+    "sort_error": "按键 '{sort_by}' 排序时发生错误：{e}",
+    "sort_key_not_found": "排序键 '{sort_by}' 在商品数据中不存在或为空，请检查。"
+  }
+}

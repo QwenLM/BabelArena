@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "Xử lý các truy vấn ngôn ngữ tự nhiên rộng, không giới hạn. Nó thực hiện tìm kiếm ngữ nghĩa trên thông tin sản phẩm chính (tên, thương hiệu, danh mục, thẻ) để nhanh chóng truy xuất một tập hợp ban đầu các sản phẩm liên quan. Đây là bước đầu tiên trong việc khám phá của người dùng.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Truy vấn ngôn ngữ tự nhiên của người dùng. Ví dụ, 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Tùy chọn. Giới hạn số lượng product_ids được trả về. Mặc định là 20 để ngăn kết quả quá lớn."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "Lọc một danh sách ID sản phẩm được cung cấp theo một hoặc nhiều tên thương hiệu. Nếu nhiều tên thương hiệu được cung cấp, nó trả về các sản phẩm phù hợp với bất kỳ thương hiệu nào (logic OR).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách tùy chọn các product_ids để lọc. Nếu không được cung cấp, lọc từ toàn bộ danh mục sản phẩm."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách các tên thương hiệu để khớp. Ví dụ, [\"UNIQLO\"] hoặc [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "Lọc một danh sách ID sản phẩm được cung cấp theo một hoặc nhiều màu sắc. Nếu nhiều màu sắc được cung cấp, nó trả về các sản phẩm phù hợp với bất kỳ màu nào (logic OR). Kiểm tra màu sắc dựa trên trường 'color' của sản phẩm. Nếu không cung cấp product_ids, lọc từ toàn bộ danh mục sản phẩm.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách tùy chọn các product_ids để lọc. Nếu không được cung cấp, lọc từ toàn bộ danh mục sản phẩm."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách các tên màu sắc để khớp. Ví dụ, [\"White\"] hoặc [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "Lọc một danh sách ID sản phẩm được cung cấp theo một hoặc nhiều kích thước. Nếu nhiều kích thước được cung cấp, nó trả về các sản phẩm phù hợp với bất kỳ kích thước nào (logic OR). Kiểm tra kích thước dựa trên trường 'size' của sản phẩm (ví dụ: 'M', 'L', '42', '140cm'). Nếu không cung cấp product_ids, lọc từ toàn bộ danh mục sản phẩm.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách tùy chọn các product_ids để lọc. Nếu không được cung cấp, lọc từ toàn bộ danh mục sản phẩm."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách các kích cỡ để khớp. Ví dụ, [\"M\"] hoặc [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "Lọc một danh sách ID sản phẩm dựa trên các phiếu giảm giá áp dụng. Công cụ này khớp tất cả các sản phẩm có `applicable_coupons` chứa các tên phiếu giảm giá được cung cấp. Ví dụ, sử dụng [\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"] sẽ khớp các sản phẩm có cả hai phiếu giảm giá này trong danh sách applicable_coupons của chúng.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách tùy chọn các product_ids để lọc. Nếu không được cung cấp, lọc từ toàn bộ danh mục sản phẩm."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách tên phiếu giảm giá để khớp. Ví dụ, [\"Cross-store: ¥30 off every ¥300\"] hoặc [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "Lọc một danh sách ID sản phẩm dựa trên một đặc điểm số, một toán tử so sánh và một giá trị ngưỡng.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách tùy chọn các product_ids để lọc. Nếu không được cung cấp, lọc từ toàn bộ danh mục sản phẩm."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "Kích thước đặc điểm số để lọc.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "Toán tử so sánh.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "Giá trị số để so sánh."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "Sắp xếp một danh sách ID sản phẩm được cung cấp theo một chiều và thứ tự được chỉ định.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách tùy chọn các product_ids để sắp xếp. Nếu không cung cấp, sắp xếp từ toàn bộ danh mục sản phẩm."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Kích thước đặc điểm để sử dụng làm cơ sở sắp xếp.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "Thứ tự sắp xếp. Mặc định là 'desc' (giảm dần).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "Truy xuất thông tin chi tiết, đầy đủ cho một danh sách ID sản phẩm.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Danh sách các định danh sản phẩm duy nhất để lấy chi tiết."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "Tính toán thời gian giao hàng ước tính bằng ngày cho một sản phẩm. Nó sử dụng nguồn gốc vận chuyển của sản phẩm và địa chỉ đích của người dùng. Kết quả cuối cùng là một số nguyên biểu thị số ngày.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Định danh duy nhất của sản phẩm để tìm nguồn gốc vận chuyển."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "Địa chỉ đích của người dùng, phải là tên tỉnh viết bằng pinyin, chẳng hạn như 'guangdong', 'beijing', 'shanghai', v.v. Chỉ chấp nhận pinyin cho tham số đầu vào này."
+          },
+          "provider": {
+            "type": "string",
+            "description": "Tùy chọn. Tên nhà cung cấp vận chuyển để điều chỉnh thời gian giao hàng. Các nhà cung cấp được hỗ trợ bao gồm 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default'. Nếu không cung cấp, sử dụng nhà cung cấp mặc định của sản phẩm."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "Truy xuất thông tin người dùng từ cơ sở dữ liệu, bao gồm địa chỉ của người dùng, số đo cơ thể và các chi tiết hồ sơ khác. Nếu cung cấp user_id, trả về thông tin cụ thể của người dùng đó; nếu không, trả về thông tin của người dùng mặc định/hiện tại.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Tùy chọn. Định danh duy nhất của người dùng để truy xuất. Nếu không cung cấp, trả về thông tin người dùng mặc định."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "Thêm một sản phẩm vào giỏ hàng. Xác nhận rằng sản phẩm tồn tại trong danh mục sản phẩm và kiểm tra tình trạng kho hàng. Nếu sản phẩm đã có trong giỏ hàng, nó tăng số lượng. Công cụ tự động cập nhật tóm tắt giỏ hàng (tổng số mặt hàng và tổng giá) sau khi thêm. Trả về giỏ hàng đã cập nhật với tất cả các mặt hàng và thông tin tóm tắt.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Định danh duy nhất của sản phẩm để thêm vào giỏ hàng. Phải tồn tại trong danh mục sản phẩm."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Tùy chọn. Số lượng để thêm. Phải là số nguyên dương. Mặc định là 1. Công cụ kiểm tra xem việc thêm số lượng này có vượt quá stock_quantity của sản phẩm (bao gồm các mặt hàng đã có trong giỏ hàng) hay không."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "Loại bỏ một sản phẩm khỏi giỏ hàng hoặc giảm số lượng của nó. Xác nhận rằng sản phẩm tồn tại trong danh mục sản phẩm và hiện có trong giỏ hàng. Nếu số lượng cần loại bỏ bằng hoặc vượt quá số lượng trong giỏ, mặt hàng sẽ bị loại bỏ hoàn toàn. Công cụ tự động cập nhật tóm tắt giỏ hàng và loại bỏ các mặt hàng có số lượng bằng không. Trả về giỏ hàng đã cập nhật với tất cả các mặt hàng và thông tin tóm tắt.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Định danh duy nhất của sản phẩm để xóa khỏi giỏ hàng. Phải tồn tại trong danh mục sản phẩm và hiện có trong giỏ hàng."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Tùy chọn. Số lượng để xóa. Phải là số nguyên dương. Mặc định là 1. Nếu số lượng bằng hoặc vượt quá số lượng trong giỏ hàng, mặt hàng sẽ bị xóa hoàn toàn."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "Truy xuất thông tin giỏ hàng hiện tại bao gồm tất cả các mặt hàng và thống kê tóm tắt. Trả về danh sách các mặt hàng trong giỏ (mỗi mặt hàng có product_id, tên, số lượng và giá) và một đối tượng tóm tắt chứa total_items_count (tổng số lượng) và total_price (tổng giá của tất cả các mặt hàng * số lượng). Không cần tham số - trả về trạng thái hiện tại của giỏ hàng.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "Thêm một phiếu giảm giá vào giỏ hàng. Xác nhận rằng phiếu giảm giá tồn tại trong danh sách phiếu giảm giá hợp lệ, kiểm tra quyền sở hữu của người dùng đối với phiếu giảm giá và đảm bảo tổng giỏ hàng đáp ứng yêu cầu ngưỡng của phiếu giảm giá. Nếu phiếu giảm giá đã có trong giỏ hàng, nó cập nhật số lượng. Công cụ tự động cập nhật tóm tắt giỏ hàng (tổng số mặt hàng và tổng giá sau khi giảm giá) sau khi thêm. Trả về giỏ hàng đã cập nhật với tất cả các mặt hàng, phiếu giảm giá đã sử dụng và thông tin tóm tắt.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Tên phiếu giảm giá để thêm vào giỏ hàng. Phải là một trong những phiếu giảm giá hợp lệ từ danh sách phiếu giảm giá. Ví dụ: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Tùy chọn. Số lượng phiếu giảm giá để thêm. Phải là số nguyên dương. Mặc định là 1. Công cụ kiểm tra xem người dùng có đủ phiếu giảm giá và tổng số giỏ hàng có đủ cho số lượng yêu cầu hay không."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "Loại bỏ một phiếu giảm giá khỏi giỏ hàng hoặc giảm số lượng của nó. Xác nhận rằng phiếu giảm giá tồn tại trong danh sách phiếu giảm giá hợp lệ và hiện có trong giỏ hàng. Nếu số lượng cần loại bỏ bằng hoặc vượt quá số lượng trong giỏ, phiếu giảm giá sẽ bị loại bỏ hoàn toàn. Công cụ tự động cập nhật tóm tắt giỏ hàng (tổng số mặt hàng và tổng giá sau khi giảm giá) và loại bỏ các phiếu giảm giá có số lượng bằng không. Trả về giỏ hàng đã cập nhật với tất cả các mặt hàng, phiếu giảm giá đã sử dụng và thông tin tóm tắt.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Tên phiếu giảm giá để xóa khỏi giỏ hàng. Phải là một trong những phiếu giảm giá hợp lệ và hiện có trong giỏ hàng."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Tùy chọn. Số lượng phiếu giảm giá cần xóa. Phải là một số nguyên dương. Mặc định là 1. Nếu số lượng bằng hoặc vượt quá số lượng trong giỏ hàng, phiếu giảm giá sẽ bị xóa hoàn toàn."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

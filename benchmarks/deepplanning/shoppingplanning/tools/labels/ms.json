@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "Jumlah troli {base_total} tidak mencukupi untuk gabungan kupon ini (memerlukan sekurang-kurangnya {total_threshold_required})",
+    "coupon_name_required": "coupon_name diperlukan",
+    "quantity_positive": "kuantiti mesti nombor positif",
+    "coupon_not_found": "Kupon tidak ditemui: '{coupon_name}'. Kupon yang sah adalah: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "Kuantiti kupon tidak mencukupi: Pengguna memiliki {user_coupon_count} daripada '{coupon_name}', troli sudah menggunakan {existing_cart_count}, tidak boleh tambah {quantity} lagi",
+    "vip_coupon_required": "Kupon VIP '{coupon_name}' memerlukan status VIP, tetapi pengguna bukan VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id diperlukan",
+    "quantity_positive": "kuantiti mesti nombor positif",
+    "product_not_found": "Produk tidak ditemui: product_id '{product_id}'",
+    "insufficient_stock": "Stok tidak mencukupi: Produk '{product_name}' (ID: {product_id}) mempunyai {stock_quantity} dalam stok, troli sudah mempunyai {existing_quantity}, tidak boleh tambah {quantity} lagi",
+    "save_cart_failed": "Gagal menyimpan troli: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "Parameter mesti dalam format JSON yang sah! Ralat: {err}",
+    "missing_required_arg": "Argumen yang diperlukan tiada: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "Produk dengan ID '{product_id}' tidak ditemui.",
+    "shipping_origin_not_found": "Asal penghantaran tidak ditemui untuk produk '{product_id}'.",
+    "cannot_determine_province": "Tidak dapat menentukan wilayah yang sah dari alamat asal: '{address}'.",
+    "cannot_determine_destination_province": "Tidak dapat menentukan wilayah yang sah dari alamat destinasi: '{address}'.",
+    "valid_province_required": "Sila berikan nama provinsi China yang sah.",
+    "cannot_map_to_region": "Tidak dapat memetakan provinsi ke wilayah geografi."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name diperlukan",
+    "quantity_positive": "kuantiti mesti nombor positif",
+    "invalid_coupon_name": "Nama kupon tidak sah: '{coupon_name}'. Kupon yang sah adalah: {valid_coupons_str}",
+    "coupon_not_in_cart": "Kupon tidak ada dalam troli: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "Kuantiti kupon tidak mencukupi dalam troli: Troli mempunyai {cart_count} untuk '{coupon_name}', tidak dapat mengeluarkan {quantity}",
+    "save_cart_failed": "Gagal menyimpan troli: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id diperlukan",
+    "quantity_positive": "kuantiti mesti nombor positif",
+    "product_not_found": "Produk tidak ditemui: product_id '{product_id}'",
+    "product_not_in_cart": "Produk tidak ada dalam troli: product_id '{product_id}'",
+    "save_cart_failed": "Gagal menyimpan troli: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "Beberapa product_id tidak ditemui dalam pangkalan data: {missing_ids}",
+    "invalid_coupon_names": "Nama kupon tidak sah: {coupon_names}. Kupon yang sah adalah: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "Beberapa product_id tidak ditemui dalam pangkalan data: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "Beberapa product_id tidak ditemui dalam pangkalan data: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "Beberapa product_id tidak ditemui dalam pangkalan data: {missing_ids}",
+    "missing_range_params": "Parameter yang diperlukan hilang: condition_key, operator, atau value.",
+    "condition_key_not_found": "condition_key tidak dapat ditemui dalam data produk, sila periksa semula."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "Beberapa product_id tidak ditemui dalam pangkalan data: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "Pengguna dengan user_id '{user_id}' tidak ditemui"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "Indeks BM25 tidak tersedia. Sila periksa pemuatan pangkalan data."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "Parameter yang diperlukan hilang: sort_by.",
+    "invalid_order": "Nilai tidak sah untuk 'order': '{order}'. Mesti 'asc' atau 'desc'.",
+    "sort_error": "Ralat berlaku semasa menyusun pada kunci '{sort_by}': {e}",
+    "sort_key_not_found": "Kunci susunan '{sort_by}' tidak dapat ditemui dalam data produk atau adalah null. Sila periksa semula."
+  }
+}

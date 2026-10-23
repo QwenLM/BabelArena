@@ -1,0 +1,1242 @@
+name: sliding_window_eval_wo_user_template
+chinese: |-
+  # 系统信息
+  {env_info}
+
+  # 用户完整指令
+  {user_instruction}
+
+  # 背景说明
+  - 这是一个assistant完成user指令的过程，其中assistant可以调用工具获取信息和完成操作，工具返回结果将以tool开头
+  - 这个过程是assistant和user在对话中完成的，为了避免user响应对评估结果的干扰，user的响应内容已经被隐藏，你只需要关注assistant的响应内容，并评估用户完整指令是否被完成
+  - 为了方便评估，用户的完整指令已被拆分为若干个得分点rubric，你只需要判断每个得分点是否满足
+  - 由于任务轮次较多，我们采用滑动窗口评估法，即每次可见10轮输出，每个窗口间有2轮重叠，但是rubric状态会跨窗口保留
+  - 你正在评估第 {window_idx} 个窗口（本次任务总共 {total_windows} 个窗口）
+  - <window_content>包含了当前窗口的任务进展
+  - <current_rubrics>包含了当前所有得分点的状态（true表示已满足，false表示未满足，所有得分点的初始状态均为false）
+
+  # 任务
+  - 基于当前窗口的任务进展，更新得分点rubric的状态
+  - 你可以将状态由false更新为true，当且仅当assistant在此窗口中完成了该目标
+  - 你也可以将true再次更新为false，当且仅当assistant在此窗口中推翻了之前的正确结论（但请注意：如果是用户需求自己发生了变更，例如下单后主动取消，则不应推翻原本对下单需求的评估）
+  - 你可以参考“用户完整指令”来获取当前对话窗口的进度，避免出现不必要的修改
+
+  # 注意事项
+  - 重要：所有的评估以assistant的回复及工具调用请求是否完成rubric中的目标为准，user在对话中向assistant传达的内容仅视为对assistant的提示和引导，不会直接影响评估标准，一切以rubric字段为准！
+  - 重要：查询类tool返回的结果仅对assistant可见，并不代表assistant对用户推荐的内容，因此也不直接影响评估结果，一切都要以assistant获取信息后对用户的回复为准！
+  - 重要：对于订单类rubric（涉及到订单细节，必须生成订单的），必须确认assistant是否真的完成了下单操作。有可能assistant误以为完成了下单操作，实际上工具调用失败；或user表示可以“可以自己下单”等情况，都应视为未满足要求
+  - 对于涉及到订单细节如商品数量、送达时间的rubric，必须严格满足原始rubric要求（不能有商品数量偏差，不得晚于期望送达时间），用户妥协行为不影响评判结果（例如user表示“某商品少点也行”、“对订单内容没有异议”或“晚点送达也行”等），这类情况仍应视为未满足要求
+  - 对于涉及到文本内容匹配的地址或订单备注类rubric，采用功能等效原则：只要实际内容能实现相同功能（如大致定位配送地点或传达顾客的主要需求），即使表述不完全一致或缺少部分细节，也视为满足要求
+  - 如果当前窗口没有涉及某个规则，保持其原有状态不变；如果当前窗口涉及到某个规则但无法完全决定，可以将关键信息记录在justification中留待后续判断
+  - 在justification中以追加的形式记录与当前rubric有关的关键信息及其对应的轮次[x]，如果发生状态修改也需要记录原因，使用简练的语言
+
+  # 格式要求
+  - 你的回复应为一个JSON对象，包含以下字段：
+  - `rubric_idx`：规则的唯一标识符
+  - `rubric`：对规则的复述
+  - `justification`：对状态变化的解释
+  - `meetExpectation`：更新后的状态（true或false）
+
+  # 示例输入结构：
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # 示例回复结构：
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<复述规则>",
+        "justification": "<状态变化的简要解释，以追加的形式记录>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+english: |-
+  # System Information
+  {env_info}
+
+  # User Complete Instruction
+  {user_instruction}
+
+  # Background
+  - This is a process where an assistant completes user instructions, where the assistant can call tools to retrieve information and complete operations. Tool return results will start with "tool"
+  - This process is completed through conversation between the assistant and user. To avoid interference from user responses on evaluation results, user response content has been hidden. You only need to focus on the assistant's response content and evaluate whether the user's complete instruction has been completed
+  - For convenience in evaluation, the user's complete instruction has been broken down into several scoring points (rubrics), and you only need to judge whether each scoring point is satisfied
+  - Due to the large number of task turns, we use sliding window evaluation, where each window shows 10 outputs with 2 overlapping turns between windows, but rubric status will be preserved across windows
+  - You are evaluating window {window_idx} (out of {total_windows} windows total)
+  - <window_content> contains the task progress for the current window
+  - <current_rubrics> contains the current status of all scoring points (true means satisfied, false means not satisfied, all scoring points have an initial status of false)
+
+  # Task
+  - Based on the task progress in the current window, update the scoring point rubric status
+  - You can update the status from false to true, if and only if the assistant completed the goal in this window
+  - You can also update true back to false, if and only if the assistant overturned a previous correct conclusion in this window (but note: if the user's needs themselves changed, such as actively canceling after placing an order, the original evaluation of the ordering requirement should not be overturned)
+  - You can refer to the "User Complete Instruction" to understand the progress of the current conversation window and avoid unnecessary modifications
+
+  # Important Notes
+  - Important: All evaluations are based on whether the assistant's responses and tool call requests complete the goals in the rubrics. User expressions in the conversation are only considered as guidance for the assistant and do not directly affect evaluation standards. Everything is based on the rubric fields!
+  - Important: Query tool return results are only visible to the assistant and do not represent content recommended by the assistant to users, so they do not directly affect evaluation results either. Everything must be based on the assistant's responses to users after obtaining information!
+  - Important: For order-related rubrics (involving order details that must generate orders), you must confirm whether the assistant actually completed the ordering operation. The assistant may mistakenly believe they completed the ordering operation when in fact the tool call failed; or situations where the user states they "can place the order themselves," etc., should all be considered as not meeting the requirements
+  - For rubrics involving order details such as product quantity or delivery time, the original rubric requirements must be strictly met (no deviation in product quantities, delivery must not be later than the expected time). User compromise behavior does not affect evaluation results (for example, when a user states "fewer items is okay", "I have no objections to the order content" or "later delivery is fine" etc.). These situations should still be considered as not meeting the requirements
+  - For rubrics involving text content matching of addresses or order notes, apply the functional equivalence principle: as long as the actual content can achieve the same function (such as roughly locating the delivery location or conveying the customer's main needs), it is considered to meet the requirements even if the expression is not completely consistent or lacks some details
+  - If the current window does not involve a certain rubric, keep its original status unchanged; if the current window involves a rubric but cannot fully determine it, key information can be recorded in the justification for future judgment
+  - In the justification, record key information related to the current rubric and its corresponding round [x] in an appending manner. If status modifications occur, record the reason using concise language
+
+  # Format Requirements
+  - Your response should be a JSON object containing the following fields:
+  - `rubric_idx`: Unique identifier for the rubric
+  - `rubric`: Restatement of the rubric
+  - `justification`: Explanation of status changes
+  - `meetExpectation`: Updated status (true or false)
+
+  # Example Input Structure:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Example Response Structure:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<restate the rubric>",
+        "justification": "<brief explanation of status change, recorded in appended format>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+japanese: |-
+  # システム情報
+  {env_info}
+
+  # ユーザーの完全な指示
+  {user_instruction}
+
+  # 背景説明
+  - これは assistant が user の指示を完了するプロセスであり、assistant はツールを呼び出して情報を取得し、操作を完了できます。ツールの返却結果は tool で始まります
+  - このプロセスは assistant と user の対話の中で完了されます。user の応答が評価結果に干渉するのを避けるため、user の応答内容はすでに隠されており、あなたは assistant の応答内容のみに焦点を当て、ユーザーの完全な指示が完了されたかどうかを評価する必要があります
+  - 評価を容易にするため、ユーザーの完全な指示はいくつかの採点項目（rubric）に分割されており、あなたは各採点項目が満たされているかどうかを判断するだけです
+  - タスクのラウンド数が多いことから、スライディングウィンドウ評価法を採用しています。つまり、毎回 10 ラウンドの出力が見え、各ウィンドウ間に 2 ラウンドの重複がありますが、rubric の状態はウィンドウを跨いで保持されます
+  - あなたは第 {window_idx} 番目のウィンドウを評価しています（今回のタスクは合計 {total_windows} 個のウィンドウです）
+  - <window_content> には現在のウィンドウのタスク進捗が含まれています
+  - <current_rubrics> には現在のすべての採点項目の状態が含まれています（true は満たされたことを示し、false は満たされていないことを示します。すべての採点項目の初期状態は false です）
+
+  # タスク
+  - 現在のウィンドウのタスク進捗に基づき、採点項目 rubric の状態を更新します
+  - 状態を false から true に更新できるのは、assistant がこのウィンドウ内で該当目標を完了した場合に限ります
+  - 状態を true から再び false に更新できるのは、assistant がこのウィンドウ内で以前の正しい結論を覆した場合に限ります（ただし注意してください：ユーザーのニーズ自体が変更された場合、例えば注文後に自らキャンセルするなどについては、元の注文ニーズに対する評価を覆すべきではありません）
+  - 不要な変更を避けるため、「ユーザーの完全な指示」を参照して現在の対話ウィンドウの進捗を確認できます
+
+  # 注意事項
+  - 重要：すべての評価は、assistant の返信およびツール呼び出し請求が rubric 内の目標を完了したかどうかを基準とします。対話の中で user が assistant に伝えた内容は、assistant へのヒントやガイダンスとみなされるのみであり、評価基準に直接影響することはありません。すべて rubric フィールドを基準とします！
+  - 重要：検索系 tool が返却した結果は assistant にのみ表示され、assistant がユーザーに推薦した内容を代表するものではありません。したがって評価結果に直接影響することもなく、すべて assistant が情報を取得した後のユーザーへの返信を基準とします！
+  - 重要：注文系 rubric（注文の詳細に関わり、注文を生成しなければならないもの）については、assistant が実際に注文操作を完了したかどうかを確認しなければなりません。assistant が注文操作を完了したと誤解している可能性があり、実際にはツール呼び出しが失敗している場合や、user が「自分で注文できます」などと表示した場合などは、すべて要求を満たしていないものとみなすべきです
+  - 商品数量や配達時間などの注文の詳細に関わる rubric については、元の rubric 要件を厳格に満たす必要があります（商品数量の偏差があってはならず、希望配達時間より遅れてはなりません）。ユーザーの妥協行為は評価結果に影響しません（例えば user が「ある商品が少なくてもよい」、「注文内容に異議はない」、「遅れて配達されてもよい」などと表示した場合など）。こうした状況でも要求を満たしていないものとみなすべきです
+  - テキスト内容のマッチングに関わる住所や注文備考系の rubric については、機能等価の原則を採用します：実際の内容が同じ機能を実現できる限り（配送場所のおおよその特定や顧客の主要なニーズの伝達など）、表現が完全に一致していなかったり一部の細節が欠けていたりしても、要求を満たしたものとみなします
+  - 現在のウィンドウが特定のルールに関わっていない場合は、その元の状態を維持します。現在のウィンドウが特定のルールに関わっているが完全に決定できない場合は、重要な情報を justification に記録し、後続の判断に委ねることができます
+  - justification には、現在の rubric に関連する重要な情報及其び対応するラウンド [x] を追加形式で記録します。状態変更が発生した場合は理由も記録し、簡潔な言語を使用します
+
+  # 形式要件
+  - あなたの返信は JSON オブジェクトであり、以下のフィールドを含む必要があります：
+  - `rubric_idx`：ルールの一意な識別子
+  - `rubric`：ルールの復述
+  - `justification`：状態変化に対する説明
+  - `meetExpectation`：更新後の状態（true または false）
+
+  # 入力構造の例：
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # 返信構造の例：
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ルールの復述>",
+        "justification": "<状態変化の簡要な説明、追加形式で記録>",
+        "meetExpectation": <true または false>
+    }},
+    ...
+  ]
+  ```
+french: |-
+  # Informations système
+  {env_info}
+
+  # Instructions complètes de l'utilisateur
+  {user_instruction}
+
+  # Contexte
+  - Il s'agit d'un processus où un assistant exécute les instructions de l'utilisateur, au cours duquel l'assistant peut appeler des outils pour obtenir des informations et effectuer des opérations ; les résultats retournés par les outils commenceront par "tool"
+  - Ce processus est réalisé via une conversation entre l'assistant et l'utilisateur. Pour éviter que les réponses de l'utilisateur n'interfèrent avec les résultats de l'évaluation, le contenu des réponses de l'utilisateur a été masqué. Vous devez uniquement vous concentrer sur le contenu des réponses de l'assistant et évaluer si les instructions complètes de l'utilisateur ont été exécutées
+  - Pour faciliter l'évaluation, les instructions complètes de l'utilisateur ont été divisées en plusieurs points de scoring (rubrics). Vous devez uniquement déterminer si chaque point est satisfait
+  - En raison du grand nombre de tours de tâche, nous utilisons une méthode d'évaluation par fenêtre glissante, c'est-à-dire que 10 tours de sortie sont visibles à chaque fois, avec un chevauchement de 2 tours entre chaque fenêtre, mais l'état des rubrics est conservé d'une fenêtre à l'autre
+  - Vous évaluez actuellement la fenêtre numéro {window_idx} (il y a au total {total_windows} fenêtres pour cette tâche)
+  - <window_content> contient l'avancement de la tâche pour la fenêtre actuelle
+  - <current_rubrics> contient l'état de tous les points de scoring actuels (true signifie satisfait, false signifie non satisfait, l'état initial de tous les points de scoring est false)
+
+  # Tâche
+  - Basé sur l'avancement de la tâche dans la fenêtre actuelle, mettez à jour l'état des points de scoring (rubrics)
+  - Vous pouvez mettre à jour l'état de false à true si et seulement si l'assistant a atteint cet objectif dans cette fenêtre
+  - Vous pouvez également mettre à jour l'état de true à false si et seulement si l'assistant a invalidé une conclusion correcte précédente dans cette fenêtre (mais veuillez noter : si la demande de l'utilisateur elle-même a changé, par exemple annulation active après commande, l'évaluation originale de la demande de commande ne doit pas être invalidée)
+  - Vous pouvez vous référer aux "Instructions complètes de l'utilisateur" pour obtenir la progression de la fenêtre de conversation actuelle et éviter des modifications inutiles
+
+  # Remarques importantes
+  - Important : Toutes les évaluations dépendent de si les réponses de l'assistant et les demandes d'appel d'outil atteignent les objectifs définis dans les rubrics. Le contenu transmis par l'utilisateur à l'assistant durant la conversation est considéré uniquement comme des indications et des guides pour l'assistant et n'affecte pas directement les critères d'évaluation. Tout est basé sur les champs des rubrics !
+  - Important : Les résultats retournés par les outils de type requête sont visibles uniquement par l'assistant et ne représentent pas le contenu recommandé par l'assistant à l'utilisateur. Par conséquent, ils n'affectent pas directement les résultats de l'évaluation. Tout doit être basé sur la réponse de l'assistant à l'utilisateur après avoir obtenu les informations !
+  - Important : Pour les rubrics de type commande (impliquant des détails de commande, où la génération d'une commande est requise), il faut confirmer si l'assistant a réellement effectué l'opération de commande. Il est possible que l'assistant pense à tort avoir effectué l'opération de commande alors que l'appel d'outil a échoué ; ou que l'utilisateur indique qu'il peut "passer la commande lui-même", etc. Ces situations doivent toutes être considérées comme non satisfaisantes
+  - Pour les rubrics impliquant des détails de commande tels que la quantité de produits ou l'heure de livraison, les exigences originales des rubrics doivent être strictement satisfaites (aucun écart sur la quantité de produits, pas de livraison plus tardive que l'heure de livraison souhaitée). Les comportements de compromis de l'utilisateur n'affectent pas le résultat de l'évaluation (par exemple, si l'utilisateur indique "un peu moins de tel produit ça va", "pas d'objection sur le contenu de la commande" ou "une livraison plus tardive ça va", etc.). Ces situations doivent toujours être considérées comme non satisfaisantes
+  - Pour les rubrics de type adresse ou note de commande impliquant une correspondance de contenu textuel, le principe d'équivalence fonctionnelle est adopté : tant que le contenu réel peut réaliser la même fonction (comme localiser approximativement le lieu de livraison ou transmettre les besoins principaux du client), même si l'expression n'est pas complètement identique ou manque certains détails, cela est considéré comme satisfaisant
+  - Si la fenêtre actuelle n'implique pas une certaine règle, conservez son état d'origine inchangé ; si la fenêtre actuelle implique une certaine règle mais qu'il est impossible de décider complètement, vous pouvez enregistrer les informations clés dans la justification pour un jugement ultérieur
+  - Enregistrez dans la justification, sous forme d'ajout, les informations clés relatives au rubric actuel et leur tour correspondant [x]. Si une modification d'état se produit, la raison doit également être enregistrée, en utilisant un langage concis
+
+  # Exigences de format
+  - Votre réponse doit être un objet JSON contenant les champs suivants :
+  - `rubric_idx` : Identifiant unique de la règle
+  - `rubric` : Reformulation de la règle
+  - `justification` : Explication du changement d'état
+  - `meetExpectation` : État mis à jour (true ou false)
+
+  # Structure d'exemple d'entrée :
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Structure d'exemple de réponse :
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Reformulation de la règle>",
+        "justification": "<Explication concise du changement d'état, enregistrée sous forme d'ajout>",
+        "meetExpectation": <true ou false>
+    }},
+    ...
+  ]
+  ```
+russian: |-
+  # Системная информация
+  {env_info}
+
+  # Полная инструкция пользователя
+  {user_instruction}
+
+  # Описание контекста
+  - Это процесс выполнения инструкций пользователя ассистентом, где ассистент может вызывать инструменты для получения информации и выполнения операций; результаты возврата инструментов начинаются с tool
+  - Этот процесс выполняется в ходе диалога между ассистентом и пользователем; чтобы избежать влияния ответов пользователя на результаты оценки, содержимое ответов пользователя скрыто, вам нужно сосредоточиться только на ответах ассистента и оценить, выполнена ли полная инструкция пользователя
+  - Для удобства оценки полная инструкция пользователя была разбита на несколько критериев оценки rubric, вам нужно только определить, выполнен ли каждый критерий
+  - Поскольку количество раундов задачи велико, мы используем метод оценки скользящим окном, то есть каждый раз видны 10 раундов вывода, между каждым окном есть перекрытие в 2 раунда, но статус rubric сохраняется между окнами
+  - Вы оцениваете окно номер {window_idx} (всего в этой задаче {total_windows} окон)
+  - <window_content> содержит прогресс задачи в текущем окне
+  - <current_rubrics> содержит статус всех текущих критериев оценки (true означает выполнено, false означает не выполнено, начальный статус всех критериев равен false)
+
+  # Задача
+  - На основе прогресса задачи в текущем окне обновите статус критериев оценки rubric
+  - Вы можете изменить статус с false на true, только если ассистент выполнил эту цель в данном окне
+  - Вы также можете изменить статус с true обратно на false, только если ассистент в этом окне опроверг предыдущий правильный вывод (но обратите внимание: если потребности пользователя изменились самостоятельно, например, активная отмена после размещения заказа, то не следует отменять первоначальную оценку требования размещения заказа)
+  - Вы можете ссылаться на «Полную инструкцию пользователя», чтобы получить прогресс текущего окна диалога и избежать ненужных изменений
+
+  # Примечания
+  - Важно: вся оценка основывается на том, завершили ли ответы ассистента и запросы вызова инструментов цели в rubric; содержимое, передаваемое пользователем ассистенту в диалоге, считается только подсказкой и руководством для ассистента и не влияет напрямую на критерии оценки, все основывается на поле rubric!
+  - Важно: результаты, возвращаемые инструментами запроса, видны только ассистенту и не представляют собой контент, рекомендованный ассистентом пользователю, поэтому они также не влияют напрямую на результаты оценки; все должно основываться на ответах ассистента пользователю после получения информации!
+  - Важно: для rubric, связанных с заказами (касается деталей заказа, необходимо сгенерировать заказ), необходимо подтвердить, действительно ли ассистент завершил операцию размещения заказа. Возможно, ассистент ошибочно полагает, что завершил операцию размещения заказа, но на самом деле вызов инструмента не удался; или пользователь указывает, что может «разместить заказ самостоятельно» и т. д., все это должно считаться невыполненным требованием
+  - Для rubric, касающихся деталей заказа, таких как количество товаров, время доставки, необходимо строго соблюдать первоначальные требования rubric (не должно быть отклонений в количестве товаров, не должно быть позже ожидаемого времени доставки); компромиссное поведение пользователя не влияет на результат оценки (например, пользователь указывает «немного меньше товара тоже подойдет», «нет возражений против содержимого заказа» или «можно доставить позже» и т. д.), такие случаи все равно должны считаться невыполненными требованиями
+  - Для rubric, касающихся сопоставления текстового содержимого, такого как адрес или примечания к заказу, применяется принцип функциональной эквивалентности: пока фактическое содержимое может реализовать ту же функцию (например, примерно определить место доставки или передать основные потребности клиента), даже если формулировка не полностью совпадает или отсутствуют некоторые детали, это также считается выполнением требования
+  - Если текущее окно не касается какого-либо правила, сохраните его исходный статус неизменным; если текущее окно касается какого-либо правила, но невозможно полностью решить, можно записать ключевую информацию в justification для последующего суждения
+  - В justification запишите в виде добавления ключевую информацию, относящуюся к текущему rubric, и соответствующий раунд [x]; если произошло изменение статуса, также необходимо записать причину, используя лаконичный язык
+
+  # Требования к формату
+  - Ваш ответ должен быть объектом JSON, содержащим следующие поля:
+  - `rubric_idx`: уникальный идентификатор правила
+  - `rubric`: пересказ правила
+  - `justification`: объяснение изменения статуса
+  - `meetExpectation`: обновленный статус (true или false)
+
+  # Пример структуры ввода:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Пример структуры ответа:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<пересказ правила>",
+        "justification": "<краткое объяснение изменения статуса, записанное в виде добавления>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+arabic: |-
+  # معلومات النظام
+  {env_info}
+
+  # تعليمات المستخدم الكاملة
+  {user_instruction}
+
+  # خلفية توضيحية
+  - هذه هي العملية التي يكمل فيها المساعد تعليمات المستخدم، حيث يمكن للمساعد استدعاء أدوات للحصول على المعلومات وإتمام العمليات، وستبدأ نتائج عودة الأداة بـ tool
+  - تتم هذه العملية في محادثة بين المساعد والمستخدم، ولتجنب تداخل استجابات المستخدم مع نتائج التقييم، تم إخفاء محتوى استجابات المستخدم، تحتاج فقط إلى التركيز على محتوى استجابات المساعد، وتقييم ما إذا كانت تعليمات المستخدم الكاملة قد اكتملت
+  - لتسهيل التقييم، تم تقسيم تعليمات المستخدم الكاملة إلى عدة نقاط تقييم rubric، تحتاج فقط إلى الحكم على ما إذا كانت كل نقطة تقييم مستوفاة
+  - نظرًا لوجود العديد من جولات المهام، نعتمد طريقة تقييم النافذة المنزلقة، أي أنه يمكن رؤية 10 جولات من المخرجات في كل مرة، هناك جولتان متداخلتان بين كل نافذة، ولكن حالة rubric ستُحتفظ بها عبر النوافذ
+  - أنت تقوم بتقييم النافذة رقم {window_idx} (إجمالي {total_windows} نافذة في هذه المهمة)
+  - يحتوي <window_content> على تقدم المهمة في النافذة الحالية
+  - يحتوي <current_rubrics> على حالة جميع نقاط التقييم الحالية (true تعني مستوفاة، false تعني غير مستوفاة، الحالة الأولية لجميع نقاط التقييم هي false)
+
+  # المهمة
+  - بناءً على تقدم المهمة في النافذة الحالية، قم بتحديث حالة نقاط التقييم rubric
+  - يمكنك تحديث الحالة من false إلى true، فقط عندما يكمل المساعد هذا الهدف في هذه النافذة
+  - يمكنك أيضًا تحديث true إلى false مرة أخرى، فقط عندما ينقض المساعد الاستنتاج الصحيح السابق في هذه النافذة (لكن يرجى ملاحظة: إذا تغيرت احتياجات المستخدم بنفسها، مثل الإلغاء الطوعي بعد الطلب، فلا ينبغي نقض التقييم الأصلي لمتطلبات الطلب)
+  - يمكنك الرجوع إلى "تعليمات المستخدم الكاملة" للحصول على تقدم نافذة المحادثة الحالية، لتجنب التعديلات غير الضرورية
+
+  # ملاحظات هامة
+  - مهم: جميع التقييمات تعتمد على ما إذا كانت ردود المساعد وطلبات استدعاء الأداة قد أكملت الأهداف في rubric، المحتوى الذي ينقله المستخدم إلى المساعد في المحادثة يعتبر فقط تلميحًا وتوجيهًا للمساعد، ولن يؤثر مباشرة على معايير التقييم، كل شيء يعتمد على حقل rubric!
+  - مهم: النتائج التي تعود من أدوات الاستعلام مرئية فقط للمساعد، ولا تمثل المحتوى الذي يوصي به المساعد للمستخدم، وبالتالي لا تؤثر مباشرة على نتائج التقييم، كل شيء يجب أن يعتمد على رد المساعد للمستخدم بعد الحصول على المعلومات!
+  - مهم: بالنسبة لنقاط التقييم من نوع الطلب (تتضمن تفاصيل الطلب، يجب إنشاء الطلب)، يجب تأكيد ما إذا كان المساعد قد أكمل عملية الطلب فعليًا. من الممكن أن يعتقد المساعد خطأً أنه أكمل عملية الطلب، بينما فشل استدعاء الأداة فعليًا؛ أو أن المستخدم يشير إلى أنه يمكنه "الطلب بنفسه" وغيرها من الحالات، يجب اعتبارها جميعًا غير مستوفاة للمتطلبات
+  - بالنسبة لنقاط التقييم التي تتضمن تفاصيل الطلب مثل كمية البضائع ووقت التسليم، يجب تلبية متطلبات rubric الأصلية بدقة (لا يمكن أن يكون هناك انحراف في كمية البضائع، لا يمكن أن يكون متأخرًا عن وقت التسليم المتوقع)، سلوك تنازل المستخدم لا يؤثر على نتيجة التقييم (على سبيل المثال، إذا أشار المستخدم إلى أن "قليلًا من سلعة معينة مقبول"، أو "لا اعتراض على محتوى الطلب"، أو "التسليم المتأخر مقبول"، إلخ)، لا تزال هذه الحالات تعتبر غير مستوفاة للمتطلبات
+  - بالنسبة لنقاط التقييم من نوع العنوان أو ملاحظات الطلب التي تتضمن مطابقة محتوى النص، اعتمد مبدأ التكافؤ الوظيفي: طالما أن المحتوى الفعلي يمكنه تحقيق نفس الوظيفة (مثل تحديد موقع التسليم تقريبًا أو نقل الاحتياجات الرئيسية للعميل)، حتى لو لم يكن التعبير متطابقًا تمامًا أو افتقر إلى بعض التفاصيل، يعتبر أيضًا مستوفيًا للمتطلبات
+  - إذا لم تتضمن النافذة الحالية قاعدة معينة، احتفظ بحالتها الأصلية دون تغيير؛ إذا تضمنت النافذة الحالية قاعدة معينة ولكن لا يمكن الحسم تمامًا، يمكن تسجيل المعلومات الرئيسية في justification للانتظار والحكم لاحقًا
+  - سجل في justification المعلومات الرئيسية المتعلقة بـ rubric الحالي والجولة المقابلة لها [x] بشكل تراكمي، إذا حدث تعديل في الحالة يجب أيضًا تسجيل السبب، استخدم لغة موجزة
+
+  # متطلبات التنسيق
+  - يجب أن تكون ردودك كائن JSON، يحتوي على الحقول التالية:
+  - `rubric_idx`: المعرف الفريد للقاعدة
+  - `rubric`: إعادة صياغة القاعدة
+  - `justification`: شرح لتغيير الحالة
+  - `meetExpectation`: الحالة المحدثة (true أو false)
+
+  # هيكل مثال الإدخال:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # هيكل مثال الرد:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<إعادة صياغة القاعدة>",
+        "justification": "<شرح موجز لتغيير الحالة، يسجل بشكل تراكمي>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+hindi: |-
+  # सिस्टम जानकारी
+  {env_info}
+
+  # उपयोगकर्ता का पूर्ण निर्देश
+  {user_instruction}
+
+  # पृष्ठभूमि विवरण
+  - यह एक प्रक्रिया है जिसमें assistant user के निर्देशों को पूरा करता है, जहाँ assistant जानकारी प्राप्त करने और कार्य करने के लिए tool का उपयोग कर सकता है, tool द्वारा लौटाए गए परिणाम tool से शुरू होंगे
+  - यह प्रक्रिया assistant और user के बीच वार्तालाप में पूरी होती है, user की प्रतिक्रियाओं द्वारा मूल्यांकन परिणामों में हस्तक्षेप से बचने के लिए, user की प्रतिक्रिया सामग्री छिपा दी गई है, आपको केवल assistant की प्रतिक्रिया सामग्री पर ध्यान देना है, और यह मूल्यांकन करना है कि उपयोगकर्ता का पूर्ण निर्देश पूरा हुआ है या नहीं
+  - मूल्यांकन को आसान बनाने के लिए, उपयोगकर्ता के पूर्ण निर्देश को कई स्कोरिंग बिंदुओं rubric में विभाजित किया गया है, आपको केवल यह निर्णय लेना है कि प्रत्येक स्कोरिंग बिंदु पूरा हुआ है या नहीं
+  - चूंकि कार्य के राउंड अधिक हैं, हम स्लाइडिंग विंडो मूल्यांकन विधि का उपयोग करते हैं, अर्थात हर बार 10 राउंड आउटपुट दिखाई देते हैं, प्रत्येक विंडो के बीच 2 राउंड का ओवरलैप होता है, लेकिन rubric स्थिति विंडो के पार बनाए रखी जाएगी
+  - आप {window_idx} वीं विंडो का मूल्यांकन कर रहे हैं (इस कार्य के लिए कुल {total_windows} विंडो हैं)
+  - <window_content> में वर्तमान विंडो की कार्य प्रगति शामिल है
+  - <current_rubrics> में वर्तमान सभी स्कोरिंग बिंदुओं की स्थिति शामिल है (true का अर्थ है पूरा हुआ, false का अर्थ है पूरा नहीं हुआ, सभी स्कोरिंग बिंदुओं की प्रारंभिक स्थिति false है)
+
+  # कार्य
+  - वर्तमान विंडो की कार्य प्रगति के आधार पर, स्कोरिंग बिंदु rubric की स्थिति अपडेट करें
+  - आप स्थिति को false से true में अपडेट कर सकते हैं, यदि और केवल यदि assistant ने इस विंडो में उस लक्ष्य को पूरा किया है
+  - आप true को फिर से false में अपडेट भी कर सकते हैं, यदि और केवल यदि assistant ने इस विंडो में पिछले सही निष्कर्ष को रद्द कर दिया है (लेकिन कृपया ध्यान दें: यदि उपयोगकर्ता की आवश्यकता स्वयं बदल गई है, जैसे कि ऑर्डर देने के बाद सक्रिय रूप से रद्द करना, तो ऑर्डर आवश्यकता के मूल मूल्यांकन को रद्द नहीं किया जाना चाहिए)
+  - आप वर्तमान वार्तालाप विंडो की प्रगति प्राप्त करने के लिए "उपयोगकर्ता का पूर्ण निर्देश" का संदर्भ ले सकते हैं, ताकि अनावश्यक संशोधनों से बचा जा सके
+
+  # ध्यान देने योग्य बातें
+  - महत्वपूर्ण: सभी मूल्यांकन इस आधार पर किए जाएंगे कि assistant के उत्तर और tool कॉल अनुरोध ने rubric में लक्ष्यों को पूरा किया है या नहीं, वार्तालाप में user द्वारा assistant को संचारित सामग्री को केवल assistant के लिए संकेत और मार्गदर्शन माना जाएगा, यह मूल्यांकन मानकों को सीधे प्रभावित नहीं करेगा, सब कुछ rubric फ़ील्ड के आधार पर होगा!
+  - महत्वपूर्ण: क्वेरी प्रकार के tool द्वारा लौटाए गए परिणाम केवल assistant के लिए दृश्यमान हैं, और यह उस सामग्री का प्रतिनिधित्व नहीं करता है जिसे assistant उपयोगकर्ता को अनुशंसित करता है, इसलिए यह मूल्यांकन परिणामों को सीधे प्रभावित नहीं करता है, सब कुछ assistant द्वारा जानकारी प्राप्त करने के बाद उपयोगकर्ता को दिए गए उत्तर के आधार पर होना चाहिए!
+  - महत्वपूर्ण: ऑर्डर प्रकार के rubric के लिए (जो ऑर्डर विवरणों से संबंधित हैं, ऑर्डर जनरेट करना आवश्यक है), यह पुष्टि करना आवश्यक है कि assistant ने वास्तव में ऑर्डर प्लेसिंग ऑपरेशन पूरा किया है या नहीं। हो सकता है कि assistant को गलती से लगा हो कि ऑर्डर प्लेसिंग ऑपरेशन पूरा हो गया है, वास्तव में tool कॉल विफल रहा; या user ने संकेत दिया कि वे "स्वयं ऑर्डर कर सकते हैं" ऐसी स्थितियों को भी आवश्यकताओं को पूरा नहीं किया गया माना जाना चाहिए
+  - ऑर्डर विवरणों जैसे कि वस्तु की मात्रा, डिलीवरी समय से संबंधित rubric के लिए, मूल rubric आवश्यकताओं को कड़ाई से पूरा करना आवश्यक है (वस्तु की मात्रा में विचलन नहीं हो सकता, अपेक्षित डिलीवरी समय से बाद में नहीं हो सकता), उपयोगकर्ता की समझौता व्यवहार मूल्यांकन परिणामों को प्रभावित नहीं करता है (जैसे कि user का कहना है कि "कुछ वस्तुएं कम भी चलेंगी", "ऑर्डर सामग्री से कोई आपत्ति नहीं" या "बाद में डिलीवरी भी चलेंगी" आदि), ऐसी स्थितियों को अभी भी आवश्यकताओं को पूरा नहीं किया गया माना जाना चाहिए
+  - पाठ सामग्री मिलान से संबंधित पते या ऑर्डर नोट्स प्रकार के rubric के लिए, कार्यात्मक समानता सिद्धांत अपनाया जाता है: जब तक वास्तविक सामग्री समान कार्य प्राप्त कर सकती है (जैसे डिलीवरी स्थान का मोटे तौर पर पता लगाना या ग्राहक की मुख्य आवश्यकताओं को संप्रेषित करना), भले ही अभिव्यक्ति पूरी तरह से सुसंगत न हो या कुछ विवरण गायब हों, इसे आवश्यकताओं को पूरा किया गया माना जाता है
+  - यदि वर्तमान विंडो में किसी नियम का समावेश नहीं है, तो उसकी मूल स्थिति को अपरिवर्तित रखें; यदि वर्तमान विंडो में किसी नियम का समावेश है लेकिन पूरी तरह से निर्णय नहीं लिया जा सकता, तो महत्वपूर्ण जानकारी को बाद के निर्णय के लिए justification में दर्ज किया जा सकता है
+  - justification में वर्तमान rubric से संबंधित महत्वपूर्ण जानकारी और इसके अनुरूप राउंड [x] को जोड़ने के रूप में दर्ज करें, यदि स्थिति संशोधन होता है तो कारण भी दर्ज करना आवश्यक है, संक्षिप्त भाषा का उपयोग करें
+
+  # प्रारूप आवश्यकताएं
+  - आपका उत्तर एक JSON ऑब्जेक्ट होना चाहिए, जिसमें निम्नलिखित फ़ील्ड शामिल हैं:
+  - `rubric_idx`: नियम का अद्वितीय पहचानकर्ता
+  - `rubric`: नियम का पुनर्कथन
+  - `justification`: स्थिति परिवर्तन की व्याख्या
+  - `meetExpectation`: अपडेट की गई स्थिति (true या false)
+
+  # उदाहरण इनपुट संरचना:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # उदाहरण उत्तर संरचना:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<नियम का पुनर्कथन>",
+        "justification": "<स्थिति परिवर्तन का संक्षिप्त विवरण, जोड़ने के रूप में दर्ज>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+thai: |-
+  # ข้อมูลระบบ
+  {env_info}
+
+  # คำสั่งครบถ้วนของผู้ใช้
+  {user_instruction}
+
+  # คำชี้แจงพื้นหลัง
+  - นี่คือกระบวนการที่ assistant ทำตามคำสั่งของ user โดยที่ assistant สามารถเรียกใช้เครื่องมือเพื่อรับข้อมูลและดำเนินการได้ ผลลัพธ์ที่ส่งกลับจากเครื่องมือจะขึ้นต้นด้วย tool
+  - กระบวนการนี้ดำเนินการผ่านการสนทนาระหว่าง assistant และ user เพื่อหลีกเลี่ยงการรบกวนผลการประเมินจากการตอบสนองของ user เนื้อหาการตอบสนองของ user จึงถูกซ่อนไว้ คุณเพียงแค่ต้องสนใจเนื้อหาการตอบสนองของ assistant และประเมินว่าคำสั่งครบถ้วนของผู้ใช้ได้รับการดำเนินการเสร็จสิ้นหรือไม่
+  - เพื่อความสะดวกในการประเมิน คำสั่งครบถ้วนของผู้ใช้ถูกแบ่งออกเป็นเกณฑ์การให้คะแนน (rubric) หลายข้อ คุณเพียงแค่ต้องตัดสินว่าแต่ละเกณฑ์การให้คะแนนเป็นที่พอใจหรือไม่
+  - เนื่องจากจำนวนรอบของภารกิจมีมาก เราจึงใช้วิธีการประเมินแบบหน้าต่างเลื่อน (sliding window) กล่าวคือแต่ละครั้งจะเห็นผลลัพธ์ 10 รอบ แต่ละหน้าต่างมีการทับซ้อนกัน 2 รอบ แต่สถานะของ rubric จะถูกคงไว้ข้ามหน้าต่าง
+  - คุณกำลังประเมินหน้าต่างที่ {window_idx} (ภารกิจครั้งนี้มีทั้งหมด {total_windows} หน้าต่าง)
+  - <window_content> ประกอบด้วยความคืบหน้าของภารกิจในหน้าต่างปัจจุบัน
+  - <current_rubrics> ประกอบด้วยสถานะของเกณฑ์การให้คะแนนทั้งหมดในปัจจุบัน (true หมายถึงเป็นที่พอใจแล้ว, false หมายถึงยังไม่เป็นที่พอใจ, สถานะเริ่มต้นของเกณฑ์การให้คะแนนทั้งหมดคือ false)
+
+  # ภารกิจ
+  - อัปเดตสถานะของเกณฑ์การให้คะแนน rubric โดยอิงจากความคืบหน้าของภารกิจในหน้าต่างปัจจุบัน
+  - คุณสามารถเปลี่ยนสถานะจาก false เป็น true ก็ต่อเมื่อ assistant ดำเนินการเป้าหมายนั้นเสร็จสิ้นในหน้าต่างนี้
+  - คุณสามารถเปลี่ยนสถานะจาก true เป็น false อีกครั้ง ก็ต่อเมื่อ assistant ล้มล้างข้อสรุปที่ถูกต้องก่อนหน้าในหน้าต่างนี้ (แต่โปรดระวัง: หากความต้องการของผู้ใช้เปลี่ยนแปลงเอง เช่น ยกเลิกคำสั่งซื้อหลังจากสั่งแล้ว ไม่ควรล้มล้างการประเมินเดิมเกี่ยวกับความต้องการในการสั่งซื้อ)
+  - คุณสามารถอ้างอิง "คำสั่งครบถ้วนของผู้ใช้" เพื่อดูความคืบหน้าของหน้าต่างการสนทนาปัจจุบัน และหลีกเลี่ยงการแก้ไขที่ไม่จำเป็น
+
+  # ข้อควรระวัง
+  - สำคัญ: การประเมินทั้งหมดยึดถือว่า assistant ตอบกลับและการเรียกใช้เครื่องมือเสร็จสิ้นเป้าหมายใน rubric หรือไม่ เนื้อหาที่ user สื่อสารถึง assistant ในการสนทนาถือเป็นเพียงคำแนะนำและแนวทางสำหรับ assistant ไม่ส่งผลโดยตรงต่อเกณฑ์การประเมิน ทุกอย่างยึดตามฟิลด์ rubric เป็นหลัก!
+  - สำคัญ: ผลลัพธ์ที่ส่งกลับจาก tool ประเภทการค้นหาจะปรากฏเฉพาะต่อ assistant เท่านั้น ไม่ได้หมายถึงเนื้อหาที่ assistant แนะนำให้ผู้ใช้ ดังนั้นจึงไม่ส่งผลโดยตรงต่อผลการประเมิน ทุกอย่างต้องยึดตามคำตอบที่ assistant มีต่อผู้ใช้หลังจากได้รับข้อมูล!
+  - สำคัญ: สำหรับ rubric ประเภทคำสั่งซื้อ (เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ ต้องมีการสร้างคำสั่งซื้อ) ต้องยืนยันว่า assistant ดำเนินการสั่งซื้อเสร็จสิ้นจริงหรือไม่ เป็นไปได้ที่ assistant อาจเข้าใจผิดว่าดำเนินการสั่งซื้อเสร็จสิ้นแล้ว แต่ фактическиการเรียกใช้เครื่องมือล้มเหลว; หรือ user ระบุว่าสามารถ "สั่งซื้อเองได้" เป็นต้น กรณีเหล่านี้ควรถือว่าไม่เป็นที่พอใจ
+  - สำหรับ rubric ที่เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ เช่น จำนวนสินค้า เวลาจัดส่ง ต้องเป็นไปตามข้อกำหนดเดิมของ rubric อย่างเคร่งครัด (ไม่มีความคลาดเคลื่อนของจำนวนสินค้า ไม่ช้ากว่าเวลาจัดส่งที่ต้องการ) การประนีประนอมของผู้ใช้ไม่ส่งผลต่อผลการตัดสิน (เช่น user ระบุว่า "สินค้าบางอย่างน้อยหน่อยก็ได้", "ไม่มีข้อโต้แย้งต่อเนื้อหาคำสั่งซื้อ" หรือ "จัดส่งช้าหน่อยก็ได้" เป็นต้น) กรณีเหล่านี้ยังคงควรถือว่าไม่เป็นที่พอใจ
+  - สำหรับ rubric ประเภทที่อยู่หรือหมายเหตุคำสั่งซื้อที่เกี่ยวข้องกับการจับคู่เนื้อหาข้อความ ใช้หลักการเทียบเท่าเชิงฟังก์ชัน: ตราบใดที่เนื้อหาจริงสามารถทำหน้าที่เดียวกันได้ (เช่น ระบุตำแหน่งจัดส่งโดยประมาณหรือสื่อสารความต้องการหลักของลูกค้า) แม้ถ้อยคำจะไม่ตรงกันทั้งหมดหรือขาดรายละเอียดบางส่วน ก็ถือว่าเป็นที่พอใจ
+  - หากหน้าต่างปัจจุบันไม่เกี่ยวข้องกับกฎใด ๆ ให้คงสถานะเดิมไว้; หากหน้าต่างปัจจุบันเกี่ยวข้องกับกฎใดกฎหนึ่งแต่ไม่สามารถตัดสินได้โดยสมบูรณ์ สามารถบันทึกข้อมูลสำคัญใน justification เพื่อรอการตัดสินในภายหลัง
+  - ใน justification ให้บันทึกข้อมูลสำคัญที่เกี่ยวข้องกับ rubric ปัจจุบันและรอบที่สอดคล้องกัน [x] ในรูปแบบการเพิ่มเติม หากมีการแก้ไขสถานะก็ต้องบันทึกเหตุผลเช่นกัน ใช้ภาษาที่กระชับ
+
+  # ข้อกำหนดรูปแบบ
+  - การตอบกลับของคุณควรเป็นวัตถุ JSON ประกอบด้วยฟิลด์ต่อไปนี้:
+  - `rubric_idx`: ตัวระบุเฉพาะของกฎ
+  - `rubric`: การกล่าวซ้ำของกฎ
+  - `justification`: คำอธิบายของการเปลี่ยนแปลงสถานะ
+  - `meetExpectation`: สถานะหลังอัปเดต (true หรือ false)
+
+  # โครงสร้างตัวอย่างอินพุต:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # โครงสร้างตัวอย่างการตอบกลับ:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<การกล่าวซ้ำของกฎ>",
+        "justification": "<คำอธิบายโดยย่อของการเปลี่ยนแปลงสถานะ บันทึกในรูปแบบการเพิ่มเติม>",
+        "meetExpectation": <true หรือ false>
+    }},
+    ...
+  ]
+  ```
+spanish: |-
+  # Información del Sistema
+  {env_info}
+
+  # Instrucción Completa del Usuario
+  {user_instruction}
+
+  # Descripción del Contexto
+  - Este es un proceso en el que un assistant completa las instrucciones del user, donde el assistant puede llamar herramientas para obtener información y realizar operaciones; los resultados devueltos por las herramientas comenzarán con tool
+  - Este proceso se completa en una conversación entre el assistant y el user; para evitar interferencias de las respuestas del user en los resultados de la evaluación, el contenido de las respuestas del user ha sido ocultado, solo necesitas enfocarte en el contenido de las respuestas del assistant y evaluar si la instrucción completa del usuario ha sido completada
+  - Para facilitar la evaluación, la instrucción completa del usuario ha sido dividida en varios puntos de puntuación rubric, solo necesitas juzgar si cada punto de puntuación se cumple
+  - Debido a que hay muchas rondas de tareas, utilizamos un método de evaluación de ventana deslizante, es decir, 10 rondas de salida son visibles cada vez, hay 2 rondas de superposición entre cada ventana, pero el estado del rubric se conservará entre ventanas
+  - Estás evaluando la ventana número {window_idx} (hay un total de {total_windows} ventanas en esta tarea)
+  - <window_content> contiene el progreso de la tarea de la ventana actual
+  - <current_rubrics> contiene el estado de todos los puntos de puntuación actuales (true indica cumplido, false indica no cumplido, el estado inicial de todos los puntos de puntuación es false)
+
+  # Tarea
+  - Basado en el progreso de la tarea de la ventana actual, actualiza el estado del punto de puntuación rubric
+  - Puedes actualizar el estado de false a true, si y solo si el assistant completó ese objetivo en esta ventana
+  - También puedes actualizar true a false nuevamente, si y solo si el assistant revocó la conclusión correcta anterior en esta ventana (pero ten en cuenta: si la demanda del usuario cambió por sí misma, por ejemplo, cancelar activamente después de hacer un pedido, entonces no se debe revocar la evaluación original de la demanda del pedido)
+  - Puedes referirte a la "Instrucción Completa del Usuario" para obtener el progreso de la ventana de conversación actual y evitar modificaciones innecesarias
+
+  # Notas Importantes
+  - Importante: Todas las evaluaciones se basan en si las respuestas del assistant y las solicitudes de llamada de herramientas completan los objetivos en el rubric; el contenido que el user transmite al assistant en la conversación se considera solo como sugerencias y guía para el assistant, no afectará directamente los estándares de evaluación, ¡todo se basa en el campo rubric!
+  - Importante: Los resultados devueltos por las tool de tipo consulta son visibles solo para el assistant, no representan el contenido recomendado por el assistant al usuario, por lo tanto, tampoco afectan directamente los resultados de la evaluación, ¡todo debe basarse en la respuesta del assistant al usuario después de obtener la información!
+  - Importante: Para los rubric de tipo pedido (que involucran detalles del pedido, deben generar un pedido), se debe confirmar si el assistant realmente completó la operación de hacer el pedido. Es posible que el assistant crea erróneamente que completó la operación de hacer el pedido, pero en realidad la llamada de la herramienta falló; o si el user indica que puede "hacer el pedido por sí mismo", etc., todo esto debe considerarse como no cumplido
+  - Para los rubric que involucran detalles del pedido como la cantidad de productos, el tiempo de entrega, etc., se deben cumplir estrictamente los requisitos del rubric original (no puede haber desviación en la cantidad de productos, no debe ser más tarde que el tiempo de entrega esperado), el comportamiento de compromiso del usuario no afecta el resultado de la evaluación (por ejemplo, si el user indica "está bien menos cantidad de cierto producto", "no hay objeción al contenido del pedido" o "está bien entregar más tarde", etc.), estas situaciones aún deben considerarse como no cumplidas
+  - Para los rubric de tipo dirección o notas de pedido que involucran coincidencia de contenido de texto, se adopta el principio de equivalencia funcional: siempre que el contenido real pueda lograr la misma función (como ubicar aproximadamente el lugar de entrega o transmitir la necesidad principal del cliente), incluso si la expresión no es completamente consistente o faltan algunos detalles, también se considera cumplido
+  - Si la ventana actual no involucra una cierta regla, mantén su estado original sin cambios; si la ventana actual involucra una cierta regla pero no se puede decidir completamente, puedes registrar la información clave en justification para dejarla para juicio posterior
+  - Registra la información clave relacionada con el rubric actual y su ronda correspondiente [x] en justification de forma acumulativa, si ocurre una modificación de estado también se debe registrar la razón, usa un lenguaje conciso
+
+  # Requisitos de Formato
+  - Tu respuesta debe ser un objeto JSON, que contiene los siguientes campos:
+  - `rubric_idx`: El identificador único de la regla
+  - `rubric`: Una reiteración de la regla
+  - `justification`: Una explicación del cambio de estado
+  - `meetExpectation`: El estado actualizado (true o false)
+
+  # Estructura de Entrada de Ejemplo:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Estructura de Respuesta de Ejemplo:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Reiteración de la regla>",
+        "justification": "<Explicación breve del cambio de estado, registrada de forma acumulativa>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+indonesian: |-
+  # Informasi Sistem
+  {env_info}
+
+  # Instruksi Lengkap Pengguna
+  {user_instruction}
+
+  # Penjelasan Latar Belakang
+  - Ini adalah proses di mana assistant menyelesaikan instruksi user, di mana assistant dapat memanggil alat untuk mendapatkan informasi dan menyelesaikan operasi, hasil yang dikembalikan oleh alat akan dimulai dengan tool
+  - Proses ini diselesaikan dalam percakapan antara assistant dan user, untuk menghindari gangguan respons user terhadap hasil evaluasi, konten respons user telah disembunyikan, Anda hanya perlu fokus pada konten respons assistant, dan mengevaluasi apakah instruksi lengkap user telah diselesaikan
+  - Untuk memudahkan evaluasi, instruksi lengkap user telah dipecah menjadi beberapa poin penilaian rubric, Anda hanya perlu menentukan apakah setiap poin penilaian terpenuhi
+  - Karena jumlah putaran tugas banyak, kami menggunakan metode evaluasi jendela geser, yaitu setiap kali 10 putaran output terlihat, ada 2 putaran tumpang tindih antara setiap jendela, tetapi status rubric akan dipertahankan lintas jendela
+  - Anda sedang mengevaluasi jendela ke-{window_idx} (total {total_windows} jendela untuk tugas ini)
+  - <window_content> berisi kemajuan tugas untuk jendela saat ini
+  - <current_rubrics> berisi status semua poin penilaian saat ini (true menunjukkan telah terpenuhi, false menunjukkan belum terpenuhi, status awal semua poin penilaian adalah false)
+
+  # Tugas
+  - Berdasarkan kemajuan tugas jendela saat ini, perbarui status poin penilaian rubric
+  - Anda dapat mengubah status dari false menjadi true, jika dan hanya jika assistant menyelesaikan target tersebut dalam jendela ini
+  - Anda juga dapat mengubah true menjadi false lagi, jika dan hanya jika assistant membatalkan kesimpulan benar sebelumnya dalam jendela ini (namun harap perhatikan: jika kebutuhan user berubah sendiri, misalnya membatalkan secara aktif setelah memesan, maka evaluasi asli terhadap kebutuhan pemesanan tidak boleh dibatalkan)
+  - Anda dapat merujuk pada "Instruksi Lengkap Pengguna" untuk mendapatkan kemajuan jendela percakapan saat ini, menghindari modifikasi yang tidak perlu
+
+  # Perhatian
+  - Penting: Semua evaluasi didasarkan pada apakah respons assistant dan permintaan panggilan alat menyelesaikan target dalam rubric, konten yang disampaikan user kepada assistant dalam percakapan hanya dianggap sebagai petunjuk dan panduan untuk assistant, tidak akan langsung mempengaruhi standar evaluasi, semuanya berdasarkan bidang rubric!
+  - Penting: Hasil yang dikembalikan oleh tool jenis kueri hanya terlihat oleh assistant, tidak mewakili konten yang direkomendasikan assistant kepada user, oleh karena itu juga tidak langsung mempengaruhi hasil evaluasi, semuanya harus berdasarkan respons assistant kepada user setelah mendapatkan informasi!
+  - Penting: Untuk rubric jenis pesanan (melibatkan detail pesanan, harus menghasilkan pesanan), harus dikonfirmasi apakah assistant benar-benar menyelesaikan operasi pemesanan. Mungkin assistant salah mengira telah menyelesaikan operasi pemesanan, sebenarnya panggilan alat gagal; atau user menyatakan bisa "pesan sendiri" dll, semua harus dianggap sebagai belum memenuhi persyaratan
+  - Untuk rubric yang melibatkan detail pesanan seperti jumlah barang, waktu pengiriman, harus secara ketat memenuhi persyaratan rubric asli (tidak boleh ada penyimpangan jumlah barang, tidak boleh lebih lambat dari waktu pengiriman yang diharapkan), perilaku kompromi user tidak mempengaruhi hasil penilaian (misalnya user menyatakan "barang tertentu sedikit juga tidak apa-apa", "tidak keberatan dengan konten pesanan" atau "pengiriman terlambat juga tidak apa-apa" dll), situasi seperti ini tetap harus dianggap sebagai belum memenuhi persyaratan
+  - Untuk rubric jenis alamat atau catatan pesanan yang melibatkan pencocokan konten teks, gunakan prinsip equivalensi fungsional: selama konten aktual dapat mencapai fungsi yang sama (seperti memlokasikan tempat pengiriman secara kasar atau menyampaikan kebutuhan utama pelanggan), meskipun ekspresi tidak sepenuhnya konsisten atau kekurangan beberapa detail, juga dianggap memenuhi persyaratan
+  - Jika jendela saat ini tidak melibatkan aturan tertentu, pertahankan status aslinya tanpa perubahan; jika jendela saat ini melibatkan aturan tertentu tetapi tidak dapat diputuskan sepenuhnya, informasi kunci dapat dicatat dalam justification untuk penilaian selanjutnya
+  - Catat informasi kunci yang terkait dengan rubric saat ini dan putaran yang sesuai [x] dalam bentuk tambahan di justification, jika terjadi modifikasi status juga perlu mencatat alasan, gunakan bahasa yang ringkas
+
+  # Persyaratan Format
+  - Respons Anda harus berupa objek JSON, berisi bidang berikut:
+  - `rubric_idx`: Pengenal unik untuk aturan
+  - `rubric`: Pernyataan ulang aturan
+  - `justification`: Penjelasan untuk perubahan status
+  - `meetExpectation`: Status setelah diperbarui (true atau false)
+
+  # Struktur Input Contoh:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Struktur Respons Contoh:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Pernyataan Ulang Aturan>",
+        "justification": "<Penjelasan singkat perubahan status, dicatat dalam bentuk tambahan>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+hebrew: |-
+  # מידע מערכת
+  {env_info}
+
+  # הוראה מלאה של המשתמש
+  {user_instruction}
+
+  # הסבר רקע
+  - זהו תהליך שבו ה-assistant משלים את הוראות ה-user, כאשר ה-assistant יכול להשתמש בכלים כדי להשיג מידע לבצע פעולות, ותוצאות החזרה מהכלים יתחילו ב-tool
+  - תהליך זה מושלם בשיחה בין ה-assistant ל-user, כדי להימנע מהפרעת תגובות ה-user לתוצאות ההערכה, תוכן התגובה של ה-user הוסתר, עליך להתמקד רק בתוכן התגובה של ה-assistant, ולהעריך האם ההוראה המלאה של המשתמש הושלמה
+  - כדי להקל על ההערכה, ההוראה המלאה של המשתמש פוצלה למספר נקודות ציון rubric, עליך רק לקבוע האם כל נקודת ציון מסופקת
+  - מכיוון שישנם סיבובי משימה רבים, אנו משתמשים בשיטת הערכת חלון גולש, כלומר כל פעם נראים 10 סיבובי פלט, בין כל חלון יש חפיפה של 2 סיבובים, אך מצב ה-rubric יישמר בין החלונות
+  - אתה מעריך כעת את החלון ה-{window_idx} (בסך הכל {total_windows} חלונות במשימה זו)
+  - <window_content> מכיל את התקדמות המשימה בחלון הנוכחי
+  - <current_rubrics> מכיל את המצב של כל נקודות הציון הנוכחיות (true מציין שסופק, false מציין שלא סופק, המצב ההתחלתי של כל נקודות הציון הוא false)
+
+  # משימה
+  - בהתבסס על התקדמות המשימה בחלון הנוכחי, עדכן את המצב של נקודות הציון rubric
+  - ניתן לעדכן את המצב מ-false ל-true, אך ורק כאשר ה-assistant השלים יעד זה בחלון זה
+  - ניתן גם לעדכן את המצב מ-true חזרה ל-false, אך ורק כאשר ה-assistant הפריך את המסקנה הנכונה הקודמת בחלון זה (אך שים לב: אם צורכי המשתמש השתנו מעצמם, למשל ביטול יזום לאחר ביצוע הזמנה, אין להפריך את ההערכה המקורית לגבי דרישת ההזמנה)
+  - ניתן להתייחס ל"הוראה מלאה של המשתמש" כדי לקבל את התקדמות חלון השיחה הנוכחי, ולהימנע מביצוע שינויים מיותרים
+
+  # הערות חשובות
+  - חשוב: כל ההערכות נקבעות על פי האם תגובות ה-assistant ובקשות קריאת הכלים השלימו את היעדים ב-rubric, תוכן שה-user העביר ל-assistant בשיחה נחשב רק כרמז והנחיה ל-assistant, לא משפיע ישירות על סטנדרט ההערכה, הכל לפי שדה ה-rubric!
+  - חשוב: תוצאות שהוחזרו על ידי כלי חיפוש מסוג tool גלויות רק ל-assistant, אינן מייצגות את התוכן שה-assistant המליץ למשתמש, ולכן גם לא משפיעות ישירות על תוצאת ההערכה, הכל חייב להיות לפי תגובת ה-assistant למשתמש לאחר קבלת המידע!
+  - חשוב: לגבי rubric מסוג הזמנה (הכולל פרטי הזמנה, חייב ליצור הזמנה), יש לאשר האם ה-assistant באמת השלים את פעולת ביצוע ההזמנה. ייתכן שה-assistant חשב בטעות שהשלים את פעולת ביצוע ההזמנה, למעשה קריאת הכלי נכשלה; או שה-user ציין ש"אפשר לבצע הזמנה בעצמי" וכדומה, כל אלו ייחשבו כלא עומדים בדרישות
+  - לגבי rubric הכולל פרטי הזמנה כמו כמות מוצרים, זמן אספקה, יש לעמוד בדרישות ה-rubric המקוריות בקפדנות (אין סטייה בכמות המוצרים, לא מאוחר מזמן האספקה הצפוי), התנהגות פשרה של המשתמש לא משפיעה על תוצאת השיפוט (למשל אם ה-user ציין "קצת פחות ממוצר מסוים זה בסדר", "אין התנגדות לתוכן ההזמנה" או "אספקה מאוחרת יותר זה בסדר" וכו'), מצבים כאלה עדיין ייחשבו כלא עומדים בדרישות
+  - לגבי rubric מסוג כתובת או הערת הזמנה הכוללת התאמת תוכן טקסט, משתמשים בעקרון שוויון פונקציונלי: כל עוד התוכן בפועל יכול לממש את אותה פונקציה (כמו מיקום כללי של נקודת משלוח או העברת הדרישה העיקרית של הלקוח), גם אם הניסוח לא זהה לחלוטין או חסרים פרטים מסוימים, זה נחשב כעומד בדרישות
+  - אם חלון נוכחי לא כולל כלל מסוים, שמור על המצב המקורי שלו ללא שינוי; אם חלון נוכחי כולל כלל מסוים אך לא ניתן להחליט לחלוטין, ניתן לרשום מידע מפתח ב-justification להמתנה לשיפוט מאוחר יותר
+  - ב-justification יש לרשום בצורה של תוספת מידע מפתח הקשור ל-rubric הנוכחי ואת הסיבוב התואם [x], אם מתרחש שינוי מצב יש גם לרשום את הסיבה, להשתמש בשפה תמציתית
+
+  # דרישות פורמט
+  - התגובה שלך צריכה להיות אובייקט JSON, הכולל את השדות הבאים:
+  - `rubric_idx`: המזהה הייחודי של הכלל
+  - `rubric`: ניסוח חוזר של הכלל
+  - `justification`: הסבר לשינוי המצב
+  - `meetExpectation`: המצב המעודכן (true או false)
+
+  # מבנה קלט לדוגמה:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # מבנה תגובה לדוגמה:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ניסוח חוזר של הכלל>",
+        "justification": "<הסבר קצר לשינוי המצב, רשום בצורה של תוספת>",
+        "meetExpectation": <true או false>
+    }},
+    ...
+  ]
+  ```
+turkish: |-
+  # Sistem Bilgisi
+  {env_info}
+
+  # Kullanıcı Tam Talimatı
+  {user_instruction}
+
+  # Arka Plan Açıklaması
+  - Bu, assistant'ın kullanıcı talimatını tamamladığı bir süreçtir; assistant bilgi almak ve işlem yapmak için araçları çağırabilir, araç dönüş sonuçları tool ile başlayacaktır
+  - Bu süreç assistant ve user arasında konuşma yoluyla tamamlanır; user yanıtlarının değerlendirme sonuçlarına müdahalesini önlemek için user'ın yanıt içeriği gizlenmiştir, yalnızca assistant'ın yanıt içeriğine odaklanmalı ve kullanıcı talimatının tamamlanıp tamamlanmadığını değerlendirmelisiniz
+  - Değerlendirmeyi kolaylaştırmak için, kullanıcının tam talimatı birkaç puanlama noktasına (rubric) ayrılmıştır, yalnızca her puanlama noktasının karşılanıp karşılanmadığını belirlemeniz gerekir
+  - Görev tur sayısı fazla olduğu için kayan pencere değerlendirme yöntemi kullanıyoruz, yani her seferinde 10 tur çıktı görünür, her pencere arasında 2 tur örtüşme vardır, ancak rubric durumu pencereler arasında korunur
+  - {window_idx}. pencereyi değerlendiriyorsunuz (bu görevde toplam {total_windows} pencere var)
+  - <window_content> mevcut pencerenin görev ilerlemesini içerir
+  - <current_rubrics> mevcut tüm puanlama noktalarının durumunu içerir (true karşılandığını, false karşılanmadığını gösterir, tüm puanlama noktalarının başlangıç durumu false'dır)
+
+  # Görev
+  - Mevcut pencerenin görev ilerlemesine dayanarak, puanlama noktası rubric durumunu güncelleyin
+  - Durumu false'dan true'ya yalnızca assistant bu pencerede hedefi tamamladığında güncelleyebilirsiniz
+  - Durumu true'dan tekrar false'a yalnızca assistant bu pencerede önceki doğru sonucu geçersiz kıldığında güncelleyebilirsiniz (ancak lütfen dikkat edin: kullanıcı talebi kendi kendine değişirse, örneğin sipariş verdikten sonra aktif olarak iptal etme durumu, o zaman orijinal sipariş talebi değerlendirmesi geçersiz kılınmamalıdır)
+  - Gereksiz değişikliklerden kaçınmak için mevcut konuşma penceresinin ilerlemesini almak üzere "Kullanıcı Tam Talimatı"na başvurabilirsiniz
+
+  # Dikkat Edilmesi Gerekenler
+  - Önemli: Tüm değerlendirmeler, assistant'ın yanıtının ve araç çağrı isteğinin rubric'teki hedefleri tamamlayıp tamamlamadığına dayanır; user'ın konuşmada assistant'a ilettiği içerik yalnızca assistant için ipucu ve rehber olarak kabul edilir, değerlendirme standartlarını doğrudan etkilemez, her şey rubric alanına dayanır!
+  - Önemli: Sorgu tipi tool'ların döndürdüğü sonuçlar yalnızca assistant için görünürdür ve assistant'ın kullanıcıya önerdiği içeriği temsil etmez, bu nedenle değerlendirme sonuçlarını doğrudan etkilemez, her şey assistant'ın bilgiyi aldıktan sonra kullanıcıya verdiği yaníta dayanmalıdır!
+  - Önemli: Sipariş tipi rubric'ler için (sipariş detaylarını içeren, sipariş oluşturulması gereken), assistant'ın gerçekten sipariş verme işlemini tamamlayıp tamamlamadığı doğrulanmalıdır. Assistant'ın sipariş verme işlemini tamamladığını yanlışlıkla düşünmesi, ancak araç çağrısının başarısız olması mümkündür; veya user'ın "kendim sipariş verebilirim" demesi gibi durumlar, gereksinimlerin karşılanmadığı olarak kabul edilmelidir
+  - Ürün miktarı, teslimat zamanı gibi sipariş detaylarını içeren rubric'ler için, orijinal rubric gereksinimleri kesinlikle karşılanmalıdır (ürün miktarında sapma olmamalı, beklenen teslimat zamanından geç olmamalıdır), kullanıcının uzlaşma davranışı değerlendirme sonucunu etkilemez (örneğin user'ın "bir ürün daha az olsa da olur", "sipariş içeriğinde itirazım yok" veya "geç teslimat da olur" demesi gibi), bu tür durumlar hala gereksinimlerin karşılanmadığı olarak kabul edilmelidir
+  - Metin içeriği eşleşmesini içeren adres veya sipariş notu tipi rubric'ler için, işlevsel eşdeğerlik ilkesi benimsenir: Fiili içerik aynı işlevi gerçekleştirebildiği sürece (örneğin teslimat yerini kabaca konumlandırmak veya müşterinin ana talebini iletmek), ifade tamamen tutarlı olmasa veya bazı detaylar eksik olsa bile, gereksinimlerin karşılandığı kabul edilir
+  - Eğer mevcut pencere belirli bir kuralı içermiyorsa, orijinal durumunu korun; eğer mevcut pencere belirli bir kuralı içeriyorsa ancak tamamen kararlaştırılamıyorsa, anahtar bilgiler justification'a kaydedilerek sonraki değerlendirme için bırakılabilir
+  - justification'a mevcut rubric ile ilgili anahtar bilgiler ve ilgili tur [x] ekleme şeklinde kaydedilmeli, eğer durum değişikliği oluşursa neden de kaydedilmeli, öz bir dil kullanın
+
+  # Format Gereksinimleri
+  - Yanıtınız aşağıdaki alanları içeren bir JSON nesnesi olmalıdır:
+  - `rubric_idx`: Kuralın benzersiz tanımlayıcısı
+  - `rubric`: Kuralın tekrar edilmesi
+  - `justification`: Durum değişikliğinin açıklaması
+  - `meetExpectation`: Güncellenmiş durum (true veya false)
+
+  # Örnek Giriş Yapısı:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Örnek Yanıt Yapısı:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Kuralın Tekrarı>",
+        "justification": "<Durum değişikliğinin kısa açıklaması, ekleme şeklinde kaydedilir>",
+        "meetExpectation": <true veya false>
+    }},
+    ...
+  ]
+  ```
+vietnamese: |-
+  # Thông tin hệ thống
+  {env_info}
+
+  # Hướng dẫn đầy đủ của người dùng
+  {user_instruction}
+
+  # Mô tả bối cảnh
+  - Đây là quá trình assistant hoàn thành hướng dẫn của user, trong đó assistant có thể gọi công cụ để lấy thông tin và thực hiện thao tác, kết quả trả về của công cụ sẽ bắt đầu bằng tool
+  - Quá trình này được hoàn thành trong cuộc hội thoại giữa assistant và user, để tránh sự ảnh hưởng của phản hồi user đối với kết quả đánh giá, nội dung phản hồi của user đã được ẩn, bạn chỉ cần tập trung vào nội dung phản hồi của assistant và đánh giá xem hướng dẫn đầy đủ của người dùng có được hoàn thành hay không
+  - Để thuận tiện cho việc đánh giá, hướng dẫn đầy đủ của người dùng đã được chia nhỏ thành các điểm chấm rubric, bạn chỉ cần xác định xem mỗi điểm chấm có được đáp ứng hay không
+  - Do có nhiều vòng nhiệm vụ, chúng tôi áp dụng phương pháp đánh giá cửa sổ trượt, tức là mỗi lần hiển thị 10 vòng đầu ra, giữa mỗi cửa sổ có 2 vòng chồng lấp, nhưng trạng thái rubric sẽ được giữ lại qua các cửa sổ
+  - Bạn đang đánh giá cửa sổ thứ {window_idx} (tổng cộng {total_windows} cửa sổ cho nhiệm vụ này)
+  - <window_content> chứa tiến độ nhiệm vụ của cửa sổ hiện tại
+  - <current_rubrics> chứa trạng thái của tất cả các điểm chấm hiện tại (true biểu thị đã đáp ứng, false biểu thị chưa đáp ứng, trạng thái ban đầu của tất cả các điểm chấm đều là false)
+
+  # Nhiệm vụ
+  - Dựa trên tiến độ nhiệm vụ của cửa sổ hiện tại, cập nhật trạng thái của điểm chấm rubric
+  - Bạn có thể cập nhật trạng thái từ false sang true, khi và chỉ khi assistant đã hoàn thành mục tiêu đó trong cửa sổ này
+  - Bạn cũng có thể cập nhật true sang false một lần nữa, khi và chỉ khi assistant đã bác bỏ kết luận đúng trước đó trong cửa sổ này (nhưng lưu ý: nếu nhu cầu của người dùng tự thay đổi, ví dụ chủ động hủy đơn sau khi đặt, thì không nên bác bỏ đánh giá ban đầu về nhu cầu đặt hàng)
+  - Bạn có thể tham khảo "Hướng dẫn đầy đủ của người dùng" để nắm bắt tiến độ của cửa sổ hội thoại hiện tại, tránh thực hiện các sửa đổi không cần thiết
+
+  # Lưu ý
+  - Quan trọng: Tất cả các đánh giá dựa trên việc phản hồi của assistant và yêu cầu gọi công cụ có hoàn thành mục tiêu trong rubric hay không, nội dung mà user truyền đạt cho assistant trong cuộc hội thoại chỉ được coi là gợi ý và hướng dẫn cho assistant, không ảnh hưởng trực tiếp đến tiêu chí đánh giá, mọi thứ đều dựa trên trường rubric!
+  - Quan trọng: Kết quả trả về từ công cụ loại truy vấn chỉ hiển thị với assistant, không đại diện cho nội dung mà assistant khuyến nghị cho người dùng, do đó cũng không ảnh hưởng trực tiếp đến kết quả đánh giá, mọi thứ đều phải dựa trên phản hồi của assistant đối với người dùng sau khi lấy thông tin!
+  - Quan trọng: Đối với rubric loại đơn hàng (liên quan đến chi tiết đơn hàng, bắt buộc phải tạo đơn hàng), phải xác nhận xem assistant có thực sự hoàn thành thao tác đặt hàng hay không. Có thể assistant nhầm tưởng đã hoàn thành thao tác đặt hàng, nhưng thực tế gọi công cụ thất bại; hoặc user biểu thị có thể "tự đặt hàng" và các tình huống tương tự, đều nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các rubric liên quan đến chi tiết đơn hàng như số lượng hàng hóa, thời gian giao hàng, phải đáp ứng nghiêm ngặt yêu cầu rubric gốc (không được có sai lệch về số lượng hàng hóa, không được muộn hơn thời gian giao hàng mong đợi), hành vi thỏa hiệp của người dùng không ảnh hưởng đến kết quả đánh giá (ví dụ user biểu thị "ít hàng hóa nào đó cũng được", "không có ý kiến gì về nội dung đơn hàng" hoặc "giao muộn cũng được" v.v.), những trường hợp này vẫn nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các rubric loại địa chỉ hoặc ghi chú đơn hàng liên quan đến khớp nội dung văn bản, áp dụng nguyên tắc tương đương chức năng: miễn là nội dung thực tế có thể thực hiện chức năng tương tự (ví dụ định vị sơ bộ địa điểm giao hàng hoặc truyền đạt nhu cầu chính của khách hàng), ngay cả khi cách diễn đạt không hoàn toàn giống nhau hoặc thiếu một số chi tiết, cũng được coi là đáp ứng yêu cầu
+  - Nếu cửa sổ hiện tại không liên quan đến một quy tắc nào đó, hãy giữ nguyên trạng thái ban đầu của nó; nếu cửa sổ hiện tại liên quan đến một quy tắc nào đó nhưng không thể quyết định hoàn toàn, có thể ghi lại thông tin chính vào justification để chờ đánh giá sau
+  - Trong justification, ghi lại thông tin chính liên quan đến rubric hiện tại và vòng tương ứng [x] của nó dưới dạng bổ sung, nếu xảy ra sửa đổi trạng thái cũng cần ghi lại lý do, sử dụng ngôn ngữ ngắn gọn
+
+  # Yêu cầu định dạng
+  - Phản hồi của bạn phải là một đối tượng JSON, bao gồm các trường sau:
+  - `rubric_idx`: Định danh duy nhất của quy tắc
+  - `rubric`: Lời nhắc lại của quy tắc
+  - `justification`: Giải thích về sự thay đổi trạng thái
+  - `meetExpectation`: Trạng thái sau khi cập nhật (true hoặc false)
+
+  # Cấu trúc đầu vào ví dụ:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Cấu trúc phản hồi ví dụ:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Nhắc lại quy tắc>",
+        "justification": "<Giải thích ngắn gọn về sự thay đổi trạng thái, ghi lại dưới dạng bổ sung>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+malay: |-
+  # Maklumat Sistem
+  {env_info}
+
+  # Arahan Lengkap Pengguna
+  {user_instruction}
+
+  # Penerangan Latar Belakang
+  - Ini adalah proses assistant menyelesaikan arahan user, di mana assistant boleh memanggil alat untuk memperoleh maklumat dan melaksanakan operasi, hasil yang dikembalikan oleh alat akan bermula dengan tool
+  - Proses ini diselesaikan melalui perbualan antara assistant dan user; untuk mengelakkan gangguan respons user terhadap hasil penilaian, kandungan respons user telah disembunyikan, anda hanya perlu memberi tumpuan kepada kandungan respons assistant, dan menilai sama ada arahan lengkap user telah diselesaikan
+  - Untuk memudahkan penilaian, arahan lengkap user telah dipecahkan kepada beberapa titik penilaian rubric, anda hanya perlu menentukan sama ada setiap titik penilaian dipenuhi
+  - Oleh kerana terdapat banyak pusingan tugas, kami menggunakan kaedah penilaian tingkap slaid, iaitu 10 pusingan output boleh dilihat setiap kali, terdapat 2 pusingan pertindihan antara setiap tingkap, tetapi status rubric akan dikekalkan merentas tingkap
+  - Anda sedang menilai tingkap ke-{window_idx} (jumlah keseluruhan {total_windows} tingkap untuk tugas ini)
+  - <window_content> mengandungi kemajuan tugas untuk tingkap semasa
+  - <current_rubrics> mengandungi status semua titik penilaian semasa (true bermaksud dipenuhi, false bermaksud tidak dipenuhi, status awal semua titik penilaian adalah false)
+
+  # Tugas
+  - Berdasarkan kemajuan tugas tingkap semasa, kemaskini status titik penilaian rubric
+  - Anda boleh mengemaskini status daripada false kepada true, jika dan hanya jika assistant telah menyelesaikan objektif tersebut dalam tingkap ini
+  - Anda juga boleh mengemaskini true kepada false sekali lagi, jika dan hanya jika assistant membatalkan kesimpulan yang betul sebelum ini dalam tingkap ini (tetapi sila ambil perhatian: jika keperluan user berubah sendiri, contohnya membatalkan secara aktif selepas membuat pesanan, maka penilaian asal terhadap keperluan pesanan tidak boleh dibatalkan)
+  - Anda boleh merujuk "Arahan Lengkap Pengguna" untuk mendapatkan kemajuan tingkap perbualan semasa, untuk mengelakkan pengubahsuaian yang tidak perlu
+
+  # Perkara Perlu Diperhatikan
+  - Penting: Semua penilaian berdasarkan sama ada respons assistant dan permintaan panggilan alat menyelesaikan objektif dalam rubric, kandungan yang disampaikan oleh user kepada assistant dalam perbualan hanya dianggap sebagai petunjuk dan panduan untuk assistant, tidak akan mempengaruhi secara langsung kriteria penilaian, semuanya berdasarkan medan rubric!
+  - Penting: Hasil yang dikembalikan oleh tool jenis pertanyaan hanya boleh dilihat oleh assistant, tidak mewakili kandungan yang disyorkan oleh assistant kepada user, oleh itu juga tidak mempengaruhi secara langsung hasil penilaian, semuanya harus berdasarkan respons assistant kepada user selepas memperoleh maklumat!
+  - Penting: Untuk rubric jenis pesanan (melibatkan butiran pesanan, mesti menjana pesanan), mesti mengesahkan sama ada assistant benar-benar telah menyelesaikan operasi pemesanan. Ada kemungkinan assistant menyangka telah menyelesaikan operasi pemesanan, sebenarnya panggilan alat gagal; atau user menyatakan boleh "pesan sendiri" dan sebagainya, semua keadaan ini harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk rubric yang melibatkan butiran pesanan seperti kuantiti barang, masa penghantaran, mesti memenuhi secara ketat keperluan rubric asal (tidak boleh ada sisihan kuantiti barang, tidak boleh lewat daripada masa penghantaran yang dijangkakan), tindakan kompromi user tidak mempengaruhi hasil penilaian (contohnya user menyatakan "kurangkan sedikit barang tertentu juga boleh", "tiada bantahan terhadap kandungan pesanan" atau "hantar lewat juga boleh" dan sebagainya), keadaan jenis ini masih harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk rubric jenis alamat atau nota pesanan yang melibatkan padanan kandungan teks, gunakan prinsip kesetaraan fungsi: selagi kandungan sebenar boleh melaksanakan fungsi yang sama (seperti menentukan lokasi penghantaran secara kasar atau menyampaikan keperluan utama pelanggan), walaupun ungkapan tidak sepenuhnya konsisten atau kekurangan beberapa butiran, juga dianggap memenuhi keperluan
+  - Jika tingkap semasa tidak melibatkan sesuatu peraturan, kekalkan status asalnya tidak berubah; jika tingkap semasa melibatkan sesuatu peraturan tetapi tidak dapat ditentukan sepenuhnya, boleh merekodkan maklumat penting dalam justification untuk penilaian seterusnya
+  - Rekodkan maklumat penting yang berkaitan dengan rubric semasa dan pusingan sepadannya [x] dalam justification dalam bentuk tambahan, jika berlaku pengubahsuaian status juga perlu merekodkan sebab, gunakan bahasa yang ringkas
+
+  # Keperluan Format
+  - Respons anda hendaklah menjadi objek JSON, mengandungi medan berikut:
+  - `rubric_idx`: Pengenal pasti unik untuk peraturan
+  - `rubric`: Penyataan semula peraturan
+  - `justification`: Penjelasan mengenai perubahan status
+  - `meetExpectation`: Status selepas dikemaskini (true atau false)
+
+  # Struktur Input Contoh:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Struktur Respons Contoh:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<nyatakan semula peraturan>",
+        "justification": "<penjelasan ringkas perubahan status, direkodkan dalam bentuk tambahan>",
+        "meetExpectation": <true atau false>
+    }},
+    ...
+  ]
+  ```
+belarusian: |-
+  # Сістэмная інфармацыя
+  {env_info}
+
+  # Поўная інструкцыя карыстальніка
+  {user_instruction}
+
+  # Апісанне кантэксту
+  - Гэта працэс выканання інструкцыі карыстальніка асістэнтам, падчас якога асістэнт можа выкарыстоўваць інструменты для атрымання інфармацыі і выканання дзеянняў; вынікі, вернутыя інструментамі, будуць пачынацца з tool
+  - Гэты працэс ажыццяўляецца ў дыялогу паміж асістэнтам і карыстальнікам; каб пазбегнуць уплыву адказаў карыстальніка на вынікі ацэнкі, змест адказаў карыстальніка быў схаваны; вам трэба толькі засяродзіцца на змесце адказаў асістэнта і ацаніць, ці была выканана поўная інструкцыя карыстальніка
+  - Для зручнасці ацэнкі поўная інструкцыя карыстальніка была разбіта на некалькі крытэрыяў ацэнкі (rubric); вам трэба толькі вызначыць, ці выкананы кожны крытэрый
+  - Паколькі існуе шмат раўндаў задач, мы выкарыстоўваем метад ацэнкі з плаваючым акном, гэта значыць, кожны раз бачна 10 раўндаў вываду, паміж кожным акном ёсць 2 раўнды перакрыцця, але стан rubric захоўваецца паміж вокнамі
+  - Вы ацэньваеце акно нумар {window_idx} (усяго ў гэтай задачы {total_windows} вокнаў)
+  - <window_content> утрымлівае прагрэс задачы ў бягучым акне
+  - <current_rubrics> утрымлівае стан усіх бягучых крытэрыяў ацэнкі (true азначае выканана, false азначае не выканана, пачатковы стан усіх крытэрыяў - false)
+
+  # Задача
+  - На аснове прагрэсу задачы ў бягучым акне абнавіце стан крытэрыяў ацэнкі (rubric)
+  - Вы можаце змяніць стан з false на true, толькі калі асістэнт выканаў гэтую мэту ў дадзеным акне
+  - Вы таксама можаце змяніць стан з true назад на false, толькі калі асістэнт у гэтым акне аспрэчыў папярэдні правільны выснову (але звярніце ўвагу: калі патрабаванні карыстальніка змяніліся самі па сабе, напрыклад, актыўная адмена пасля размяшчэння замовы, гэта не павінна аспрэчваць першапачатковую ацэнку патрабаванняў да замовы)
+  - Вы можаце спасылацца на "Поўную інструкцыю карыстальніка", каб атрымаць інфармацыю пра прагрэс бягучага акна дыялогу, каб пазбегнуць непатрэбных змен
+
+  # Заўвагі
+  - Важна: уся ацэнка грунтуецца на тым, ці выконваюць адказы асістэнта і запыты на выклік інструментаў мэты ў rubric; змест, перададзены карыстальнікам асістэнту ў дыялогу, разглядаецца толькі як падказка і кіраўніцтва для асістэнта і не ўплывае непасрэдна на крытэрыі ацэнкі; усё вызначаецца палем rubric!
+  - Важна: вынікі, вернутыя інструментамі запыту, бачныя толькі асістэнту і не ўяўляюць сабой кантэнт, рэкамендаваны асістэнтам карыстальніку, таму яны таксама не ўплываюць непасрэдна на вынікі ацэнкі; усё павінна грунтавацца на адказе асістэнта карыстальніку пасля атрымання інфармацыі!
+  - Важна: Для rubric, звязаных з замовамі (якія ўключаюць дэталі замовы і патрабуюць стварэння замовы), неабходна пацвердзіць, ці сапраўды асістэнт выканаў аперацыю размяшчэння замовы. Магчыма, асістэнт памылкова лічыць, што замову размешчана, але на самой справе выклік інструмента не ўдаўся; або карыстальнік кажа, што можа "размясціць замову сам" і г.д.; усе такія выпадкі павінны разглядацца як невыкананне патрабаванняў
+  - Для rubric, якія ўключаюць дэталі замовы, такія як колькасць тавараў, час дастаўкі і г.д., неабходна строга выконваць першапачатковыя патрабаванні rubric (не павінна быць адхіленняў у колькасці тавараў, нельга спазняцца адносна жаданага часу дастаўкі); саступкі з боку карыстальніка не ўплываюць на вынікі ацэнкі (напрыклад, калі карыстальнік кажа "менш тавару таксама падойдзе", "не маю пярэчанняў да зместу замовы" або "дастаўка крыху пазней таксама падойдзе" і г.д.); такія выпадкі ўсё роўна павінны разглядацца як невыкананне патрабаванняў
+  - Для rubric, якія ўключаюць супадзенне тэкставага зместу, напрыклад, адрасы або заўвагі да замовы, прымяняецца прынцып функцыянальнай эквівалентнасці: калі фактычны змест можа выконваць тую ж функцыю (напрыклад, прыкладнае вызначэнне месца дастаўкі або перадача асноўных патрабаванняў кліента), нават калі фармулёўка не цалкам супадае або адсутнічаюць некаторыя дэталі, гэта таксама лічыцца выкананнем патрабаванняў
+  - Калі бягучае акно не закранае пэўнае правіла, захавайце яго першапачатковы стан без змен; калі бягучае акно закранае пэўнае правіла, але немагчыма цалкам вызначыць, можна запісаць ключавую інфармацыю ў justification для наступнай ацэнкі
+  - У justification запісвайце ключавую інфармацыю, якая адносіцца да бягучага rubric, і адпаведны раўнд [x] у форме дадавання; калі адбываецца змена стану, неабходна таксама запісаць прычыну, выкарыстоўваючы сціслую мову
+
+  # Патрабаванні да фармату
+  - Ваш адказ павінен быць аб'ектам JSON, які змяшчае наступныя палі:
+  - `rubric_idx`: унікальны ідэнтыфікатар правіла
+  - `rubric`: пераказ правіла
+  - `justification`: тлумачэнне змены стану
+  - `meetExpectation`: абноўлены стан (true або false)
+
+  # Прыклад структуры ўводу:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Прыклад структуры адказу:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Пераказ правіла>",
+        "justification": "<Кароткае тлумачэнне змены стану, запісанае ў форме дадавання>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+punjabi: |-
+  # ਸਿਸਟਮ ਜਾਣਕਾਰੀ
+  {env_info}
+
+  # ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼
+  {user_instruction}
+
+  # ਪਿਛੋਕੜ ਵੇਰਵਾ
+  - ਇਹ ਇੱਕ ਪ੍ਰਕਿਰਿਆ ਹੈ ਜਿੱਥੇ assistant ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ ਪੂਰੇ ਕਰਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ assistant ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਕਾਰਵਾਈਆਂ ਕਰਨ ਲਈ ਟੂਲਾਂ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦਾ ਹੈ, ਟੂਲ ਦੇ ਨਤੀਜੇ tool ਨਾਲ ਸ਼ੁਰੂ ਹੋਣਗੇ
+  - ਇਹ ਪ੍ਰਕਿਰਿਆ assistant ਅਤੇ user ਵਿਚਕਾਰ ਗੱਲਬਾਤ ਵਿੱਚ ਪੂਰੀ ਕੀਤੀ ਜਾਂਦੀ ਹੈ, user ਦੇ ਜਵਾਬਾਂ ਦੁਆਰਾ ਮੁਲਾਂਕਣ ਨਤੀਜਿਆਂ ਵਿੱਚ ਦਖਲਅੰਦਾਜ਼ੀ ਤੋਂ ਬਚਣ ਲਈ, user ਦੇ ਜਵਾਬ ਦੀ ਸਮੱਗਰੀ ਨੂੰ ਲੁਕਾਇਆ ਗਿਆ ਹੈ, ਤੁਹਾਨੂੰ ਸਿਰਫ assistant ਦੇ ਜਵਾਬ ਦੀ ਸਮੱਗਰੀ 'ਤੇ ਧਿਆਨ ਦੇਣਾ ਹੈ, ਅਤੇ ਮੁਲਾਂਕਣ ਕਰਨਾ ਹੈ ਕਿ ਕੀ ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼ ਪੂਰੇ ਕੀਤੇ ਗਏ ਹਨ
+  - ਮੁਲਾਂਕਣ ਨੂੰ ਆਸਾਨ ਬਣਾਉਣ ਲਈ, ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼ਾਂ ਨੂੰ ਕਈ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟਾਂ rubric ਵਿੱਚ ਵੰਡਿਆ ਗਿਆ ਹੈ, ਤੁਹਾਨੂੰ ਸਿਰਫ ਇਹ ਫੈਸਲਾ ਕਰਨਾ ਹੈ ਕਿ ਕੀ ਹਰੇਕ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟ ਪੂਰਾ ਹੋਇਆ ਹੈ
+  - ਕਿਉਂਕਿ ਕਾਰਜ ਦੇ ਗੇੜ ਕਾਫੀ ਹਨ, ਅਸੀਂ ਸਲਾਈਡਿੰਗ ਵਿੰਡੋ ਮੁਲਾਂਕਣ ਵਿਧੀ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹਾਂ, ਭਾਵ ਹਰ ਵਾਰ 10 ਗੇੜ ਦੇ ਆਉਟਪੁਟ ਦਿਖਾਈ ਦਿੰਦੇ ਹਨ, ਹਰੇਕ ਵਿੰਡੋ ਵਿਚਕਾਰ 2 ਗੇੜਾਂ ਦਾ ਓਵਰਲੈਪ ਹੁੰਦਾ ਹੈ, ਪਰ rubric ਸਥਿਤੀ ਵਿੰਡੋਆਂ ਵਿਚਕਾਰ ਬਰਕਰਾਰ ਰਹੇਗੀ
+  - ਤੁਸੀਂ {window_idx} ਵੀਂ ਵਿੰਡੋ ਦਾ ਮੁਲਾਂਕਣ ਕਰ ਰਹੇ ਹੋ (ਇਸ ਕਾਰਜ ਲਈ ਕੁੱਲ {total_windows} ਵਿੰਡੋਆਂ ਹਨ)
+  - <window_content> ਵਿੱਚ ਮੌਜੂਦਾ ਵਿੰਡੋ ਦੀ ਕਾਰਜ ਪ੍ਰਗਤੀ ਸ਼ਾਮਲ ਹੈ
+  - <current_rubrics> ਵਿੱਚ ਸਾਰੇ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟਾਂ ਦੀ ਮੌਜੂਦਾ ਸਥਿਤੀ ਸ਼ਾਮਲ ਹੈ (true ਦਾ ਮਤਲਬ ਹੈ ਪੂਰਾ ਹੋਇਆ, false ਦਾ ਮਤਲਬ ਹੈ ਪੂਰਾ ਨਹੀਂ ਹੋਇਆ, ਸਾਰੇ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟਾਂ ਦੀ ਸ਼ੁਰੂਆਤੀ ਸਥਿਤੀ false ਹੈ)
+
+  # ਕਾਰਜ
+  - ਮੌਜੂਦਾ ਵਿੰਡੋ ਦੀ ਕਾਰਜ ਪ੍ਰਗਤੀ ਦੇ ਆਧਾਰ 'ਤੇ, ਸਕੋਰਿੰਗ ਪੁਆਇੰਟ rubric ਦੀ ਸਥਿਤੀ ਨੂੰ ਅਪਡੇਟ ਕਰੋ
+  - ਤੁਸੀਂ ਸਥਿਤੀ ਨੂੰ false ਤੋਂ true ਵਿੱਚ ਅਪਡੇਟ ਕਰ ਸਕਦੇ ਹੋ, ਜੇਕਰ ਅਤੇ ਸਿਰਫ ਜੇਕਰ assistant ਨੇ ਇਸ ਵਿੰਡੋ ਵਿੱਚ ਉਦੇਸ਼ ਪੂਰਾ ਕੀਤਾ ਹੈ
+  - ਤੁਸੀਂ true ਨੂੰ ਦੁਬਾਰਾ false ਵਿੱਚ ਅਪਡੇਟ ਵੀ ਕਰ ਸਕਦੇ ਹੋ, ਜੇਕਰ ਅਤੇ ਸਿਰਫ ਜੇਕਰ assistant ਨੇ ਇਸ ਵਿੰਡੋ ਵਿੱਚ ਪਿਛਲੇ ਸਹੀ ਸਿੱਟੇ ਨੂੰ ਰੱਦ ਕਰ ਦਿੱਤਾ ਹੈ (ਪਰ ਧਿਆਨ ਦਿਓ: ਜੇਕਰ ਉਪਭੋਗਤਾ ਦੀ ਲੋੜ ਆਪਣੇ ਆਪ ਬਦਲ ਜਾਂਦੀ ਹੈ, ਉਦਾਹਰਣ ਵਜੋਂ ਆਰਡਰ ਕਰਨ ਤੋਂ ਬਾਅਦ ਸਵੈ-ਇੱਛਾ ਨਾਲ ਰੱਦ ਕਰਨਾ, ਤਾਂ ਆਰਡਰ ਲੋੜਾਂ ਦੇ ਮੂਲ ਮੁਲਾਂਕਣ ਨੂੰ ਰੱਦ ਨਹੀਂ ਕਰਨਾ ਚਾਹੀਦਾ)
+
+  # ਧਿਆਨ ਦੇਣ ਯੋਗ ਗੱਲਾਂ
+  - ਮਹੱਤਵਪੂਰਨ: ਸਾਰੇ ਮੁਲਾਂਕਣ ਇਸ ਗੱਲ 'ਤੇ ਨਿਰਭਰ ਕਰਦੇ ਹਨ ਕਿ ਕੀ assistant ਦੇ ਜਵਾਬ ਅਤੇ ਟੂਲ ਕਾਲ ਬੇਨਤੀਆਂ ਨੇ rubric ਵਿੱਚ ਟੀਚੇ ਪੂਰੇ ਕੀਤੇ ਹਨ, user ਦੁਆਰਾ ਗੱਲਬਾਤ ਵਿੱਚ assistant ਨੂੰ ਦਿੱਤੀ ਗਈ ਸਮੱਗਰੀ ਨੂੰ ਸਿਰਫ assistant ਲਈ ਸੰਕੇਤ ਅਤੇ ਮਾਰਗਦਰਸ਼ਨ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਇਹ ਮੁਲਾਂਕਣ ਮਾਪਦੰਡਾਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦਾ, ਸਭ ਕੁਝ rubric ਫੀਲਡ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ!
+  - ਮਹੱਤਵਪੂਰਨ: ਖੋਜ ਵਰਗੇ tool ਦੇ ਨਤੀਜੇ ਸਿਰਫ assistant ਲਈ ਦਿਖਾਈ ਦਿੰਦੇ ਹਨ, ਇਹ ਉਪਭੋਗਤਾ ਲਈ assistant ਦੀਆਂ ਸਿਫਾਰਸ਼ਾਂ ਦੀ ਨੁਮਾਇੰਦਗੀ ਨਹੀਂ ਕਰਦੇ, ਇਸ ਲਈ ਇਹ ਮੁਲਾਂਕਣ ਨਤੀਜਿਆਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦੇ, ਸਭ ਕੁਝ assistant ਦੁਆਰਾ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਤੋਂ ਬਾਅਦ ਉਪਭੋਗਤਾ ਨੂੰ ਦਿੱਤੇ ਗਏ ਜਵਾਬ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ!
+  - ਮਹੱਤਵਪੂਰਨ: ਆਰਡਰ ਵਰਗੇ rubric ਲਈ (ਜੋ ਆਰਡਰ ਵੇਰਵਿਆਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹਨ, ਆਰਡਰ ਜਨਰੇਟ ਕਰਨਾ ਜ਼ਰੂਰੀ ਹੈ), ਇਹ ਪੁਸ਼ਟੀ ਕਰਨਾ ਜ਼ਰੂਰੀ ਹੈ ਕਿ ਕੀ assistant ਨੇ ਵਾਸਤਵ ਵਿੱਚ ਆਰਡਰ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਪੂਰੀ ਕੀਤੀ ਹੈ। ਇਹ ਸੰਭਵ ਹੈ ਕਿ assistant ਨੂੰ ਗਲਤਫਹਿਮੀ ਹੋਵੇ ਕਿ ਆਰਡਰ ਪੂਰਾ ਹੋ ਗਿਆ ਹੈ, ਅਸਲ ਵਿੱਚ ਟੂਲ ਕਾਲ ਅਸਫਲ ਰਹੀ ਹੈ; ਜਾਂ user ਨੇ ਇਹ ਦਰਸਾਇਆ ਹੈ ਕਿ ਉਹ "ਖੁਦ ਆਰਡਰ ਕਰ ਸਕਦਾ ਹੈ" ਆਦਿ, ਇਹਨ ਸਾਰੀਆਂ ਸਥਿਤੀਆਂ ਨੂੰ ਲੋੜਾਂ ਪੂਰੀਆਂ ਨਾ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਆਰਡਰ ਵੇਰਵਿਆਂ ਜਿਵੇਂ ਕਿ ਉਤਪਾਦ ਦੀ ਮਾਤਰਾ, ਡਿਲੀਵਰੀ ਸਮੇਂ ਨਾਲ ਸਬੰਧਤ rubric ਲਈ, ਮੂਲ rubric ਲੋੜਾਂ ਨੂੰ ਸਖਤੀ ਨਾਲ ਪੂਰਾ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ (ਉਤਪਾਦ ਦੀ ਮਾਤਰਾ ਵਿੱਚ ਕੋਈ ਅੰਤਰ ਨਹੀਂ ਹੋ ਸਕਦਾ, ਉਮੀਦ ਕੀਤੇ ਡਿਲੀਵਰੀ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ), ਉਪਭੋਗਤਾ ਦੀ ਸਮਝੌਤਾ ਵਾਲੀ ਵਿਵਹਾਰ ਮੁਲਾਂਕਣ ਨਤੀਜੇ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦੀ (ਉਦਾਹਰਣ ਵਜੋਂ user ਨੇ ਕਿਹਾ "ਕੁਝ ਉਤਪਾਦ ਘੱਟ ਵੀ ਚਲੇਗਾ", "ਆਰਡਰ ਸਮੱਗਰੀ 'ਤੇ ਕੋਈ ਇਤਰਾਜ਼ ਨਹੀਂ" ਜਾਂ "ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਡਿਲੀਵਰੀ ਚਲੇਗੀ" ਆਦਿ), ਅਜਿਹੀਆਂ ਸਥਿਤੀਆਂ ਨੂੰ ਅਜੇ ਵੀ ਲੋੜਾਂ ਪੂਰੀਆਂ ਨਾ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਟੈਕਸਟ ਸਮੱਗਰੀ ਮੈਚਿੰਗ ਸੰਬੰਧੀ ਪਤੇ ਜਾਂ ਆਰਡਰ ਨੋਟਸ ਵਰਗੇ rubric ਲਈ, ਕਾਰਜਾਤਮਕ ਸਮਾਨਤਾ ਸਿਧਾਂਤ ਦੀ ਵਰਤੋਂ ਕਰੋ: ਜੇਕਰ ਅਸਲ ਸਮੱਗਰੀ ਇੱਕੋ ਜਿਹਾ ਕਾਰਜ ਕਰ ਸਕਦੀ ਹੈ (ਜਿਵੇਂ ਕਿ ਡਿਲੀਵਰੀ ਸਥਾਨ ਦਾ ਮੋਟਾ-ਮੋਟੀ ਪਤਾ ਲਗਾਉਣਾ ਜਾਂ ਗਾਹਕ ਦੀਆਂ ਮੁੱਖ ਲੋੜਾਂ ਨੂੰ ਸੰਚਾਰਿਤ ਕਰਨਾ), ਭਾਵੇਂ ਬਿਆਨ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ ਜਾਂ ਕੁਝ ਵੇਰਵੇ ਗੁੰਮ ਹਨ, ਇਸਨੂੰ ਲੋੜਾਂ ਪੂਰੀਆਂ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ
+  - ਜੇਕਰ ਮੌਜੂਦਾ ਵਿੰਡੋ ਵਿੱਚ ਕਿਸੇ ਨਿਯਮ ਦਾ ਜ਼ਿਕਰ ਨਹੀਂ ਹੈ, ਤਾਂ ਇਸਦੀ ਮੂਲ ਸਥਿਤੀ ਨੂੰ ਬਦਲੇ ਬਿਨਾਂ ਰੱਖੋ; ਜੇਕਰ ਮੌਜੂਦਾ ਵਿੰਡੋ ਕਿਸੇ ਨਿਯਮ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੀ ਹੈ ਪਰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਫੈਸਲਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ, ਤਾਂ ਮੁੱਖ ਜਾਣਕਾਰੀ ਨੂੰ ਬਾਅਦ ਦੇ ਫੈਸਲੇ ਲਈ justification ਵਿੱਚ ਦਰਜ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ
+  - justification ਵਿੱਚ ਮੌਜੂਦਾ rubric ਨਾਲ ਸਬੰਧਤ ਮੁੱਖ ਜਾਣਕਾਰੀ ਅਤੇ ਇਸਦੇ ਅਨੁਸਾਰੀ ਗੇੜ [x] ਨੂੰ ਜੋੜਨ ਦੇ ਰੂਪ ਵਿੱਚ ਦਰਜ ਕਰੋ, ਜੇਕਰ ਸਥਿਤੀ ਵਿੱਚ ਬਦਲਾਵ ਹੁੰਦਾ ਹੈ ਤਾਂ ਕਾਰਨ ਵੀ ਦਰਜ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ, ਸੰਖੇਪ ਭਾਸ਼ਾ ਦੀ ਵਰਤੋਂ ਕਰੋ
+
+  # ਫਾਰਮੈਟ ਲੋੜਾਂ
+  - ਤੁਹਾਡਾ ਜਵਾਬ ਇੱਕ JSON ਆਬਜੈਕਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ ਹੇਠ ਲਿਖੇ ਫੀਲਡ ਹਨ:
+  - `rubric_idx`: ਨਿਯਮ ਦਾ ਵਿਲੱਖਣ ਪਛਾਣਕਰਤਾ
+  - `rubric`: ਨਿਯਮ ਦਾ ਦੁਹਰਾਅ
+  - `justification`: ਸਥਿਤੀ ਬਦਲਾਅ ਦੀ ਵਿਆਖਿਆ
+  - `meetExpectation`: ਅਪਡੇਟ ਕੀਤੀ ਗਈ ਸਥਿਤੀ (true ਜਾਂ false)
+
+  # ਉਦਾਹਰਣ ਇਨਪੁਟ ਢਾਂਚਾ:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # ਉਦਾਹਰਣ ਜਵਾਬ ਢਾਂਚਾ:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ਨਿਯਮ ਦਾ ਦੁਹਰਾਅ>",
+        "justification": "<ਸਥਿਤੀ ਬਦਲਾਅ ਦੀ ਸੰਖੇਪ ਵਿਆਖਿਆ, ਜੋੜਨ ਦੇ ਰੂਪ ਵਿੱਚ ਦਰਜ ਕੀਤੀ ਗਈ>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+kazakh: |-
+  # Жүйе ақпараты
+  {env_info}
+
+  # Пайдаланушының толық нұсқаулығы
+  {user_instruction}
+
+  # Аялық түсініктеме
+  - Бұл assistant-тың user нұсқаулығын орындау процесі, мұнда assistant ақпарат алу және операцияларды орындау үшін құралдарды шақыра алады, құралдың қайтару нәтижесі tool сөзімен басталады
+  - Бұл процесс assistant пен user арасындағы диалогта орындалады, user жауабының бағалау нәтижесіне кедергі келтірмеуі үшін user-дың жауап мазмұны жасырылған, сіз тек assistant-тың жауап мазмұнына назар аударып, пайдаланушының толық нұсқаулығының орындалғанын бағалауыңыз керек
+  - Бағалауды жеңілдету үшін пайдаланушының толық нұсқаулығы бірнеше ұпай критерийлеріне (rubric) бөлінген, сіз тек әрбір критерийдің орындалғанын анықтауыңыз керек
+  - Тапсырма кезеңдері көп болғандықтан, біз жылжымалы терезе әдісін қолданамыз, яғни әр жолы 10 кезеңдік шығу көрінеді, әр терезе арасында 2 кезеңдік қабаттасу бар, бірақ rubric күйі терезелер арасында сақталады
+  - Сіз {window_idx}-ші терезені бағалап жатырсыз (бұл тапсырмада барлығы {total_windows} терезе)
+  - <window_content> ағымдағы терезенің тапсырма прогресін қамтиды
+  - <current_rubrics> ағымдағы барлық критерийлердің күйін қамтиды (true орындалғанын білдіреді, false орындалмағанын білдіреді, барлық критерийлердің бастапқы күйі false)
+
+  # Тапсырма
+  - Ағымдағы терезенің тапсырма прогресіне сүйене отырып, критерийлердің (rubric) күйін жаңартыңыз
+  - Сіз күйді false-тан true-ға өзгерте аласыз, тек қана assistant осы терезеде мақсатты орындаған жағдайда
+  - Сіз күйді true-дан false-қа қайта өзгерте аласыз, тек қана assistant осы терезеде алдыңғы дұрыс қорытындыны жоққа шығарған жағдайда (бірақ назар аударыңыз: егер пайдаланушы сұранысы өзгерсе, мысалы тапсырыстан кейін өз еркімен бас тартса, онда тапсырыс сұранысына қатысты бастапқы бағалауды жоққа шығармау керек)
+  - Қажетсіз өзгерістерді болдырмау үшін ағымдағы диалог терезесінің прогресін алу үшін "Пайдаланушының толық нұсқаулығына" сілтеме жасай аласыз
+
+  # Ескертулер
+  - Маңызды: Барлық бағалаулар assistant-тың жауабы және құралды шақыру сұранысы rubric-тегі мақсатты орындағанына негізделеді, user-дың диалог барысында assistant-қа жеткізген мазмұны тек assistant үшін нұсқау және бағыт ретінде қарастырылады, бағалау стандарттарына тікелей әсер етпейді, бәрі rubric өрісіне негізделеді!
+  - Маңызды: Іздеу түріндегі tool қайтарған нәтижелер тек assistant-қа көрінеді және бұл assistant-тың пайдаланушыға ұсынған мазмұнын білдірмейді, сондықтан ол да бағалау нәтижесіне тікелей әсер етпейді, бәрі assistant ақпарат алғаннан кейін пайдаланушыға берген жауабына негізделуі керек!
+  - Маңызды: Тапсырыс түріндегі rubric үшін (тапсырыс детальдарын қамтитын, тапсырыс жасау міндетті түрде орындалуы керек), assistant-тың шынымен тапсырыс жасау операциясын орындағанын растау қажет. Assistant тапсырыс жасауды орындады деп қате түсінуі мүмкін, шын мәнінде құрал шақыру сәтсіз аяқталды; немесе user "өзім тапсырыс бере аламын" деп айтуы мүмкін, мұндай жағдайлар талап орындалмаған деп саналуы керек
+  - Тауар саны, жеткізу уақыты сияқты тапсырыс детальдарын қамтитын rubric үшін бастапқы rubric талаптары қатаң орындалуы керек (тауар санында ауытқу болмауы керек, күтілетін жеткізу уақытынан кешіктірмеу керек), пайдаланушының келісімге келу әрекеті бағалау нәтижесіне әсер етпейді (мысалы, user "бір тауарды азайтса да болады", "тапсырыс мазмұнына қарсы емеспін" немесе "кешірек жеткізілсе де болады" деп айтса), мұндай жағдайлар әлі де талап орындалмаған деп саналуы керек
+  - Мәтін мазмұны сәйкестігін қамтитын мекенжай немесе тапсырыс ескертпелері түріндегі rubric үшін функционалды эквиваленттік принципі қолданылады: егер нақты мазмұн бірдей функцияны орындаса (мысалы, жеткізу орнын шамамен анықтау немесе тұтынушының негізгі сұранысын жеткізу), тіпті тұжырымдама толық сәйкес келмесе немесе кейбір детальдар жоқ болса да, талап орындалған деп саналады
+  - Егер ағымдағы терезеде белгілі бір ереже қамтылмаса, оның бастапқы күйін өзгеріссіз қалдырыңыз; егер ағымдағы терезеде белгілі бір ереже қамтылған бірақ толық шешім қабылдау мүмкін болмаса, негізгі ақпаратты кейінгі шешім үшін justification-та жазып қоя аласыз
+  - justification-та ағымдағы rubric-ке қатысты негізгі ақпарат пен оған сәйкес кезеңді [x] қосу түрінде жазыңыз, егер күй өзгерсе себепті де жазу қажет, қысқа әрі нұсқа тілді қолданыңыз
+
+  # Пішим талаптары
+  - Сіздің жауабыңыз JSON объектісі болуы керек, келесі өрістерді қамтиды:
+  - `rubric_idx`: Ереженің бірегей идентификаторы
+  - `rubric`: Ереженің қайталануы
+  - `justification`: Күй өзгерісінің түсіндірмесі
+  - `meetExpectation`: Жаңартылған күй (true немесе false)
+
+  # Үлгі кіріс құрылымы:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Үлгі жауап құрылымы:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Ереженің қайталануы>",
+        "justification": "<Күй өзгерісінің қысқаша түсіндірмесі, қосу түрінде жазылады>",
+        "meetExpectation": <true немесе false>
+    }},
+    ...
+  ]
+  ```
+khmer: |-
+  # ព័ត៌មានប្រព័ន្ធ
+  {env_info}
+
+  # ការណែនាំពេញលេញពីអ្នកប្រើប្រាស់
+  {user_instruction}
+
+  # ការពន្យល់ផ្ទៃខាងក្រោយ
+  - នេះគឺជាដំណើរការដែល assistant បំពេញការណែនាំរបស់ user ដោយ assistant អាចហៅឧបករណ៍ដើម្បីទទួលបានព័ត៌មាន និងអនុវត្តសកម្មភាព លទ្ធផលដែលត្រឡប់មកពីឧបករណ៍នឹងចាប់ផ្តើមដោយ tool
+  - ដំណើរការនេះត្រូវបានបំពេញនៅក្នុងការសន្ទនារវាង assistant និង user ដើម្បីជៀសវាងការរំខានពីការឆ្លើយតបរបស់ user ចំពោះលទ្ធផលការវាយតម្លៃ មាតិកាឆ្លើយតបរបស់ user ត្រូវបានលាក់បាំង អ្នកគ្រាន់តែត្រូវយកចិត្តទុកដាក់លើមាតិកាឆ្លើយតបរបស់ assistant និងវាយតម្លៃថាតើការណែនាំពេញលេញរបស់អ្នកប្រើប្រាស់ត្រូវបានបំពេញឬអត់
+  - ដើម្បីងាយស្រួលក្នុងការវាយតម្លៃ ការណែនាំពេញលេញរបស់អ្នកប្រើប្រាស់ត្រូវបានបែងចែកជាចំណុចផ្តល់ពិន្ទុ rubric ជាច្រើន អ្នកគ្រាន់តែត្រូវវិនិច្ឆ័យថាតើចំណុចផ្តល់ពិន្ទុនីមួយៗត្រូវបានបំពេញឬអត់
+  - ដោយសារតែចំនួនវគ្នភារកិច្ចមានច្រើន យើងប្រើប្រាស់វិធីសាស្ត្រវាយតម្លៃបង្អួចរំកិល គឺមើលឃើញលទ្ធផល ១០ វគ្នក្នុងមួយដង រវាងបង្អួចនីមួយៗមានការត្រួតគ្នា ២ វគ្ន ប៉ុន្តែស្ថានភាព rubric នឹងត្រូវបានរក្សាទុកឆ្លងកាត់បង្អួច
+  - អ្នកកំពុងវាយតម្លៃបង្អួចទី {window_idx} (ភារកិច្ចនេះមានសរុប {total_windows} បង្អួច)
+  - <window_content>មានផ្ទុកនូវវឌ្ឍនភាពភារកិច្ចរបស់បង្អួចបច្ចុប្បន្ន
+  - <current_rubrics>មានផ្ទុកនូវស្ថានភាពនៃចំណុចផ្តល់ពិន្ទុទាំងអស់បច្ចុប្បន្ន (true មានន័យថាបានបំពេញ, false មានន័យថាមិនបានបំពេញ, ស្ថានភាពដើមនៃចំណុចផ្តល់ពិន្ទុទាំងអស់គឺ false)
+
+  # ភារកិច្ច
+  - ផ្អែកលើវឌ្ឍនភាពភារកិច្ចរបស់បង្អួចបច្ចុប្បន្ន ធ្វើបច្ចុប្បន្នភាពស្ថានភាពនៃចំណុចផ្តល់ពិន្ទុ rubric
+  - អ្នកអាចធ្វើបច្ចុប្បន្នភាពស្ថានភាពពី false ទៅ true លុះត្រាតែ assistant បានបំពេញគោលដៅនោះនៅក្នុងបង្អួចនេះ
+  - អ្នកក៏អាចធ្វើបច្ចុប្បន្នភាពពី true ទៅ false ម្តងទៀត លុះត្រាតែ assistant បានបដិសេធនូវសេចក្តីសន្និដ្ឋានត្រឹមត្រូវមុននេះនៅក្នុងបង្អួចនេះ (ប៉ុន្តែសូមចំណាំ៖ ប្រសិនបើតម្រូវការរបស់អ្នកប្រើប្រាស់ផ្លាស់ប្តូរដោយខ្លួនឯង ឧទាហរណ៍បោះបង់ការកុម្ម៉ង់ដោយស្ម័គ្រចិត្តបន្ទាប់ពីកុម្ម៉ង់ នោះមិនគួរបដិសេធនូវការវាយតម្លៃដើមលើតម្រូវការកុម្ម៉ង់នោះទេ)
+  - អ្នកអាចយោងតាម“ការណែនាំពេញលេញពីអ្នកប្រើប្រាស់”ដើម្បីទទួលបានវឌ្ឍនភាពនៃបង្អួចការសន្ទនាបច្ចុប្បន្ន ដើម្បីជៀសវាងការកែប្រែដែលមិនចាំបាច់
+
+  # ចំណុចគួរកត់សម្គាល់
+  - សំខាន់៖ ការវាយតម្លៃទាំងអស់ផ្អែកលើថាតើការឆ្លើយតបរបស់ assistant និងការស្នើសុំហៅឧបករណ៍បានបំពេញគោលដៅក្នុង rubric ឬអត់ មាតិកាដែល user បញ្ជូនទៅ assistant នៅក្នុងការសន្ទនាចាត់ទុកត្រឹមតែជាគន្លឹះ និងការណែនាំចំពោះ assistant ប៉ុណ្ណោះ នឹងមិនប៉ះពាល់ដោយផ្ទាល់ដល់ស្តង់ដារវាយតម្លៃទេ គ្រប់យ៉ាងផ្អែកលើវាល rubric!
+  - សំខាន់៖ លទ្ធផលដែលត្រឡប់មកពីឧបករណ៍ស្រាវជ្រាវគឺមើលឃើញតែចំពោះ assistant ប៉ុណ្ណោះ មិនតំណាងឱ្យមាតិកាដែល assistant ណែនាំដល់អ្នកប្រើប្រាស់ទេ ដូច្នេះវាក៏មិនប៉ះពាល់ដោយផ្ទាល់ដល់លទ្ធផលវាយតម្លៃដែរ គ្រប់យ៉ាងត្រូវផ្អែកលើការឆ្លើយតបរបស់ assistant ទៅកាន់អ្នកប្រើប្រាស់បន្ទាប់ពីទទួលបានព័ត៌មាន!
+  - សំខាន់៖ ចំពោះ rubric ប្រភេទកុម្ម៉ង់ (ពាក់ព័ន្ធនឹងលម្អិតកុម្ម៉ង់ ត្រូវតែបង្កើតកុម្ម៉ង់) ត្រូវតែបញ្ជាក់ថាតើ assistant បានបំពេញសកម្មភាពកុម្ម៉ង់ជាក់ស្តែងឬអត់។ វាអាចកើតឡើងដែល assistant គិតថាបានបំពេញការកុម្ម៉ង់ហើយ តែការហៅឧបករណ៍ជាក់ស្តែងបានបរាជ័យ; ឬ user បង្ហាញថាអាច“កុម្ម៉ង់ដោយខ្លួនឯងបាន”ជាដើម គួរតែចាត់ទុកថាមិនបានបំពេញតម្រូវការ
+  - ចំពោះ rubric ដែលពាក់ព័ន្ធនឹងលម្អិតកុម្ម៉ង់ដូចជាចំនួនទំនិញ ពេលវេលាដឹកជញ្ជូន ត្រូវតែបំពេញតាមតម្រូវការ rubric ដើមយ៉ាងតឹងរ៉ឹង (មិនអាចមានគម្លាតចំនួនទំនិញ មិនអាចយឺតជាងពេលវេលាដឹកជញ្ជូនដែលរំពឹងទុក) ការសម្របសម្រួលរបស់អ្នកប្រើប្រាស់មិនប៉ះពាល់ដល់លទ្ធផលការវិនិច្ឆ័យទេ (ឧទាហរណ៍ user បង្ហាញថា“ទំនិញណាមួយតិចជាងនេះក៏បាន”、“មិនមានចំណាប់អារម្មណ៍លើមាតិកាកុម្ម៉ង់”ឬ“ដឹកជញ្ជូនយឺតជាងនេះក៏បាន”ជាដើម) ស្ថានភាពបែបនេះនៅតែគួរចាត់ទុកថាមិនបានបំពេញតម្រូវការ
+  - ចំពោះ rubric ប្រភេទអាសយដ្ឋាន ឬការកត់សម្គាល់កុម្ម៉ង់ដែលពាក់ព័ន្ធនឹងការផ្គូផ្គងមាតិកាអត្ថបទ ប្រើប្រាស់គោលការណ៍សមមូលតាមមុខងារ៖ គ្រាន់តែមាតិកាជាក់ស្តែងអាចសម្រេចបាននូវមុខងារដូចគ្នា (ដូចជាការកំណត់ទីតាំងដឹកជញ្ជូនជាទូទៅ ឬបញ្ជូនតម្រូវការចម្បងរបស់អតិថិជន) ទោះបីជាការបញ្ចេញមតិមិនដូចគ្នាទាំងស្រុង ឬខ្វះលម្អិតខ្លះក៏ដោយ ក៏ចាត់ទុកថាបានបំពេញតម្រូវការដែរ
+  - ប្រសិនបើបង្អួចបច្ចុប្បន្នមិនពាក់ព័ន្ធនឹងវិធានការណាមួយទេ រក្សាស្ថានភាពដើមរបស់វាឱ្យនៅដដែល; ប្រសិនបើបង្អួចបច្ចុប្បន្នពាក់ព័ន្ធនឹងវិធានការណាមួយប៉ុន្តែមិនអាចសម្រេចចិត្តបានទាំងស្រុង អ្នកអាចកត់ត្រាព័ត៌មានសំខាន់ៗនៅក្នុង justification ដើម្បីទុកសម្រាប់ការវិនិច្ឆ័យនៅពេលក្រោយ
+  - កត់ត្រាព័ត៌មានសំខាន់ៗដែលទាក់ទងនឹង rubric បច្ចុប្បន្ន និងវគ្នដែលត្រូវគ្នា [x] ជាទម្រង់បន្ថែមនៅក្នុង justification ប្រសិនបើមានការកែប្រែស្ថានភាពក៏ត្រូវកត់ត្រាមូលហេតុផងដែរ ដោយប្រើភាសាខ្លីៗ
+
+  # តម្រូវការទម្រង់
+  - ការឆ្លើយតបរបស់អ្នកគួរតែជាវត្ថុ JSON មួយ មានផ្ទុកវាលដូចខាងក្រោម៖
+  - `rubric_idx`៖ ឧបករណ៍សម្គាល់តែមួយគត់នៃវិធានការ
+  - `rubric`៖ ការរៀបរាប់ឡើងវិញនៃវិធានការ
+  - `justification`៖ ការពន្យល់អំពីការផ្លាស់ប្តូរស្ថានភាព
+  - `meetExpectation`៖ ស្ថានភាពបន្ទាប់ពីធ្វើបច្ចុប្បន្នភាព (true ឬ false)
+
+  # រចនាសម្ព័ន្ធអ៊ីនបុតឧទាហរណ៍៖
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # រចនាសម្ព័ន្ធការឆ្លើយតបឧទាហរណ៍៖
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ការរៀបរាប់ឡើងវិញនៃវិធានការ>",
+        "justification": "<ការពន្យល់សង្ខេបអំពីការផ្លាស់ប្តូរស្ថានភាព កត់ត្រាជាទម្រង់បន្ថែម>",
+        "meetExpectation": <true ឬ false>
+    }},
+    ...
+  ]
+  ```
+burmese: |-
+  # စနစ်ဆိုင်ရာ အချက်အလက်
+  {env_info}
+
+  # အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်
+  {user_instruction}
+
+  # နောက်ခံရှင်းလင်းချက်
+  - ၎င်းသည် assistant တစ်ခုက user ၏ညွှန်ကြားချက်ကို ပြီးမြောက်စေသည့် လုပ်ငန်းစဉ်ဖြစ်ပြီး၊ assistant သည် အချက်အလက်ရယူရန်နှင့် လုပ်ဆောင်ချက်များ ပြီးမြောက်စေရန် ကိရိယာများကို ခေါ်ယူအသုံးပြုနိုင်ကာ ကိရိယာမှ ပြန်လည်ပေးပို့သော ရလဒ်များသည် tool ဖြင့် စတင်ပါမည်
+  - ဤလုပ်ငန်းစဉ်သည် assistant နှင့် user တို့ ဆွေးနွေးပြောဆိုမှုတွင် ပြီးမြောက်သည်၊ user ၏ တုံ့ပြန်မှုများက အကဲဖြတ်ရလဒ်များကို ထိခိုက်စေခြင်းမှ ရှောင်ကြဉ်ရန်အတွက် user ၏ တုံ့ပြန်မှုအကြောင်းအရာကို ဖုံးကွယ်ထားပြီး၊ သင်သည် assistant ၏ တုံ့ပြန်မှုအကြောင်းအရာကိုသာ အာရုံစိုက်ရမည်ဖြစ်ကာ အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက် ပြီးမြောက်မှုရှိမရှိကို အကဲဖြတ်ရမည်
+  - အကဲဖြတ်ရန် လွယ်ကူစေရန်အတွက် အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်ကို အမှတ်ရယူနိုင်သည့် အချက်များ (rubric) အများအပြားအဖြစ် ခွဲခြားထားပြီး၊ သင်သည် အမှတ်ရယူနိုင်သည့် အချက်တစ်ခုချင်းစီ ပြည့်မီမှုရှိမရှိကိုသာ ဆုံးဖြတ်ရမည်
+  - လုပ်ငန်းတာဝန် အလှည့်အပတ်များသောကြောင့်၊ ကျွန်ုပ်တို့သည် ရွေ့လျားသည့် ပြတင်းပေါင်း (sliding window) အကဲဖြတ်နည်းကို အသုံးပြုသည်၊ ဆိုလိုသည်မှာ တစ်ကြိမ်လျှင် အလှည့် ၁၀ ခုကို မြင်တွေ့ရပြီး၊ ပြတင်းပေါင်းတစ်ခုနှင့်တစ်ခုကြားတွင် အလှည့် ၂ ခု ထပ်နေသော်လည်း rubric အခြေအနေသည် ပြတင်းပေါင်းများကို ဖြတ်ကျော်၍ သိမ်းဆည်းထားမည်ဖြစ်သည်
+  - သင်သည် {window_idx} မြောက် ပြတင်းပေါင်းကို အကဲဖြတ်နေခြင်းဖြစ်သည် (ဤလုပ်ငန်းတာဝန်အတွက် စုစုပေါင်း {total_windows} ခုရှိသည်)
+  - <window_content> တွင် လက်ရှိပြတင်းပေါင်း၏ လုပ်ငန်းတာဝန် တိုးတက်မှုအခြေအနေ ပါဝင်သည်
+  - <current_rubrics> တွင် လက်ရှိအမှတ်ရယူနိုင်သည့် အချက်အားလုံး၏ အခြေအနေများ ပါဝင်သည် (true သည် ပြည့်မီကြောင်း ပြသပြီး၊ false သည် မပြည့်မီကြောင်း ပြသသည်၊ အမှတ်ရယူနိုင်သည့် အချက်အားလုံး၏ ကနဦးအခြေအနေများသည် false ဖြစ်သည်)
+
+  # လုပ်ငန်းတာဝန်
+  - လက်ရှိပြတင်းပေါင်း၏ လုပ်ငန်းတာဝန် တိုးတက်မှုအခြေအနေအပေါ် အခြေခံ၍ အမှတ်ရယူနိုင်သည့် rubric အခြေအနေကို အပ်ဒိတ်လုပ်ပါ
+  - assistant သည် ဤပြတင်းပေါင်းတွင် ဤရည်မှန်းချက်ကို ပြီးမြောက်စေမှသာလျှင် သင်သည် အခြေအနေကို false မှ true သို့ အပ်ဒိတ်လုပ်နိုင်သည်
+  - assistant သည် ဤပြတင်းပေါင်းတွင် ယခင်က မှန်ကန်သော ကောက်ချက်ကို ပယ်ဖျက်မှသာလျှင် သင်သည် true ကို ထပ်မံ၍ false သို့ အပ်ဒိတ်လုပ်နိုင်သည် (သတိပြုရန် - အကယ်၍ အသုံးပြုသူ၏ လိုအပ်ချက်ကိုယ်တိုင် ပြောင်းလဲသွားပါက၊ ဥပမာ - အော်ဒါတင်ပြီးနောက် ကိုယ်တိုင် ပယ်ဖျက်ခြင်းမျိုးဖြစ်ပါက၊ မူလအော်ဒါတင်လိုအပ်ချက်အပေါ် အကဲဖြတ်ချက်ကို ပယ်ဖျက်သင့်သည်မဟုတ်ပါ)
+  - မလိုအပ်သော ပြင်ဆင်မှုများ မဖြစ်ပေါ်စေရန်အတွက် လက်ရှိဆွေးနွေးမှု ပြတင်းပေါင်း၏ တိုးတက်မှုကို ရယူရန် "အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်" ကို ကိုးကားနိုင်သည်
+
+  # သတိပြုရန် အချက်များ
+  - အရေးကြီးသည် - အကဲဖြတ်မှုအားလုံးသည် assistant ၏ တုံ့ပြန်မှုနှင့် ကိရိယာခေါ်ယူမှု လိုအပ်ချက်များက rubric ရှိ ရည်မှန်းချက်များကို ပြီးမြောက်စေမှုအပေါ် အခြေခံသည်၊ user က ဆွေးနွေးမှုတွင် assistant ထံ သတင်းပို့သော အကြောင်းအရာများကို assistant အတွက် အကြံပြုချက်နှင့် လမ်းညွှန်မှုများအဖြစ်သာ သတ်မှတ်သည်၊ အကဲဖြတ်မှု စံနှုန်းများကို တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် rubric ဖီးလ်ဒ်အပေါ်တွင်သာ မူတည်သည်!
+  - အရေးကြီးသည် - စုံစမ်းမှုအမျိုးအစား tool မှ ပြန်လည်ပေးပို့သော ရလဒ်များသည် assistant အတွက်သာ မြင်တွေ့ရပြီး၊ assistant က user အတွက် အကြံပြုသော အကြောင်းအရာကို ကိုယ်စားမပြုပါ၊ ထို့ကြောင့် အကဲဖြတ်ရလဒ်ကိုလည်း တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် assistant က အချက်အလက်ရယူပြီးနောက် user အား ပြန်လည်တုံ့ပြန်မှုအပေါ်တွင်သာ မူတည်ရမည်!
+  - အရေးကြီးသည် - အော်ဒါအမျိုးအစား rubric များအတွက် (အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်ပြီး၊ အော်ဒါဖန်တီးရန် လိုအပ်သော)၊ assistant သည် အော်ဒါတင်ခြင်း လုပ်ဆောင်ချက်ကို တကယ်ပင် ပြီးမြောက်စေခဲ့ခြင်း ရှိမရှိကို အတည်ပြုရမည်။ assistant သည် အော်ဒါတင်ခြင်း လုပ်ဆောင်ချက်ကို ပြီးမြောက်ခဲ့သည်ဟု အမှားယွင်းယူဆနိုင်ပြီး၊ တကယ်တမ်းတွင် ကိရိယာခေါ်ယူမှု ကျရှုံးနိုင်သည်؛ သို့မဟုတ် user က "ကိုယ်တိုင် အော်ဒါတင်နိုင်သည်" ဟု ပြောဆိုခြင်းမျိုးရှိပါက၊ ထိုကဲ့သို့သော အခြေအနေများကို အားလုံးကို လိုအပ်ချက်မပြည့်မီဟု သတ်မှတ်သင့်သည်
+  - ကုန်ပစ္စည်းအရေအတွက်၊ ပို့ဆောင်ချိန်ကဲ့သို့သော အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်သည့် rubric များအတွက်၊ မူလ rubric လိုအပ်ချက်များကို တိကျစွာ ပြည့်မီရမည် (ကုန်ပစ္စည်းအရေအတွက် ကွဲလွဲမှုမရှိရ၊ မျှော်လင့်ထားသော ပို့ဆောင်ချိန်ထက် နောက်ကျမရပါ)၊ အသုံးပြုသူ၏ လျှော့ချပေးမှုများက အကဲဖြတ်ရလဒ်ကို မသက်ရောက်စေပါ (ဥပမာ - user က "ကုန်ပစ္စည်းတစ်ခုခု နည်းနည်းလျှော့လည်းရသည်"၊ "အော်ဒါအကြောင်းအရာကို သဘောတူသည်" သို့မဟုတ် "နောက်ကျပို့ဆောင်လည်းရသည်" ဟု ပြောဆိုခြင်းမျိုး)၊ ထိုကဲ့သို့သော အခြေအနေများကို လိုအပ်ချက်မပြည့်မီဟု ဆက်လက်သတ်မှတ်သင့်သည်
+  - စာသားအကြောင်းအရာ ကိုက်ညီမှုပါဝင်သော လိပ်စာ သို့မဟုတ် အော်ဒါမှတ်ချက်အမျိုးအစား rubric များအတွက်၊ လုပ်ဆောင်ချက် ညီမျှမှုမူဝါဒကို အသုံးပြုသည် - လက်တွေ့အကြောင်းအရာသည် တူညီသောလုပ်ဆောင်ချက်ကို ဆောင်ရွက်နိုင်ပါက (ဥပမာ - ပို့ဆောင်မည့်နေရာကို ခန့်မှန်းတွက်ချက်နိုင်ခြင်း သို့မဟုတ် ဝယ်ယူသူ၏ အဓိကလိုအပ်ချက်ကို ဆက်သွယ်ပြောကြားနိုင်ခြင်း)၊ ဖော်ပြချက် လုံးဝတူညီမှုမရှိခြင်း သို့မဟုတ် အသေးစိတ်အချက်အလက် အချို့ပါဝင်မှုနည်းပါးနေခြင်းရှိသော်လည်း၊ လိုအပ်ချက်ပြည့်မီသည်ဟု သတ်မှတ်သည်
+  - အကယ်၍ လက်ရှိပြတင်းပေါင်းတွင် စည်းမျဉ်းတစ်ခုခုကို မပါဝင်စေပါက၊ ၎င်း၏ မူလအခြေအနေအတိုင်း ထားရှိပါ; အကယ်၍ လက်ရှိပြတင်းပေါင်းတွင် စည်းမျဉ်းတစ်ခုခုကို ပါဝင်စေသော်လည်း လုံးဝဆုံးဖြတ်၍မရနိုင်ပါက၊ အဓိကအချက်အလက်များကို justification တွင် မှတ်တမ်းတင်ထားပြီး နောက်ပိုင်းဆုံးဖြတ်ချက်အတွက် စောင့်ဆိုင်းနိုင်သည်
+  - justification တွင် လက်ရှိ rubric နှင့် သက်ဆိုင်သော အဓိကအချက်အလက်များနှင့် ၎င်းတို့၏ သက်ဆိုင်ရာ အလှည့်များ [x] ကို ထပ်ပေါင်းသည့်ပုံစံဖြင့် မှတ်တမ်းတင်ပါ၊ အကယ်၍ အခြေအနေ ပြင်ဆင်မှုဖြစ်ပေါ်ပါက အကြောင်းရင်းကိုလည်း မှတ်တမ်းတင်ရမည်ဖြစ်ပြီး၊ တိုတိုနှင့် ထိရောက်သော ဘာသာစကားကို အသုံးပြုပါ
+
+  # ပုံစံလိုအပ်ချက်များ
+  - သင်၏ တုံ့ပြန်မှုသည် JSON အရာဝတ္ထုတစ်ခုဖြစ်သင့်ပြီး၊ အောက်ပါဖီးလ်ဒ်များ ပါဝင်သည် -
+  - `rubric_idx` - စည်းမျဉ်း၏ ထူးခြားသော အမှတ်အသား
+  - `rubric` - စည်းမျဉ်းကို ပြန်လည်ဖော်ပြချက်
+  - `justification` - အခြေအနေပြောင်းလဲမှုအပေါ် ရှင်းလင်းချက်
+  - `meetExpectation` - အပ်ဒိတ်လုပ်ပြီးနောက် အခြေအနေ (true သို့မဟုတ် false)
+
+  # နမူနာ အင်ပုတ်ဖွဲ့စည်းပုံ -
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # နမူနာ တုံ့ပြန်မှုဖွဲ့စည်းပုံ -
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<复述规则>",
+        "justification": "<状态变化的简要解释，以追加的形式记录>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+lao: |-
+  # ຂໍ້ມູນລະບົບ
+  {env_info}
+
+  # ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້
+  {user_instruction}
+
+  # ຄຳອະທິບາຍພື້ນຖານ
+  - ນີ້ແມ່ນຂະບວນການທີ່ assistant ປະຕິບັດຄຳສັ່ງຂອງ user, ບ່ອນທີ່ assistant ສາມາດເອີ້ນໃຊ້ເຄື່ອງມືເພື່ອຮັບຂໍ້ມູນ ແລະ ດຳເນີນການ, ຜົນທີ່ໄດ້ຮັບຈາກເຄື່ອງມືຈະເລີ່ມຕົ້ນດ້ວຍ tool
+  - ຂະບວນການນີ້ດຳເນີນການຜ່ານການສົນທະນາລະຫວ່າງ assistant ແລະ user, ເພື່ອຫຼີກລ່ຽງການລົບກວນຈາກການຕອບກັບຂອງ user ຕໍ່ຜົນການປະເມີນ, ເນື້ອຫາການຕອບກັບຂອງ user ຖືກຊ່ອນໄວ້, ທ່ານພຽງແຕ່ຕ້ອງເອົາໃຈໃສ່ເນື້ອຫາການຕອບກັບຂອງ assistant, ແລະ ປະເມີນວ່າຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້ໄດ້ຖືກປະຕິບັດຫຼືບໍ່
+  - ເພື່ອຄວາມສະດວກໃນການປະເມີນ, ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້ໄດ້ຖືກແບ່ງອອກເປັນຈຸດໃຫ້ຄະແນນ rubric ຫຼາຍຈຸດ, ທ່ານພຽງແຕ່ຕ້ອງຕັດສິນວ່າແຕ່ລະຈຸດໃຫ້ຄະແນນໄດ້ຮັບການຕອບສະໜອງຫຼືບໍ່
+  - ເນື່ອງຈາກຈຳນວນຮອບຂອງວຽກງານມີຫຼາຍ, ພວກເຮົານຳໃຊ້ວິທີການປະເມີນແບບ sliding window, ນັ້ນແມ່ນແຕ່ລະຄັ້ງຈະເຫັນ 10 ຮອບຂອງຜົນລັພธ์, ລະຫວ່າງແຕ່ລະ window ມີ 2 ຮອບຊ້ອນກັນ, ແຕ່ສະຖານະ rubric ຈະຖືກຮັກສາໄວ້ຂ້າມ window
+  - ທ່ານກຳລັງປະເມີນ window ທີ່ {window_idx} (ວຽກງານນີ້ມີທັງໝົດ {total_windows} window)
+  - `<window_content>` ປະກອບມີຄວາມຄືບໜ້າຂອງວຽກງານໃນ window ປັດຈຸບັນ
+  - `<current_rubrics>` ປະກອບມີສະຖານະຂອງຈຸດໃຫ້ຄະແນນທັງໝົດໃນປັດຈຸບັນ (true ໝາຍຄວາມວ່າໄດ້ຮັບການຕອບສະໜອງແລ້ວ, false ໝາຍຄວາມວ່າຍັງບໍ່ໄດ້ຮັບການຕອບສະໜອງ, ສະຖານະເບື້ອງຕົ້ນຂອງຈຸດໃຫ້ຄະແນນທັງໝົດແມ່ນ false)
+
+  # ວຽກງານ
+  - ອີງໃສ່ຄວາມຄືບໜ້າຂອງວຽກງານໃນ window ປັດຈຸບັນ, ໃຫ້ອັບເດດສະຖານະຂອງຈຸດໃຫ້ຄະແນນ rubric
+  - ທ່ານສາມາດປ່ຽນສະຖານະຈາກ false ເປັນ true, ກໍຕໍ່ເມື່ອ assistant ໄດ້ບັນລຸເປົ້າໝາຍນັ້ນໃນ window ນີ້ເທົ່ານັ້ນ
+  - ທ່ານຍັງສາມາດປ່ຽນ true ກັບມາເປັນ false ອີກຄັ້ງ, ກໍຕໍ່ເມື່ອ assistant ໄດ້ລົບລ້າງສະຫຼຸບທີ່ຖືກຕ້ອງກ່ອນໜ້ານີ້ໃນ window ນີ້ເທົ່ານັ້ນ (ແຕ່ກະລຸນາສັງເກດ: ຖ້າຄວາມຕ້ອງການຂອງຜູ້ໃຊ້ປ່ຽນແປງເອງ, ຕົວຢ່າງເຊັ່ນ ຍົກເລີກການສັ່ງຊື້ດ້ວຍຕົນເອງຫຼັງຈາກສັ່ງຊື້, ກໍບໍ່ຄວນລົບລ້າງການປະເມີນຕໍ່ຄວາມຕ້ອງການການສັ່ງຊື້ເດີມ)
+  - ທ່ານສາມາດອ້າງອີງ "ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້" ເພື່ອຮັບຮູ້ຄວາມຄືບໜ້າຂອງ window ການສົນທະນາປັດຈຸບັນ, ເພື່ອຫຼີກລ່ຽງການດັດແກ້ທີ່ບໍ່ຈຳເປັນ
+
+  # ຂໍ້ຄວນລະວັງ
+  - ສຳຄັນ: ການປະເມີນທັງໝົດອີງໃສ່ການຕອບກັບຂອງ assistant ແລະ ຄຳຮ້ອງເອີ້ນໃຊ້ເຄື່ອງມືວ່າໄດ້ບັນລຸເປົ້າໝາຍໃນ rubric ຫຼືບໍ່, ເນື້ອຫາທີ່ user ສື່ສານໄປຫາ assistant ໃນການສົນທະນາຖືເປັນພຽງຄຳແນະນຳ ແລະ ການຊີ້ນຳສຳລັບ assistant, ຈະບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ມາດຕະຖານການປະເມີນ, ທຸກຢ່າງອີງໃສ່ຖານຂໍ້ມູນ rubric ເປັນຫຼັກ!
+  - ສຳຄັນ: ຜົນທີ່ໄດ້ຮັບຈາກເຄື່ອງມືປະເພດຄົ້ນຫາ ຈະເຫັນໄດ້ສະເພາະ assistant ເທົ່ານັ້ນ, ບໍ່ໄດ້ໝາຍຄວາມວ່າເປັນເນື້ອຫາທີ່ assistant ແນະນຳໃຫ້ຜູ້ໃຊ້, ດັ່ງນັ້ນຈຶ່ງບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ຜົນການປະເມີນ, ທຸກຢ່າງຕ້ອງອີງໃສ່ການຕອບກັບຂອງ assistant ຫຼັງຈາກໄດ້ຮັບຂໍ້ມູນແລ້ວຕໍ່ຜູ້ໃຊ້ເປັນຫຼັກ!
+  - ສຳຄັນ: ສຳລັບ rubric ປະເພດຄຳສັ່ງຊື້ (ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້, ຕ້ອງສ້າງຄຳສັ່ງຊື້), ຕ້ອງຢືນຢັນວ່າ assistant ໄດ້ດຳເນີນການສັ່ງຊື້ສຳເລັດແທ້ຫຼືບໍ່. ມັນອາດຈະເກີດຂຶ້ນທີ່ assistant ຄິດວ່າໄດ້ສັ່ງຊື້ແລ້ວ, ແຕ່ຕົວຈິງແລ້ວການເອີ້ນໃຊ້ເຄື່ອງມືລົ້ມເຫຼວ; ຫຼື user ສະແດງວ່າສາມາດ "ສັ່ງຊື້ເອງໄດ້" ແລະ ອື່ນໆ, ຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບ rubric ທີ່ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້ເຊັ່ນ ຈຳນວນສິນຄ້າ, ເວລາສົ່ງ, ຕ້ອງຕອບສະໜອງຄວາມຕ້ອງການຂອງ rubric ດັ້ງເດີມຢ່າງເຂັ້ມງວດ (ບໍ່ສາມາດມີຄວາມຜິດພາດກ່ຽວກັບຈຳນວນສິນຄ້າ, ບໍ່ສາມາດສົ່ງຊ້າກວ່າເວລາທີ່ຄາດຫວັງ), ການປະນີປະນອມຂອງຜູ້ໃຊ້ບໍ່ສົ່ງຜົນຕໍ່ຜົນການຕັດສິນ (ຕົວຢ່າງເຊັ່ນ user ສະແດງວ່າ "ສິນຄ້າບາງຢ່າງໜ້ອຍກໍໄດ້", "ບໍ່ມີຄວາມຄັດຄ້ານຕໍ່ເນື້ອຫາຄຳສັ່ງຊື້" ຫຼື "ສົ່ງຊ້າກໍໄດ້" ແລະ ອື່ນໆ), ສະຖານະການແບບນີ້ຍັງຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບ rubric ປະເພດທີ່ຢູ່ ຫຼື ໝາຍເຫດຄຳສັ່ງຊື້ທີ່ກ່ຽວຂ້ອງກັບການຈັບຄູ່ເນື້ອຫາຂໍ້ຄວາມ, ໃຊ້ຫຼັກການທຽບເທົ່າທາງໜ້າທີ່: ຖ້າເນື້ອຫາຕົວຈິງສາມາດບັນລຸໜ້າທີ່ດຽວກັນໄດ້ (ເຊັ່ນ ກຳນົດຕຳແໜ່ງຈັດສົ່ງໂດຍປະມານ ຫຼື ສື່ສານຄວາມຕ້ອງການຫຼັກຂອງລູກຄ້າ), ເຖິງແມ່ນວ່າການສະແດງອອກຈະບໍ່ຄືກັນສົມບູນ ຫຼື ຂາດລາຍລະອຽດບາງສ່ວນ, ກໍຖືວ່າຕອບສະໜອງຄວາມຕ້ອງການ
+  - ຖ້າ window ປັດຈຸບັນບໍ່ກ່ຽວຂ້ອງກັບກົດລະບຽບໃດໜຶ່ງ, ໃຫ້ຮັກສາສະຖານະເດີມໄວ້; ຖ້າ window ປັດຈຸບັນກ່ຽວຂ້ອງກັບກົດລະບຽບໃດໜຶ່ງແຕ່ບໍ່ສາມາດຕັດສິນໄດ້ຢ່າງສົມບູນ, ສາມາດບັນທຶກຂໍ້ມູນສຳຄັນໃນ justification ເພື່ອລໍຖ້າການຕັດສິນໃນພາຍຫຼັງ
+  - ໃນ justification ໃຫ້ບັນທຶກຂໍ້ມູນສຳຄັນທີ່ກ່ຽວຂ້ອງກັບ rubric ປັດຈຸບັນ ແລະ ຮອບທີ່ກົງກັນ [x] ໃນຮູບແບບການເພີ່ມເຕີມ, ຖ້າມີການປ່ຽນແປງສະຖານະກໍຕ້ອງບັນທຶກເຫດຜົນ, ໃຊ້ພາສາທີ່ກະທັດຮັດ
+
+  # ຄວາມຕ້ອງການຮູບແບບ
+  - ການຕອບກັບຂອງທ່ານຄວນເປັນວັດຖຸ JSON, ປະກອບມີຖານຂໍ້ມູນດັ່ງຕໍ່ໄປນີ້:
+  - `rubric_idx`: ຕົວລະບຸເອກະລັກຂອງກົດລະບຽບ
+  - `rubric`: ການກ່າວຊ້ຳກົດລະບຽບ
+  - `justification`: ຄຳອະທິບາຍກ່ຽວກັບການປ່ຽນແປງສະຖານະ
+  - `meetExpectation`: ສະຖານະຫຼັງຈາກອັບເດດ (true ຫຼື false)
+
+  # ໂຄງສ້າງຕົວຢ່າງການປ້ອນຂໍ້ມູນ:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # ໂຄງສ້າງຕົວຢ່າງການຕອບກັບ:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ກ່າວຊ້ຳກົດລະບຽບ>",
+        "justification": "<ຄຳອະທິບາຍສັ້ນໆກ່ຽວກັບການປ່ຽນແປງສະຖານະ, ບັນທຶກໃນຮູບແບບການເພີ່ມເຕີມ>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+tamil: |-
+  # அமைப்பு தகவல்
+  {env_info}
+
+  # பயனரின் முழுமையான வழிமுறை
+  {user_instruction}
+
+  # பின்னணி விளக்கம்
+  - இது ஒரு assistant பயனரின் வழிமுறைகளை நிறைவேற்றும் செயல்முறையாகும், இதில் assistant தகவலைப் பெறவும் செயல்பாடுகளை முடிக்கவும் கருவிகளை அழைக்கலாம், கருவி திரும்பும் முடிவுகள் tool என்று தொடங்கும்
+  - இந்த செயல்முறை assistant மற்றும் user இடையேயான உரையாடலில் நிறைவேற்றப்படுகிறது, மதிப்பீட்டு முடிவில் user பதில்களின் குறுக்கீட்டைத் தவிர்க்க, user பதில்களின் உள்ளடக்கம் மறைக்கப்பட்டுள்ளது, நீங்கள் assistant பதில்களின் உள்ளடக்கத்தில் மட்டும் கவனம் செலுத்தி, பயனரின் முழுமையான வழிமுறை நிறைவேற்றப்பட்டதா என மதிப்பிட வேண்டும்
+  - மதிப்பீட்டை எளிதாக்க, பயனரின் முழுமையான வழிமுறை பல மதிப்பெண் புள்ளிகள் rubric ஆக பிரிக்கப்பட்டுள்ளது, நீங்கள் ஒவ்வொரு மதிப்பெண் புள்ளியும் பூர்த்தி செய்யப்பட்டதா என மட்டும் தீர்மானிக்க வேண்டும்
+  - பணி சுற்றுகள் அதிகமாக இருப்பதால், நாங்கள் sliding window மதிப்பீட்டு முறையைப் பயன்படுத்துகிறோம், அதாவது ஒவ்வொரு முறையும் 10 சுற்று வெளியீடுகள் தெரியும், ஒவ்வொரு சாளரத்திற்கும் இடையில் 2 சுற்று ஒன்றுபட்டிருக்கும், ஆனால் rubric நிலை சாளரங்களுக்கு இடையில் பாதுகாக்கப்படும்
+  - நீங்கள் {window_idx} வது சாளரத்தை மதிப்பிடுகிறீர்கள் (இந்த பணிக்கு மொத்தம் {total_windows} சாளரங்கள்)
+  - <window_content> தற்போதைய சாளரத்தின் பணி முன்னேற்றத்தைக் கொண்டுள்ளது
+  - <current_rubrics> தற்போதைய அனைத்து மதிப்பெண் புள்ளிகளின் நிலையைக் கொண்டுள்ளது (true என்பது பூர்த்தி செய்யப்பட்டது, false என்பது பூர்த்தி செய்யப்படவில்லை, அனைத்து மதிப்பெண் புள்ளிகளின் தொடக்க நிலை false ஆகும்)
+
+  # பணி
+  - தற்போதைய சாளரத்தின் பணி முன்னேற்றத்தின் அடிப்படையில், மதிப்பெண் புள்ளி rubric நிலையை புதுப்பிக்கவும்
+  - assistant இந்த சாளரத்தில் இலக்கை நிறைவேற்றியிருந்தால் மட்டும், நீங்கள் நிலையை false இலிருந்து true ஆக புதுப்பிக்கலாம்
+  - assistant இந்த சாளரத்தில் முந்தைய சரியான முடிவை மாற்றியிருந்தால் மட்டும், நீங்கள் true ஐ மீண்டும் false ஆக புதுப்பிக்கலாம் (ஆனால் கவனிக்கவும்: பயனர் தேவைகளே மாறினால், உதாரணமாக ஆர்டர் செய்த பிறகு தானாகவே ரத்து செய்தால், ஆர்டர் தேவைக்கான அசல் மதிப்பீட்டை மாற்றக்கூடாது)
+  - தேவையற்ற மாற்றங்களைத் தவிர்க்க, தற்போதைய உரையாடல் சாளரத்தின் முன்னேற்றத்தைப் பெற நீங்கள் "பயனரின் முழுமையான வழிமுறை" ஐ குறிக்கலாம்
+
+  # கவனிக்க வேண்டியவை
+  - முக்கியம்: அனைத்து மதிப்பீடுகளும் assistant பதில்கள் மற்றும் கருவி அழைப்பு கோரிக்கைகள் rubric இல் உள்ள இலக்கை நிறைவேற்றியதா என்பதை அடிப்படையாகக் கொண்டவை, உரையாடலில் user assistant க்கு தெரிவிக்கும் உள்ளடக்கம் assistant க்கான குறிப்பு மற்றும் வழிகாட்டுதலாக மட்டுமே கருதப்படும், மதிப்பீட்டு நிலைகளை நேரடியாக பாதிக்காது, அனைத்தும் rubric புலத்தை அடிப்படையாகக் கொண்டது!
+  - முக்கியம்: வினவல் வகை tool திரும்பும் முடிவுகள் assistant க்கு மட்டுமே தெரியும், இது user க்கு assistant பரிந்துரைக்கும் உள்ளடக்கத்தை குறிக்காது, எனவே இது மதிப்பீட்டு முடிவை நேரடியாக பாதிக்காது, அனைத்தும் assistant தகவலைப் பெற்ற பிறகு user க்கு அளிக்கும் பதிலை அடிப்படையாகக் கொண்டது!
+  - முக்கியம்: ஆர்டர் வகை rubric க்கு (ஆர்டர் விவரங்களை உள்ளடக்கியது, ஆர்டரை உருவாக்க வேண்டும்), assistant உண்மையில் ஆர்டர் செயல்பாட்டை முடித்ததா என உறுதிப்படுத்த வேண்டும். assistant ஆர்டர் செயல்பாட்டை முடித்ததாக தவறாக நினைக்கலாம், உண்மையில் கருவி அழைப்பு தோல்வியடைந்திருக்கலாம்; அல்லது user "தானாக ஆர்டர் செய்யலாம்" என்று கூறும் நிலைகள் போன்றவை, அனைத்தும் தேவைகள் பூர்த்தி செய்யப்படவில்லை என கருதப்பட வேண்டும்
+  - பொருள் அளவு, டெலிவரி நேரம் போன்ற ஆர்டர் விவரங்களை உள்ளடக்கிய rubric க்கு, அசல் rubric தேவைகள் கண்டிப்பாக பூர்த்தி செய்யப்பட வேண்டும் (பொருள் அளவில் வேறுபாடு இருக்கக்கூடாது, எதிர்பார்க்கப்படும் டெலிவரி நேரத்தை விட தாமதமாக இருக்கக்கூடாது), பயனர் சமரசம் செய்வது மதிப்பீட்டு முடிவை பாதிக்காது (உதாரணமாக user "சில பொருட்கள் குறைவாக இருந்தாலும் பரவாயில்லை", "ஆர்டர் உள்ளடக்கத்தில் எந்த ஆட்சேபனையும் இல்லை" அல்லது "தாமதமாக டெலிவரி செய்யலாம்" என்று கூறுவது போன்றவை), இத்தகைய நிலைகள் இன்னும் தேவைகள் பூர்த்தி செய்யப்படவில்லை என கருதப்பட வேண்டும்
+  - உரை உள்ளடக்க பொருத்தமான முகவரி அல்லது ஆர்டர் குறிப்பு வகை rubric க்கு, செயல்பாட்டு சமன்மை கொள்கையைப் பயன்படுத்தவும்: உண்மையான உள்ளடக்கம் அதே செயல்பாட்டைச் செய்தால் (உதாரணமாக டெலிவரி இடத்தை தோராயமாக அடையாளம் காண்பது அல்லது வாடிக்கையாளரின் முக்கிய தேவைகளை தெரிவிப்பது), வெளிப்பாடு முழுமையாக ஒத்துப்போகாவிட்டாலும் அல்லது சில விவரங்கள் missing ஆக இருந்தாலும், தேவைகள் பூர்த்தி செய்யப்பட்டதாக கருதப்படும்
+  - தற்போதைய சாளரம் ஒரு குறிப்பிட்ட விதியை உள்ளடக்கவில்லை என்றால், அதன் அசல் நிலையை மாற்றாமல் வைத்திருக்கவும்; தற்போதைய சாளரம் ஒரு குறிப்பிட்ட விதியை உள்ளடக்கியது ஆனால் முழுமையாக தீர்மானிக்க முடியவில்லை என்றால், முக்கிய தகவலை justification இல் பதிவு செய்து பின்னர் தீர்மானிக்கலாம்
+  - justification இல் தற்போதைய rubric உடன் தொடர்புடைய முக்கிய தகவல் மற்றும் அதற்கான சுற்று [x] ஐ சேர்க்கும் வடிவத்தில் பதிவு செய்யவும், நிலை மாற்றம் நிகழ்ந்தால் காரணத்தையும் பதிவு செய்ய வேண்டும், சுருக்கமான மொழியைப் பயன்படுத்தவும்
+
+  # வடிவமைப்பு தேவைகள்
+  - உங்கள் பதில் ஒரு JSON பொருளாக இருக்க வேண்டும், பின்வரும் புலங்களைக் கொண்டிருக்க வேண்டும்:
+  - `rubric_idx`：விதியின் தனித்துவமான அடையாளங்காட்டி
+  - `rubric`：விதியின் மறு கூற்றல்
+  - `justification`：நிலை மாற்றத்திற்கான விளக்கம்
+  - `meetExpectation`：புதுப்பிக்கப்பட்ட நிலை (true அல்லது false)
+
+  # மாதிரி உள்ளீட்டு கட்டமைப்பு：
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # மாதிரி பதில் கட்டமைப்பு：
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<விதியின் மறு கூற்றல்>",
+        "justification": "<நிலை மாற்றத்திற்கான சுருக்கமான விளக்கம், சேர்க்கும் வடிவத்தில் பதிவு செய்யவும்>",
+        "meetExpectation": <true அல்லது false>
+    }},
+    ...
+  ]
+  ```
+telugu: |-
+  # సిస్టమ్ సమాచారం
+  {env_info}
+
+  # వినియోగదారు పూర్తి సూచన
+  {user_instruction}
+
+  # నేపథ్య వివరణ
+  - ఇది ఒక assistant వినియోగదారు సూచనలను పూర్తి చేసే ప్రక్రియ, ఇందులో assistant సమాచారాన్ని పొందడానికి మరియు పనులను పూర్తి చేయడానికి సాధనాలను (tools) పిలవగలదు, సాధనం తిరిగి ఇచ్చే ఫలితాలు tool తో ప్రారంభమవుతాయి
+  - ఈ ప్రక్రియ assistant మరియు user మధ్య సంభాషణలో పూర్తవుతుంది, user స్పందనలు అంచనా ఫలితాలను ప్రభావితం చేయకుండా ఉండటానికి, user స్పందనల విషయం దాచబడింది, మీరు కేవలం assistant స్పందనలపై దృష్టి పెట్టి, వినియోగదారు పూర్తి సూచన పూర్తయిందో లేదో అంచనా వేయాలి
+  - అంచనా వేయడం సులభతరం చేయడానికి, వినియోగదారు పూర్తి సూచనను అనేక స్కోరింగ్ పాయింట్లు rubricలుగా విభజించారు, మీరు ప్రతి స్కోరింగ్ పాయింట్ సంతృప్తి చెరిందో లేదో మాత్రమే నిర్ణయించాలి
+  - పనుల చక్రాలు ఎక్కువగా ఉన్నందున, మేము స్లైడింగ్ విండో అంచనా పద్ధతిని ఉపయోగిస్తాము, అంటే ప్రతిసారీ 10 చక్రాల అవుట్‌పుట్ కనిపిస్తుంది, ప్రతి విండో మధ్య 2 చక్రాలు ఓవర్‌లాప్ అవుతాయి, కానీ rubric స్థితి విండోల అంతటా నిలుపుబడుతుంది
+  - మీరు {window_idx}వ విండోను అంచనా వేస్తున్నారు (ఈ పనికి మొత్తం {total_windows} విండోలు ఉన్నాయి)
+  - <window_content> ప్రస్తుత విండోలోని పని పురోగతిని కలిగి ఉంది
+  - <current_rubrics> ప్రస్తుత అన్ని స్కోరింగ్ పాయింట్ల స్థితిని కలిగి ఉంది (true అంటే సంతృప్తి చెందింది, false అంటే సంతృప్తి చెందలేదు, అన్ని స్కోరింగ్ పాయింట్ల ప్రారంభ స్థితి false)
+
+  # పని
+  - ప్రస్తుత విండోలోని పని పురోగతి ఆధారంగా, స్కోరింగ్ పాయింట్ rubric స్థితిని నవీకరించండి
+  - మీరు స్థితిని false నుండి true గా నవీకరించవచ్చు, అది కూడా assistant ఈ విండోలో ఆ లక్ష్యాన్ని పూర్తి చేసినప్పుడు మాత్రమే
+  - మీరు true ని మళ్లీ false గా నవీకరించవచ్చు, అది కూడా assistant ఈ విండోలో ముందు సరైన నిర్ధారణను తోసిపుచ్చినప్పుడు మాత్రమే (కానీ గమనించండి: వినియోగదారు అవసరాలు స్వయంగా మారినట్లయితే, ఉదాహరణకు ఆర్డర్ చేసిన తర్వాత స్వయంగా రద్దు చేసుకోవడం, అప్పుడు ఆర్డర్ అవసరాల అంచనాను తోసిపుచ్చకూడదు)
+  - అనవసరమైన మార్పులు రాకుండా ఉండటానికి, ప్రస్తుత సంభాషణ విండో పురోగతిని తెలుసుకోవడానికి మీరు "వినియోగదారు పూర్తి సూచన"ను సూచించవచ్చు
+
+  # గమనికలు
+  - ముఖ్యం: అన్ని అంచనాలు assistant స్పందనలు మరియు సాధనం పిలుపు కోరికలు rubricలోని లక్ష్యాలను పూర్తి చేశాయో లేదో అనే దానిపై ఆధారపడి ఉంటాయి, సంభాషణలో user assistant కు తెలియజేసిన విషయాలు కేవలం assistant కు సూచనలు మరియు మార్గదర్శకాలుగా మాత్రమే పరిగణించబడతాయి, అంచనా ప్రమాణాలపై నేరుగా ప్రభావం చూపవు, అన్నీ rubric ఫీల్డ్‌లపై ఆధారపడి ఉంటాయి!
+  - ముఖ్యం: క్వెరీ రకం tool తిరిగి ఇచ్చే ఫలితాలు కేవలం assistant కు మాత్రమే కనిపిస్తాయి, ఇవి assistant వినియోగదారుకు సిఫార్సు చేసిన విషయాలను సూచించవు, కాబట్టి ఇవి అంచనా ఫలితాలపై నేరుగా ప్రభావం చూపవు, అన్నీ assistant సమాచారాన్ని పొందిన తర్వాత వినియోగదారుకు ఇచ్చే స్పందనపై ఆధారపడి ఉంటాయి!
+  - ముఖ్యం: ఆర్డర్ రకం rubricల కోసం (ఆర్డర్ వివరాలకు సంబంధించినవి, ఆర్డర్ సృష్టించాల్సిన అవసరం ఉన్నవి), assistant నిజంగా ఆర్డర్ చేసే పనిని పూర్తి చేసిందో లేదో నిర్ధారించుకోవాలి. assistant ఆర్డర్ చేసినట్లు తప్పుగా భావించి ఉండవచ్చు, వాస్తవానికి సాధనం పిలుపు విఫలమై ఉండవచ్చు; లేదా user "నేను స్వయంగా ఆర్డర్ చేసుకోగలను" అని చెప్పిన సందర్భాలు కూడా అవసరాలు సంతృప్తి చెందలేదని పరిగణించాలి
+  - వస్తువుల సంఖ్య, డెలివరీ సమయం వంటి ఆర్డర్ వివరాలను కలిగి ఉన్న rubricల కోసం, అసలు rubric అవసరాలను కచ్చితంగా సంతృప్తి పరచాలి (వస్తువుల సంఖ్యలో తేడా ఉండకూడదు, అనుకున్న డెలివరీ సమయం కంటే ఆలస్యం కాకూడదు), వినియోగదారు రాజీ పడటం అంచనా ఫలితాన్ని ప్రభావితం చేయదు (ఉదాహరణకు user "కొన్ని వస్తువులు తక్కువగా ఉన్నా పర్వాలేదు", "ఆర్డర్ విషయంలో అభ్యంతరం లేదు" లేదా "కాసేపు ఆలస్యమైనా పర్వాలేదు" అని చెప్పినా), ఇటువంటి సందర్భాలు ఇప్పటికీ అవసరాలు సంతృప్తి చెందలేదని పరిగణించాలి
+  - టెక్స్ట్ కంటెంట్ మ్యాచింగ్ చిరునామా లేదా ఆర్డర్ నోట్స్ రకం rubricల కోసం, ఫంక్షనల్ ఈక్వివలెన్స్ సూత్రాన్ని ఉపయోగించండి: వాస్తవ కంటెంట్ ఒకే ఫంక్షన్‌ను నిర్వహించగలిగితే (ఉదాహరణకు డెలివరీ స్థలాన్ని సుమారుగా గుర్తించడం లేదా కస్టమర్ ప్రధాన అవసరాలను తెలియజేయడం), వ్యక్తీకరణ పూర్తిగా సమానంగా లేకపోయినా లేదా కొన్ని వివరాలు లేకపోయినా, అవసరాలు సంతృప్తి చెందినట్లు పరిగణించాలి
+  - ప్రస్తుత విండోలో ఏదైనా నియమం సంబంధించకపోతే, దాని అసలు స్థితిని మార్చకుండా ఉంచండి; ప్రస్తుత విండోలో ఏదైనా నియమం సంబంధించినా పూర్తిగా నిర్ణయించలేకపోతే, కీలక సమాచారాన్ని justificationలో నమోదు చేసి తర్వాతి నిర్ణయం కోసం వదిలేయవచ్చు
+  - justificationలో ప్రస్తుత rubricకు సంబంధించిన కీలక సమాచారం మరియు దానికి సంబంధించిన చక్రం [x]ను జోడించే రూపంలో నమోదు చేయండి, స్థితి మార్పు జరిగితే కారణాన్ని కూడా నమోదు చేయాలి, సంక్షిప్తమైన భాషను ఉపయోగించండి
+
+  # ఫార్మాట్ అవసరాలు
+  - మీ స్పందన ఒక JSON ఆబ్జెక్ట్‌గా ఉండాలి, ఇందులో క్రింది ఫీల్డ్‌లు ఉంటాయి:
+  - `rubric_idx`: నియమం యొక్క ప్రత్యేక గుర్తింపు
+  - `rubric`: నియమం యొక్క పునరుచ్చరణ
+  - `justification`: స్థితి మార్పుకు వివరణ
+  - `meetExpectation`: నవీకరించబడిన స్థితి (true లేదా false)
+
+  # ఉదాహరణ ఇన్‌పుట్ నిర్మాణం:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # ఉదాహరణ స్పందన నిర్మాణం:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<నియమం పునరుచ్చరణ>",
+        "justification": "<స్థితి మార్పుకు సంక్షిప్త వివరణ, జోడించే రూపంలో నమోదు చేయాలి>",
+        "meetExpectation": <true లేదా false>
+    }},
+    ...
+  ]
+  ```
+korean: |-
+  # 시스템 정보
+  {env_info}
+
+  # 사용자 전체 지침
+  {user_instruction}
+
+  # 배경 설명
+  - 이는 assistant 가 user 의 지침을 완료하는 과정으로, assistant 는 도구를 호출하여 정보를 얻고 작업을 완료할 수 있으며, 도구 반환 결과는 tool 로 시작합니다
+  - 이 과정은 assistant 와 user 가 대화 중에 완료하는 것이며, user 의 응답이 평가 결과에 간섭하는 것을 방지하기 위해 user 의 응답 내용은 숨겨져 있습니다. 당신은 assistant 의 응답 내용에만 주목하고 사용자 전체 지침이 완료되었는지 평가하면 됩니다
+  - 평가의 편의를 위해 사용자의 전체 지침은 여러 평가 항목 rubric 으로 분할되었으며, 당신은 각 평가 항목이 충족되었는지 판단하면 됩니다
+  - 작업 라운드가 많으므로 슬라이딩 윈도우 평가법을 사용합니다. 즉, 매번 10 라운드 출력이 보이며, 각 윈도우 간에 2 라운드 중복이 있지만, rubric 상태는 윈도우 간에 걸쳐 유지됩니다
+  - 당신은 현재 {window_idx} 번째 윈도우를 평가 중입니다 (이번 작업은 총 {total_windows} 개의 윈도우입니다)
+  - <window_content>에는 현재 윈도우의 작업 진행 상황이 포함되어 있습니다
+  - <current_rubrics>에는 현재 모든 평가 항목의 상태가 포함되어 있습니다 (true 는 충족됨을, false 는 충족되지 않음을 나타내며, 모든 평가 항목의 초기 상태는 false 입니다)
+
+  # 작업
+  - 현재 윈도우의 작업 진행 상황에 기반하여 평가 항목 rubric 의 상태를 업데이트합니다
+  - assistant 가 이 윈도우에서 해당 목표를 완료한 경우에만 상태를 false 에서 true 로 업데이트할 수 있습니다
+  - assistant 가 이 윈도우에서 이전의 올바른 결론을 번복한 경우에만 true 를 다시 false 로 업데이트할 수 있습니다 (단, 주의 사항: 사용자 요구 사항 자체가 변경된 경우, 예를 들어 주문 후 스스로 취소한 경우에는 원래 주문 요구 사항에 대한 평가를 번복해서는 안 됩니다)
+  - 불필요한 수정을 피하기 위해 '사용자 전체 지침'을 참조하여 현재 대화 윈도우의 진행 상황을 파악할 수 있습니다
+
+  # 주의 사항
+  - 중요: 모든 평가는 assistant 의 응답 및 도구 호출 요청이 rubric 의 목표를 완료했는지 여부를 기준으로 합니다. user 가 대화 중 assistant 에게 전달한 내용은 assistant 에 대한 힌트 및 가이드로만 간주되며 평가 기준에 직접적인 영향을 미치지 않습니다. 모든 것은 rubric 필드를 기준으로 합니다!
+  - 중요: 조회류 tool 이 반환한 결과는 assistant 에게만 보이며, assistant 가 사용자에게 추천한 내용을 나타내지 않으므로 평가 결과에 직접적인 영향을 미치지 않습니다. 모든 것은 assistant 가 정보를 얻은 후 사용자에게 한 응답을 기준으로 합니다!
+  - 중요: 주문류 rubric(주문 세부 사항 포함, 주문 생성 필수) 의 경우, assistant 가 실제로 주문 작업을 완료했는지 확인해야 합니다. assistant 가 주문 작업을 완료했다고 오인했지만 실제로 도구 호출이 실패했거나, user 가 "스스로 주문할 수 있음"이라고 표시한 경우 등은 모두 요구 사항 미충족으로 간주됩니다
+  - 상품 수량, 배송 시간 등 주문 세부 사항과 관련된 rubric 의 경우, 원래 rubric 요구 사항을 엄격히 충족해야 합니다 (상품 수량 편차 불가, 희망 배송 시간보다 늦어지면 안 됨). 사용자의 양보 행동은 평가 결과에 영향을 미치지 않습니다 (예: user 가 "어떤 상품은 적어도 됨", "주문 내용에 이의 없음" 또는 "늦게 배송되어도 됨"이라고 표시한 경우 등). 이러한 경우에도 요구 사항 미충족으로 간주됩니다
+  - 텍스트 내용 매칭과 관련된 주소 또는 주문 비고류 rubric 의 경우, 기능적 동등성 원칙을 적용합니다: 실제 내용이 동일한 기능을 수행할 수만 있다면 (예: 배송地点 대략적 위치 지정 또는 고객의 주요 요구 사항 전달), 표현이 완전히 일치하지 않거나 일부 세부 사항이 부족하더라도 요구 사항 충족으로 간주됩니다
+  - 현재 윈도우에 특정 규칙이 포함되지 않은 경우, 기존 상태를 유지합니다. 현재 윈도우에 특정 규칙이 포함되었지만 완전히 결정할 수 없는 경우, 핵심 정보를 justification 에 기록하여 후속 판단을 기다릴 수 있습니다
+  - justification 에 현재 rubric 과 관련된 핵심 정보 및 해당 라운드 [x] 를 추가 형태로 기록합니다. 상태 수정이 발생한 경우 이유도 기록해야 하며, 간결한 언어를 사용합니다
+
+  # 형식 요구 사항
+  - 당신의 응답은 다음 필드를 포함하는 JSON 객체여야 합니다:
+  - `rubric_idx`: 규칙의 고유 식별자
+  - `rubric`: 규칙에 대한 재진술
+  - `justification`: 상태 변화에 대한 설명
+  - `meetExpectation`: 업데이트된 상태 (true 또는 false)
+
+  # 예시 입력 구조:
+  <window_content>xxx</window_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # 예시 응답 구조:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<규칙 재진술>",
+        "justification": "<상태 변화에 대한 간략한 설명，추가 형태로 기록>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```

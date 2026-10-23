@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "El total del carrito {base_total} es insuficiente para esta combinación de cupones (requiere al menos {total_threshold_required})",
+    "coupon_name_required": "coupon_name es requerido",
+    "quantity_positive": "la cantidad debe ser un número positivo",
+    "coupon_not_found": "Cupón no encontrado: '{coupon_name}'. Los cupones válidos son: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "Cantidad insuficiente de cupones: El usuario posee {user_coupon_count} de '{coupon_name}', el carrito ya usa {existing_cart_count}, no se pueden agregar {quantity} más",
+    "vip_coupon_required": "El cupón VIP '{coupon_name}' requiere estado VIP, pero el usuario no es VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id es requerido",
+    "quantity_positive": "la cantidad debe ser un número positivo",
+    "product_not_found": "Producto no encontrado: product_id '{product_id}'",
+    "insufficient_stock": "Stock insuficiente: Producto '{product_name}' (ID: {product_id}) tiene {stock_quantity} en stock, el carrito ya tiene {existing_quantity}, no se puede agregar {quantity} más",
+    "save_cart_failed": "Error al guardar el carrito: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "¡Los parámetros deben ser una cadena JSON válida! Error: {err}",
+    "missing_required_arg": "Falta el argumento requerido: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "Producto con ID '{product_id}' no encontrado.",
+    "shipping_origin_not_found": "Origen de envío no encontrado para el producto '{product_id}'.",
+    "cannot_determine_province": "No se pudo determinar una provincia válida desde la dirección de origen: '{address}'.",
+    "cannot_determine_destination_province": "No se pudo determinar una provincia válida desde la dirección de destino: '{address}'.",
+    "valid_province_required": "Por favor, proporcione un nombre de provincia china válido.",
+    "cannot_map_to_region": "No se pudieron asignar provincias a regiones geográficas."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name es requerido",
+    "quantity_positive": "la cantidad debe ser un número positivo",
+    "invalid_coupon_name": "Nombre de cupón no válido: '{coupon_name}'. Los cupones válidos son: {valid_coupons_str}",
+    "coupon_not_in_cart": "Cupón no en el carrito: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "Cantidad insuficiente de cupones en el carrito: El carrito tiene {cart_count} de '{coupon_name}', no se puede eliminar {quantity}",
+    "save_cart_failed": "Error al guardar el carrito: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id es requerido",
+    "quantity_positive": "la cantidad debe ser un número positivo",
+    "product_not_found": "Producto no encontrado: product_id '{product_id}'",
+    "product_not_in_cart": "Producto no en el carrito: product_id '{product_id}'",
+    "save_cart_failed": "Error al guardar el carrito: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "Algunos product_ids no se encontraron en la base de datos: {missing_ids}",
+    "invalid_coupon_names": "Nombres de cupones no válidos: {coupon_names}. Los cupones válidos son: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "Algunos product_ids no se encontraron en la base de datos: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "Algunos product_ids no se encontraron en la base de datos: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "Algunos product_ids no se encontraron en la base de datos: {missing_ids}",
+    "missing_range_params": "Faltan parámetros requeridos: condition_key, operator, o value.",
+    "condition_key_not_found": "condition_key no se puede encontrar en los datos del producto, por favor verifique nuevamente."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "Algunos product_ids no se encontraron en la base de datos: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "Usuario con user_id '{user_id}' no encontrado"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "El índice BM25 no está disponible. Verifique la carga de la base de datos."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "Falta el parámetro requerido: sort_by.",
+    "invalid_order": "Valor inválido para 'order': '{order}'. Debe ser 'asc' o 'desc'.",
+    "sort_error": "Ocurrió un error durante la ordenación en la clave '{sort_by}': {e}",
+    "sort_key_not_found": "La clave de ordenación '{sort_by}' no se puede encontrar en los datos del producto o es nula. Por favor verifique nuevamente."
+  }
+}

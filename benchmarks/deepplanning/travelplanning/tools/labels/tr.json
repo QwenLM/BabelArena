@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "Veritabanı yüklenmedi",
+    "not_found": "Çekim merkezi {name} için ayrıntılı bilgi bulunamadı",
+    "attraction_id": "Çekim Merkezi Kimliği",
+    "attraction_name": "Çekim Merkezi Adı",
+    "city": "Şehir",
+    "address": "Adres",
+    "coordinates": "Koordinatlar",
+    "latitude": "Enlem",
+    "longitude": "Boylam",
+    "description": "Açıklama",
+    "rating": "Derecelendirme",
+    "visitor_rating": "(ortalama ziyaretçi puanı)",
+    "opening_hours": "Açılış Saatleri",
+    "to": "kadar",
+    "closed_dates": "Kapalı Tarihler",
+    "min_visit_hours": "Minimum Ziyaret Süresi",
+    "max_visit_hours": "Maksimum Ziyaret Süresi",
+    "hours_unit": "saat",
+    "ticket_price": "Bilet Fiyatı",
+    "currency_unit": "RMB",
+    "attraction_type": "Çekim Türü",
+    "db_loaded": "✓ Çekim veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Çekim veritabanı {path} konumunda bulunamadı"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "Veritabanı yüklenmedi",
+    "not_found": "Hiçbir çekim önerisi bulunamadı",
+    "recommendations": "Önerilen çekimler:",
+    "attraction_suffix": "{name}, {desc}. Bu bir {atype} türü çekimdir",
+    "db_loaded": "✓ Çekim veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Çekim veritabanı {path} konumunda bulunamadı"
+  },
+  "FlightQueryTool": {
+    "segment": "Segment {idx}",
+    "remaining_seats": "Kalan Koltuklar",
+    "sufficient": "Mevcut",
+    "no_info": "Bilgi bulunamadı, lütfen giriş parametrelerini kontrol edin",
+    "not_found": "{date} tarihinde {o} ile {d} arasında uçuş bilgisi bulunamadı",
+    "db_loaded": "✓ Uçuş veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Uçuş veritabanı {path} konumunda bulunamadı"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "Veritabanı yüklenmedi",
+    "not_found": "{checkin} ile {checkout} arasında {dest} konumunda otel bilgisi bulunamadı, lütfen parametreleri kontrol edin veya kısıtlamaları azaltın",
+    "db_loaded": "✓ Otel veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Otel veritabanı {path} konumunda bulunamadı"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "Veritabanı yüklenmedi",
+    "not_found": "{place} konumu için koordinat bilgisi bulunamadı, lütfen kontrol edin: 1. Yer adının başka araç sonuçlarından gelip gelmediği; 2. Yer adının araç sonuçlarıyla tam olarak tutarlı olup olmadığı, kısaltma, yeniden adlandırma veya ek açıklama yapılmasına izin verilmez",
+    "db_loaded": "✓ Konum koordinat veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Konum koordinat veritabanı {path} konumunda bulunamadı"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "Veritabanı yüklenmedi",
+    "not_found": "Koordinatlar ({lat}, {lon}) yakınında önerilen restoran bulunamadı, lütfen koordinat kaynağını kontrol edin",
+    "db_loaded": "✓ Restoran öneri veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Restoran öneri veritabanı {path} adresinde bulunamadı"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "Veritabanı yüklenmedi",
+    "not_found": "Restoran {name} için detaylı bilgi bulunamadı",
+    "db_loaded": "✓ Restoran detayları veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Restoran detayları veritabanı {path} adresinde bulunamadı"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "Veritabanı yüklenmedi",
+    "not_found": "{origin} ile {dest} arasında ulaşım bilgisi bulunamadı",
+    "coord_not_in_range": "Koordinat {coord} sorgu aralığında değil, lütfen kontrol edin:\n1. Koordinatın geçerli araç sorgu sonucundan geldiğinden emin olun, manuel giriş veya uydurma değil;\n2. Koordinat hassasiyetinin sorgu sonucu ile tam olarak tutarlı olduğundan emin olun, 6 ondalık basamak",
+    "db_loaded": "✓ Yol güzergahı veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Yol güzergahı veritabanı {path} adresinde bulunamadı"
+  },
+  "TrainQueryTool": {
+    "segment": "Segment {idx}",
+    "remaining_seats": "Kalan Koltuklar",
+    "sufficient": "Mevcut",
+    "no_info": "Bilgi bulunamadı",
+    "not_found": "{date} tarihinde {o} ile {d} arasında tren bilgisi bulunamadı",
+    "station_sep": "İstasyon",
+    "db_loaded": "✓ Tren veritabanı yüklendi: {count} kayıtlar (yol: {path})",
+    "db_not_found": "⚠ Uyarı: Tren veritabanı {path} adresinde bulunamadı"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "Tổng giỏ hàng {base_total} không đủ cho sự kết hợp phiếu giảm giá này (yêu cầu ít nhất {total_threshold_required})",
+    "coupon_name_required": "coupon_name là bắt buộc",
+    "quantity_positive": "số lượng phải là một số dương",
+    "coupon_not_found": "Không tìm thấy phiếu giảm giá: '{coupon_name}'. Các phiếu giảm giá hợp lệ là: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "Số lượng phiếu giảm giá không đủ: Người dùng sở hữu {user_coupon_count} của '{coupon_name}', giỏ hàng đã sử dụng {existing_cart_count}, không thể thêm {quantity} nữa",
+    "vip_coupon_required": "Phiếu giảm giá VIP '{coupon_name}' yêu cầu trạng thái VIP, nhưng người dùng không phải là VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id là bắt buộc",
+    "quantity_positive": "số lượng phải là một số dương",
+    "product_not_found": "Không tìm thấy sản phẩm: product_id '{product_id}'",
+    "insufficient_stock": "Hàng không đủ: Sản phẩm '{product_name}' (ID: {product_id}) có {stock_quantity} trong kho, giỏ hàng đã có {existing_quantity}, không thể thêm {quantity} nữa",
+    "save_cart_failed": "Không thể lưu giỏ hàng: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "Tham số phải là một chuỗi JSON hợp lệ! Lỗi: {err}",
+    "missing_required_arg": "Thiếu đối số bắt buộc: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "Không tìm thấy sản phẩm với ID '{product_id}'.",
+    "shipping_origin_not_found": "Không tìm thấy nơi xuất hàng cho sản phẩm '{product_id}'.",
+    "cannot_determine_province": "Không thể xác định tỉnh hợp lệ từ địa chỉ gốc: '{address}'.",
+    "cannot_determine_destination_province": "Không thể xác định tỉnh hợp lệ từ địa chỉ đích: '{address}'.",
+    "valid_province_required": "Vui lòng cung cấp tên tỉnh hợp lệ của Trung Quốc.",
+    "cannot_map_to_region": "Không thể ánh xạ các tỉnh vào các khu vực địa lý."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name là bắt buộc",
+    "quantity_positive": "số lượng phải là một số dương",
+    "invalid_coupon_name": "Tên phiếu giảm giá không hợp lệ: '{coupon_name}'. Các phiếu giảm giá hợp lệ là: {valid_coupons_str}",
+    "coupon_not_in_cart": "Phiếu giảm giá không có trong giỏ hàng: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "Số lượng phiếu giảm giá trong giỏ hàng không đủ: Giỏ hàng có {cart_count} của '{coupon_name}', không thể xóa {quantity}",
+    "save_cart_failed": "Không thể lưu giỏ hàng: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id là bắt buộc",
+    "quantity_positive": "số lượng phải là một số dương",
+    "product_not_found": "Không tìm thấy sản phẩm: product_id '{product_id}'",
+    "product_not_in_cart": "Sản phẩm không có trong giỏ hàng: product_id '{product_id}'",
+    "save_cart_failed": "Không thể lưu giỏ hàng: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "Một số product_id không tìm thấy trong cơ sở dữ liệu: {missing_ids}",
+    "invalid_coupon_names": "Tên phiếu giảm giá không hợp lệ: {coupon_names}. Các phiếu giảm giá hợp lệ là: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "Một số product_id không tìm thấy trong cơ sở dữ liệu: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "Một số product_id không tìm thấy trong cơ sở dữ liệu: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "Một số product_id không tìm thấy trong cơ sở dữ liệu: {missing_ids}",
+    "missing_range_params": "Thiếu các tham số bắt buộc: condition_key, operator, hoặc value.",
+    "condition_key_not_found": "condition_key không thể tìm thấy trong dữ liệu sản phẩm, vui lòng kiểm tra lại."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "Một số product_id không tìm thấy trong cơ sở dữ liệu: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "Người dùng với user_id '{user_id}' không được tìm thấy"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "Chỉ số BM25 không khả dụng. Kiểm tra tải cơ sở dữ liệu."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "Thiếu tham số bắt buộc: sort_by.",
+    "invalid_order": "Giá trị không hợp lệ cho 'order': '{order}'. Phải là 'asc' hoặc 'desc'.",
+    "sort_error": "Đã xảy ra lỗi trong quá trình sắp xếp theo khóa '{sort_by}': {e}",
+    "sort_key_not_found": "Khóa sắp xếp '{sort_by}' không thể tìm thấy trong dữ liệu sản phẩm hoặc là null. Vui lòng kiểm tra lại."
+  }
+}

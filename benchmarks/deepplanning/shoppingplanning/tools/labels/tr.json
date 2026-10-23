@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "Sepet toplamı {base_total} bu kupon kombinasyonu için yetersiz (en az {total_threshold_required} gereklidir)",
+    "coupon_name_required": "coupon_name gereklidir",
+    "quantity_positive": "miktar pozitif bir sayı olmalıdır",
+    "coupon_not_found": "Kupon bulunamadı: '{coupon_name}'. Geçerli kuponlar: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "Yetersiz kupon miktarı: Kullanıcı '{coupon_name}' kuponundan {user_coupon_count} adet sahip, sepet zaten {existing_cart_count} kullanıyor, {quantity} daha eklenemez",
+    "vip_coupon_required": "VIP kuponu '{coupon_name}' VIP statüsü gerektirir, ancak kullanıcı VIP değil"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id gereklidir",
+    "quantity_positive": "miktar pozitif bir sayı olmalıdır",
+    "product_not_found": "Ürün bulunamadı: product_id '{product_id}'",
+    "insufficient_stock": "Yetersiz stok: Ürün '{product_name}' (ID: {product_id}) stokta {stock_quantity} var, sepette zaten {existing_quantity} var, {quantity} daha eklenemez",
+    "save_cart_failed": "Sepet kaydedilemedi: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "Parametreler geçerli bir JSON dizesi olmalıdır! Hata: {err}",
+    "missing_required_arg": "Gerekli argüman eksik: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID'si '{product_id}' olan ürün bulunamadı.",
+    "shipping_origin_not_found": "Ürün '{product_id}' için gönderim kaynağı bulunamadı.",
+    "cannot_determine_province": "Kaynak adresinden geçerli bir il belirlenemedi: '{address}'.",
+    "cannot_determine_destination_province": "Varış adresinden geçerli bir il belirlenemedi: '{address}'.",
+    "valid_province_required": "Lütfen geçerli bir Çin eyalet adı sağlayın.",
+    "cannot_map_to_region": "Eyaletler coğrafi bölgelere eşlenemedi."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name gereklidir",
+    "quantity_positive": "miktar pozitif bir sayı olmalıdır",
+    "invalid_coupon_name": "Geçersiz kupon adı: '{coupon_name}'. Geçerli kuponlar: {valid_coupons_str}",
+    "coupon_not_in_cart": "Kupon sepette yok: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "Sepette yetersiz kupon miktarı: Sepette {cart_count} adet '{coupon_name}' var, {quantity} kaldırılamaz",
+    "save_cart_failed": "Sepet kaydedilemedi: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id gereklidir",
+    "quantity_positive": "miktar pozitif bir sayı olmalıdır",
+    "product_not_found": "Ürün bulunamadı: product_id '{product_id}'",
+    "product_not_in_cart": "Ürün sepette yok: product_id '{product_id}'",
+    "save_cart_failed": "Sepet kaydedilemedi: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "Bazı product_id'ler veritabanında bulunamadı: {missing_ids}",
+    "invalid_coupon_names": "Geçersiz kupon adları: {coupon_names}. Geçerli kuponlar: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "Bazı product_id'ler veritabanında bulunamadı: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "Bazı product_id'ler veritabanında bulunamadı: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "Bazı product_id'ler veritabanında bulunamadı: {missing_ids}",
+    "missing_range_params": "Gerekli parametreler eksik: condition_key, operator veya value.",
+    "condition_key_not_found": "condition_key ürün verilerinde bulunamıyor, lütfen tekrar kontrol edin."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "Bazı product_id'ler veritabanında bulunamadı: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' olan kullanıcı bulunamadı"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 indeksi mevcut değil. Veritabanı yüklemesini kontrol edin."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "Gerekli parametre eksik: sort_by.",
+    "invalid_order": "'order' için geçersiz değer: '{order}'. 'asc' veya 'desc' olmalıdır.",
+    "sort_error": "'{sort_by}' anahtarında sıralama sırasında bir hata oluştu: {e}",
+    "sort_key_not_found": "Sıralama anahtarı '{sort_by}' ürün verilerinde bulunamıyor veya null. Lütfen tekrar kontrol edin."
+  }
+}

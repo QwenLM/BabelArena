@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "מסד נתונים לא נטען",
+    "not_found": "מידע מפורט לא נמצא עבור האטרקציה {name}",
+    "attraction_id": "מזהה אטרקציה",
+    "attraction_name": "שם אטרקציה",
+    "city": "עיר",
+    "address": "כתובת",
+    "coordinates": "קואורדינטות",
+    "latitude": "קו רוחב",
+    "longitude": "קו אורך",
+    "description": "תיאור",
+    "rating": "דירוג",
+    "visitor_rating": "(דירוג מבקרים ממוצע)",
+    "opening_hours": "שעות פתיחה",
+    "to": "עד",
+    "closed_dates": "תאריכים סגורים",
+    "min_visit_hours": "משך ביקור מינימלי",
+    "max_visit_hours": "משך ביקור מקסימלי",
+    "hours_unit": "שעות",
+    "ticket_price": "מחיר כרטיס",
+    "currency_unit": "RMB",
+    "attraction_type": "סוג אטרקציה",
+    "db_loaded": "✓ מסד נתונים של אטרקציות נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד נתונים של אטרקציות לא נמצא בנתיב {path}"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "מסד נתונים לא נטען",
+    "not_found": "לא נמצאו המלצות לאטרקציות",
+    "recommendations": "אטרקציות מומלצות:",
+    "attraction_suffix": "{name}, {desc}. זו אטרקציה מסוג {atype}",
+    "db_loaded": "✓ מסד נתונים של אטרקציות נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד נתונים של אטרקציות לא נמצא בנתיב {path}"
+  },
+  "FlightQueryTool": {
+    "segment": "קטע {idx}",
+    "remaining_seats": "מושבים נותרים",
+    "sufficient": "זמין",
+    "no_info": "לא נמצאה מידע, אנא בדוק את הפרמטרים שהוזנו",
+    "not_found": "לא נמצאה מידע על טיסות מ-{o} ל-{d} בתאריך {date}",
+    "db_loaded": "✓ מסד נתונים של טיסות נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד נתונים של טיסות לא נמצא בנתיב {path}"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "מסד נתונים לא נטען",
+    "not_found": "לא נמצאה מידע על מלונות ב-{dest} מ-{checkin} עד {checkout}, אנא בדוק את הפרמטרים או הפחת את המגבלות",
+    "db_loaded": "✓ מסד נתונים של מלונות נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד נתונים של מלונות לא נמצא בנתיב {path}"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "מסד נתונים לא נטען",
+    "not_found": "לא נמצאה מידע על קואורדינטות למיקום {place}, אנא בדוק: 1. האם שם המקום מגיע מתוצאות כלי אחרות; 2. האם שם המקום תואם בדיוק לתוצאות הכלי, אין לאפשר קיצורים, שינויי שם או תיאור נוסף",
+    "db_loaded": "✓ מסד נתונים של קואורדינטות מיקום נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד נתונים של קואורדינטות מיקום לא נמצא בנתיב {path}"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "מסד נתונים לא נטען",
+    "not_found": "לא נמצאו מסעדות מומלצות ליד קואורדינטות ({lat}, {lon}), אנא בדוק את מקור הקואורדינטות",
+    "db_loaded": "✓ מסד הנתונים של המלצות המסעדות נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד הנתונים של המלצות המסעדות לא נמצא ב-{path}"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "מסד נתונים לא נטען",
+    "not_found": "מידע מפורט לא נמצא עבור המסעדה {name}",
+    "db_loaded": "✓ מסד הנתונים של פרטי המסעדות נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד הנתונים של פרטי המסעדות לא נמצא ב-{path}"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "מסד נתונים לא נטען",
+    "not_found": "לא נמצא מידע על תחבורה מ-{origin} ל-{dest}",
+    "coord_not_in_range": "הקואורדינטה {coord} אינה בטווח השאילתה, אנא בדוק:\n1. האם הקואורדינטה מגיעה מתוצאת שאילתה של כלי תקף, ולא מהזנה ידנית או יצירה;\n2. האם דיוק הקואורדינטה תואם בדיוק לתוצאת השאילתה, 6 מקומות עשרוניים",
+    "db_loaded": "✓ מסד הנתונים של מסלולי הכבישים נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד הנתונים של מסלולי הכבישים לא נמצא ב-{path}"
+  },
+  "TrainQueryTool": {
+    "segment": "קטע {idx}",
+    "remaining_seats": "מושבים נותרים",
+    "sufficient": "זמין",
+    "no_info": "לא נמצא מידע",
+    "not_found": "לא נמצא מידע על רכבות מ-{o} ל-{d} בתאריך {date}",
+    "station_sep": "תחנה",
+    "db_loaded": "✓ מסד הנתונים של רכבות נטען: {count} רשומות (נתיב: {path})",
+    "db_not_found": "⚠ אזהרה: מסד הנתונים של רכבות לא נמצא ב-{path}"
+  }
+}

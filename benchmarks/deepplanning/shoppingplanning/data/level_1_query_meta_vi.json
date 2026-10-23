@@ -1,0 +1,202 @@
+[
+  {
+    "id": "1",
+    "query": "Tôi đang xây dựng một bộ sưu tập giày dép hoàn chỉnh và cần đặt mua một số sản phẩm cụ thể trực tuyến. Trước tiên, tôi đang tìm một sản phẩm màu cam từ Nike có mức độ hài lòng của khách hàng cao - sản phẩm này phải có ít hơn 10 đánh giá 1 sao và hơn 300 đánh giá 4 sao để đảm bảo chất lượng. Tiếp theo, tôi cần Giày Thể Thao Puma RS-X Reinvention Classic Trắng Nam từ Puma, và vì tôi cần gấp nên thời gian vận chuyển phải dưới 2 ngày. Sản phẩm này phải có hơn 3000 lượt đánh giá tổng cộng nhưng ít hơn 30 đánh giá 2 sao để xác nhận là được đón nhận tốt. Tôi cũng cần một sản phẩm dùng được cho mọi mùa có thể giao trong vòng 1 ngày và có ít hơn 30 đánh giá 2 sao để đảm bảo độ tin cậy. Ngoài ra, tôi đặc biệt tìm kiếm Giày Trail Nam Aerios FL 2 GTX màu vàng kim, phải có hơn 200 đánh giá 5 sao và ít hơn 5 đánh giá 1 sao để đảm bảo chất lượng xuất sắc. Cuối cùng, tôi cần một sản phẩm mùa hè từ Vans được đánh giá cao với hơn 250 đánh giá 5 sao và ít hơn 5 đánh giá 1 sao."
+  },
+  {
+    "id": "2",
+    "query": "Tôi đang chuẩn bị đầy đủ trang thiết bị cho chuyến đi dã ngoại sắp tới. Đầu tiên, tôi đang tìm một sản phẩm rất cụ thể: 'Áo Chui Đầu Nam Atom LT Giữ Nhiệt Cổ Tròn' từ Arc'teryx trong Xanh hải quân. Tôi chỉ quan tâm nếu sản phẩm được đánh giá cao, với điểm trung bình trên 4.5, hơn 50 xếp hạng 4 sao và ít hơn 5 xếp hạng 1 sao. Tiếp theo, tôi cần một sản phẩm từ New Balance cỡ 43 có ít hơn 10 đánh giá 1 sao. Tôi cũng cần một chiếc quần Tất cả các mùa có cụm từ 'Trekking Pants' trong tên, cỡ XL. Vì tôi cần gấp nên thời gian vận chuyển phải dưới 2 ngày và sản phẩm phải có ít hơn 20 xếp hạng 3 sao. Cuối cùng, tôi đang tìm thêm một sản phẩm nam cỡ XL còn nhiều hàng với số lượng lớn hơn 180 và có hơn 40 xếp hạng 4 sao."
+  },
+  {
+    "id": "3",
+    "query": "Tôi đang chuẩn bị tủ quần áo cho thời tiết lạnh và có một vài thứ cụ thể tôi cần mua. Đầu tiên, tôi đang tìm kiếm một số High-Top Canvas Shoes màu cam từ Converse phù hợp cho mùa đông. Tôi đang chọn lọc, vì vậy chúng phải có hơn 100 đánh giá bốn sao và ít hơn 10 đánh giá hai sao. Tôi cũng cần một mặt hàng màu vàng từ Arc'teryx có thể đến nhanh chóng, với thời gian vận chuyển dưới 2 ngày và hơn 600 đánh giá tổng cộng. Để đi cùng với đó, tôi đang tìm kiếm một sản phẩm từ thương hiệu Bosideng màu burgundy, kích thước XXL, với điểm trung bình trên 4.5 và cũng có thời gian vận chuyển dưới 2 ngày. Tôi cũng muốn một sản phẩm mùa đông màu trắng phổ biến với hơn 300 đánh giá năm sao. Cuối cùng, tôi cần tìm một sản phẩm màu bạc kích thước 45 từ Levi's."
+  },
+  {
+    "id": "4",
+    "query": "Tôi đang thực hiện một bản cập nhật lớn cho tủ quần áo cho mọi mùa và có một vài thứ cụ thể tôi cần tìm. Đầu tiên, cho mùa hè, tôi đang tìm kiếm một 'Active Performance Tank Top' màu hồng từ Puma với điểm trung bình lớn hơn 4.5. Cho thời tiết chuyển mùa Xuân/Thu, tôi cần một sản phẩm nữ màu xám nhạt có 'Cloudfoam Stride' trong tên và được đánh giá tốt, cụ thể là với hơn 130 đánh giá bốn sao và hơn 15 đánh giá ba sao. Tôi cũng cần tìm một sản phẩm màu camel phổ biến từ Bosideng với doanh số hàng tháng hơn 550, và vì tôi cần nó gấp, thời gian vận chuyển phải dưới 2 ngày. Cho đôi chân của tôi, tôi đang tìm kiếm một 'Sunbeam Strider' kích thước 43 từ Li-Ning với điểm trung bình trên 4.5 và ít hơn 10 đánh giá một sao. Cuối cùng, tôi chỉ cần một sản phẩm mùa hè đơn giản từ Converse kích thước XXL."
+  },
+  {
+    "id": "5",
+    "query": "Tôi đang chuẩn bị cho một chuyến đi mùa đông và cần đặt hàng một số thứ nhanh chóng. Đầu tiên, tôi đang tìm kiếm một đôi Arc'teryx Insulated Softshell Pants phù hợp cho mùa đông được đánh giá cao, với hơn 350 đánh giá năm sao. Để đi cùng với chúng, tôi cần một mặt hàng màu xanh lá cây đậm kích thước XL có điểm trung bình lớn hơn 4.5 từ hơn 600 đánh giá tổng cộng và có thể đến với thời gian vận chuyển dưới 3 ngày. Tôi cũng muốn một mặt hàng màu vàng, cũng kích thước XL, với ít hơn 10 đánh giá một sao và thời gian vận chuyển dưới 3. Cuối cùng, tôi cần một sản phẩm được đánh giá tốt với hơn 100 đánh giá bốn sao, hơn 25 đánh giá ba sao, nhưng ít hơn 10 đánh giá một sao. Quan trọng là, nó cũng phải có thời gian vận chuyển dưới 3 để mọi thứ đến trước khi tôi đi."
+  },
+  {
+    "id": "6",
+    "query": "Tôi đang thực hiện một đợt mua sắm trực tuyến lớn để làm mới tủ quần áo của mình. Đầu tiên, tôi đang tìm một sản phẩm nữ cỡ M có 'Omni-Wick' trong tên và đã có uy tín, vì vậy nó phải có hơn 1800 lượt đánh giá tổng cộng. Tiếp theo, tôi muốn một sản phẩm từ Puma trong Đỏ rượu, và tôi khá kỹ tính về chất lượng, nên nó cần có hơn 200 đánh giá 4 sao, ít hơn 20 đánh giá 2 sao và ít hơn 15 đánh giá 1 sao. Tôi cũng cần một sản phẩm nữ từ Salomon với số lượng tồn kho trên 250 và hơn 400 xếp hạng 5 sao, và vì tôi đang vội nên thời gian vận chuyển phải dưới 2 ngày. Về giày dép, tôi đang tìm kiếm Màu be 'Canvas Slip-on Shoes' cỡ 37 với hơn 400 lượt đánh giá tổng cộng và ít hơn 10 xếp hạng 2 sao. Cuối cùng, tôi đang tìm một sản phẩm phổ biến từ Vans có 'Classic Canvas Slip-On' trong tên; sản phẩm này phải có doanh số bán hàng tháng trên 500, hơn 900 lượt đánh giá tổng cộng và thời gian vận chuyển dưới 2 ngày."
+  },
+  {
+    "id": "7",
+    "query": "Tôi đang thực hiện một cuộc làm mới lớn cho tủ quần áo và cần tìm một vài thứ cụ thể trực tuyến. Đầu tiên, tôi đang tìm kiếm một mặt hàng màu đen từ Under Armour có 'HOVR Phantom' trong tên; tôi muốn đảm bảo nó phổ biến, vì vậy nó cần hơn 400 đánh giá tổng cộng nhưng ít hơn 10 đánh giá hai sao. Để đi cùng với nó, tôi cần một 'Ruffled Short-Sleeve Top' màu trắng sẽ đến trong vòng chưa đầy 3 ngày, có hơn 300 đánh giá tổng cộng và ít hơn 5 đánh giá hai sao. Tiếp theo, tôi đang tìm kiếm một sản phẩm từ Levi's đang bán chạy, với doanh số hàng tháng hơn 200, và có rất ít đánh giá xấu—cụ thể là ít hơn 10 đánh giá một sao và ít hơn 15 đánh giá hai sao, và thời gian vận chuyển dưới 2. Tôi cũng cần một mặt hàng màu xám phổ biến với doanh số tổng cộng hơn 4500 có thể cũng được vận chuyển trong vòng chưa đầy 2. Cuối cùng, tôi đang tìm kiếm một sản phẩm màu xanh ô liu từ Timberland chắc chắn có hàng với số lượng hơn 100 và doanh số tổng cộng hơn 1900."
+  },
+  {
+    "id": "8",
+    "query": "Tôi đang tập hợp tất cả trang thiết bị cho các hoạt động mùa xuân sắp tới và cần đặt mua nhanh một vài thứ. Đầu tiên, tôi đang tìm một sản phẩm Puma phổ biến cỡ M. Sản phẩm phải giao nhanh, nên thời gian vận chuyển phải dưới 2. Để đảm bảo còn hàng và được ưa chuộng, sản phẩm cần có số lượng tồn kho trên 350 và hơn 800 lượt đánh giá tổng cộng. Nói về Puma, tôi cũng muốn mua cụ thể 'Giày thể thao kim loại Puma Cali Dream' trong Bạc. Nó phải có số lượng tồn kho lớn hơn 250 và hơn 1200 lượt đánh giá tổng cộng. Cho những chuyến đi địa hình gồ ghề hơn, tôi cần một sản phẩm bán chạy nhất từ Salomon dành cho nữ, cỡ M và màu Đen, với tổng doanh số bán hàng trên 15,000. Cuối cùng, tôi cần một sản phẩm từ Columbia cho mùa Xuân/Thu cũng có thời gian vận chuyển dưới 2 và hơn 50 xếp hạng 3 sao."
+  },
+  {
+    "id": "9",
+    "query": "Tôi đang làm mới tủ quần áo và cần một vài sản phẩm cụ thể. Đầu tiên, tôi đang tìm một sản phẩm mùa hè phổ biến trong Màu kaki, cỡ M. Để đảm bảo đó là sản phẩm thịnh hành, nó phải có doanh số bán hàng tháng hơn 1500 và tôi cần nó được giao trong vòng chưa đầy 5 ngày. Tiếp theo, tôi muốn một vài món từ thương hiệu Anta. Tôi cần một sản phẩm được đánh giá cao từ họ phù hợp cho Xuân/Thu, với điểm trung bình lớn hơn 4.5. Tôi cũng cần một sản phẩm dùng được cho mọi mùa từ Anta màu đen. Món này khẩn cấp hơn nên thời gian vận chuyển phải dưới 2 ngày và nó phải có hơn 950 lượt đánh giá tổng cộng để tôi biết đó là một lựa chọn chắc chắn."
+  },
+  {
+    "id": "10",
+    "query": "Tôi có một sự kiện đột xuất cần tham dự và cần nhận nhanh một vài món đồ. Đầu tiên, tôi đang tìm một sản phẩm từ Zara trong Xanh hải quân có thời gian vận chuyển dưới 2. Tiếp theo, tôi cần một sản phẩm từ thương hiệu Bosideng phù hợp với thời tiết Xuân/Thu. Để đảm bảo đó là lựa chọn phổ biến, tôi muốn nó có doanh số bán hàng tháng hơn 1800 và trên 550 xếp hạng 4 sao, đồng thời thời gian vận chuyển cũng phải dưới 2 ngày. Trong khi xem xét thương hiệu đó, tôi cũng đang tìm kiếm một sản phẩm Bosideng khác được đánh giá cao với hơn 700 xếp hạng 5 sao, trên 100 xếp hạng 4 sao và hơn 850 lượt đánh giá tổng cộng, và cũng phải có thời gian vận chuyển dưới 2."
+  },
+  {
+    "id": "11",
+    "query": "Tôi đang cập nhật tủ quần áo tập luyện và cần mua một vài món cụ thể. Đầu tiên, tôi đang tìm một sản phẩm rất phổ biến cỡ 43 và Cam; nó phải là sản phẩm bán chạy với doanh số bán hàng tháng trên 850 và hơn 12,000 tổng doanh số. Tiếp theo, tôi cần một chiếc 'Pima Vải cotton Polo' nam trong Xám nhạt, cỡ L. Vì tôi cần gấp nên thời gian vận chuyển phải dưới 2 ngày và được đánh giá tốt, với hơn 1800 lượt đánh giá tổng cộng. Tôi cũng đang mua một chiếc 'Áo tập luyện thể thao Air-Flow Nam' màu đỏ từ Li-Ning, đảm bảo còn hàng với số lượng trên 400 và có ít hơn 10 đánh giá 1 sao. Cuối cùng, tôi đang tìm một chiếc 'Áo Tập Luyện Họa Tiết National Pride Nam' màu trắng cũng có thể giao trong vòng dưới 2 ngày, có hơn 3000 lượt đánh giá tổng cộng và ít hơn 100 xếp hạng 3 sao."
+  },
+  {
+    "id": "12",
+    "query": "Tôi có một sự kiện đột xuất vào cuối tuần này và cần chuẩn bị nhanh một bộ trang phục. Đầu tiên, tôi đang tìm một sản phẩm được đánh giá cao có thể giao trong vòng dưới 2 ngày. Để đảm bảo chất lượng, nó phải có hơn 1800 lượt đánh giá tổng cộng, với trên 250 đánh giá 4 sao, nhưng ít hơn 50 đánh giá 3 sao và dưới 10 đánh giá 1 sao. Đi kèm với đó, tôi cần một sản phẩm rất cụ thể trong Xanh ô liu, cỡ 38. Vì không thể thử trực tiếp, tôi muốn một sản phẩm phổ biến với tổng doanh số bán hàng trên 4500, hơn 1800 lượt đánh giá tổng cộng và ít nhất 300 đánh giá 4 sao. Cuối cùng, tôi đang tìm một sản phẩm phổ biến từ thương hiệu Converse có điểm trung bình lớn hơn 4.5, doanh số bán hàng tháng trên 800 và ít hơn 10 đánh giá 1 sao."
+  },
+  {
+    "id": "13",
+    "query": "Tôi đang thực hiện một cuộc mua sắm trực tuyến khẩn cấp cho bản thân và cần một vài thứ được giao nhanh chóng. Đầu tiên, tôi đang tìm kiếm một sản phẩm từ 'Trefoil Series' với điểm trung bình lớn hơn 4.5. Nó phải có hàng với số lượng hơn 800, và quan trọng là, thời gian vận chuyển phải dưới 2. Tiếp theo, cho mùa đông, tôi cần một mặt hàng màu beige phổ biến từ Under Armour kích thước 42 có doanh số tổng cộng hơn 2400. Tôi cũng cần một mặt hàng nam từ thương hiệu Salomon được đánh giá cao, với ít hơn 5 đánh giá hai sao và thời gian vận chuyển dưới 2. Cuối cùng, tôi đang tìm kiếm một mặt hàng nam khác kích thước 42, lần này từ Vans, cũng cần có thời gian vận chuyển dưới 2."
+  },
+  {
+    "id": "14",
+    "query": "Tôi đang chuẩn bị cho một sự kiện và cần phối đồ nhanh, vì vậy mọi thứ phải có thời gian vận chuyển dưới 2 ngày. Đầu tiên, tôi đang tìm một sản phẩm được đánh giá tốt nói chung với điểm trung bình trên 4.5 và hơn 400 đánh giá 5 sao. Cho bộ trang phục của mình, tôi muốn một đôi 'Classic Slip-On Canvas Shoes' cụ thể dành cho nữ từ thương hiệu Vans; chúng cần phải phổ biến, với doanh số bán hàng tháng lớn hơn 1200. Đi kèm với chúng, tôi cần 'Quần nỉ Tiro Winterized nữ', đảm bảo chất lượng hàng đầu với hơn 1300 đánh giá 5 sao và ít hơn 15 đánh giá 2 sao. Tôi cũng cần một chiếc 'Ribbed Tank Top' cho nữ có hơn 250 xếp hạng 5 sao và còn hàng với số lượng hơn 150. Cuối cùng, tôi đang tìm kiếm một sản phẩm màu nâu dành cho nữ từ Adidas có hơn 600 xếp hạng 5 sao."
+  },
+  {
+    "id": "15",
+    "query": "Tôi đang thực hiện một cuộc mua sắm trực tuyến để cập nhật đồ đạc và tủ quần áo của mình. Đầu tiên, tôi cần tìm một mặt hàng phổ biến và tôi cần nó nhanh chóng, vì vậy tôi đang tìm kiếm một thứ có thời gian vận chuyển dưới 2, doanh số tổng cộng lớn hơn 3200, và hơn 150 đánh giá tổng cộng. Tiếp theo, tôi đang tìm kiếm một sản phẩm nam rất cụ thể từ Nike có 'Air Zoom Pegasus 41' trong tên; nó là một sản phẩm bán chạy lớn, vì vậy nó phải có doanh số tổng cộng hơn 45000. Cuối cùng, tôi đang cố gắng tìm một mặt hàng được đánh giá tốt từ Levi's kích thước L, vì vậy tôi muốn xem các tùy chọn có hơn 2500 đánh giá năm sao và hơn 400 đánh giá bốn sao."
+  },
+  {
+    "id": "16",
+    "query": "Tôi đang chuẩn bị một số đồ đạc cho chuyến đi sắp tới với các hoạt động đa dạng, và tôi cần mọi thứ đến nhanh chóng. Đầu tiên, tôi đang tìm kiếm một sản phẩm cho mọi mùa từ thương hiệu Salomon được yêu thích, vì vậy nó phải có hơn 800 đánh giá năm sao và thời gian vận chuyển dưới 2. Tôi cũng cần một thứ màu xanh lá cây đậm; để đảm bảo nó có sẵn, nó cần số lượng hàng tồn kho hơn 150 và thời gian vận chuyển dưới 3. Cho phần đi bộ đường dài, tôi đang tìm kiếm một số 'Trail Shoes' từ Patagonia phù hợp cho mùa Xuân/Thu với hơn 700 đánh giá năm sao. Cuối cùng, cho thời tiết ấm hơn, tôi cần một số 'Chino Shorts' cho mùa hè. Tôi đang chọn lọc về chất lượng, vì vậy chúng phải có ít hơn 15 đánh giá ba sao và thời gian vận chuyển dưới 2 ngày."
+  },
+  {
+    "id": "17",
+    "query": "Tôi đang phối một bộ đồ thể thao mới và cần một vài món cụ thể. Đầu tiên, tôi đang tìm một chiếc 'Crewneck Top' có thể giao nhanh, vì vậy thời gian vận chuyển phải dưới 2 ngày. Nó cần được đánh giá tốt, với điểm trung bình trên 4.5, hơn 40 đánh giá 4 sao và ít hơn 15 đánh giá 3 sao. Để bổ sung cho món đó, tôi muốn một sản phẩm rất phổ biến dành cho nữ từ thương hiệu Ralph Lauren. Cụ thể, nó phải là Hồng, cỡ L và có hơn 1000 xếp hạng 5 sao. Cuối cùng, để hoàn thiện bộ đồ, tôi cần một chiếc 'Performance Tights' từ Puma cỡ L. Tôi đang tìm kiếm chất lượng, vì vậy chúng phải có điểm trung bình lớn hơn 4.5 và hơn 150 xếp hạng 4 sao."
+  },
+  {
+    "id": "18",
+    "query": "Tôi đang cập nhật tủ quần áo mùa đông và cần đặt mua một vài thứ trực tuyến. Đầu tiên, tôi đang tìm một chiếc Fleece Hoodie màu Màu lạc đà. Nó phải được đánh giá cao, với điểm trung bình trên 4.5 và ít hơn 20 đánh giá 2 sao. Vì tôi cần gấp nên thời gian vận chuyển phải dưới 2 ngày. Đi kèm với đó, tôi cần một chiếc quần Mùa đông từ thương hiệu Converse cỡ L, và chúng cũng cần giao nhanh, vì vậy thời gian vận chuyển phải dưới 3 ngày. Cuối cùng, tôi đang tìm kiếm một sản phẩm Màu kaki phổ biến từ Zara. Tôi muốn chắc chắn rằng đó là sản phẩm được yêu thích, vì vậy nó cần có tổng doanh số bán hàng trên 6500, điểm trung bình trên 4.5 và hơn 350 đánh giá 5 sao."
+  },
+  {
+    "id": "19",
+    "query": "Tôi đang đại tu tủ quần áo trực tuyến và có một danh sách rất cụ thể. Đầu tiên, tôi cần một sản phẩm màu bạc phổ biến dành cho nam từ Nike có tổng doanh số bán hàng trên 18,000. Tiếp theo, cho các mùa chuyển tiếp, tôi đang tìm một sản phẩm xanh hải quân dành cho xuân/thu từ Under Armour, và nó phải có ít hơn 20 đánh giá 1 sao. Đi kèm với đó, tôi cần một chiếc 'Casual Trousers' màu xám được yêu thích, với doanh số bán hàng trên 11,000, hơn 1,800 xếp hạng 5 sao và ít hơn 15 đánh giá 1 sao cùng 20 đánh giá 2 sao. Tôi cũng cần một sản phẩm được đánh giá cao từ Uniqlo có thể giao nhanh, với thời gian vận chuyển dưới 2 ngày, điểm trung bình trên 4.5 và hơn 6,800 đánh giá 5 sao. Cuối cùng, tôi đang tìm kiếm một đôi 'Suede Mùa đông Ankle Boots' màu nâu từ Zara, cũng phải có thời gian vận chuyển dưới 2 ngày."
+  },
+  {
+    "id": "20",
+    "query": "Tôi đang chuẩn bị cho một chuyến đi phút chót và cần đặt hàng một số thứ cho bản thân, tất cả đều có thời gian giao hàng rất nhanh. Đầu tiên, tôi cần một mặt hàng nam từ Ralph Lauren có thời gian vận chuyển dưới 2 ngày; nó phải phổ biến, với hơn 1200 đánh giá tổng cộng và hơn 1000 đánh giá năm sao. Tiếp theo, tôi cần một sản phẩm mùa hè cho nam từ Salomon có 'Agile Tech' trong tên và thời gian vận chuyển dưới 2 ngày. Tôi cũng đang tìm kiếm một mặt hàng kích thước L có 'Canyonwall' trong tên, đảm bảo nó có hơn 150 đánh giá bốn sao và ít hơn 10 đánh giá một sao. Để đi cùng với đó, tôi cần một thứ màu xanh với doanh số hàng tháng hơn 800, số lượng hàng tồn kho lớn hơn 200, và ít hơn 20 đánh giá hai sao. Sau đó, một sản phẩm Timberland được đánh giá cao với doanh số tổng cộng hơn 1800, ít hơn 10 đánh giá một sao và hai sao mỗi loại, và thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi cần một mặt hàng nam khác với số lượng hàng tồn kho hơn 200 và ít hơn 5 đánh giá hai sao."
+  },
+  {
+    "id": "21",
+    "query": "Tôi đang mua một số quần áo cho chuyến đi sắp tới và cần đặt tất cả cùng lúc. Đầu tiên, tôi đang tìm một chiếc 'Flowy Trousers' từ thương hiệu Zara phổ biến và được yêu thích, vì vậy chúng cần có doanh số bán hàng tháng trên 850, điểm trung bình trên 4.5 và ít hơn 15 đánh giá 1 sao. Sau đó, vì trời có thể trở lạnh, tôi cần một sản phẩm mùa đông từ Bosideng cỡ M với hơn 150 đánh giá 4 sao và ít hơn 10 đánh giá 1 sao. Tôi cũng cần một sản phẩm từ Arc'teryx có ít hơn 5 đánh giá 1 sao và thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi đang tìm một chiếc 'Thermal Cổ lọ' nữ rất phổ biến, với hơn 950 lượt đánh giá tổng cộng và cũng phải giao nhanh với thời gian vận chuyển dưới 2 ngày."
+  },
+  {
+    "id": "22",
+    "query": "Tôi đang mua đồ cho một chuyến đi gấp, vì vậy tôi cần mọi thứ có thời gian vận chuyển dưới 2 ngày. Đầu tiên, tôi cần một số 'Thermal Padded Trousers' và tôi đang tìm một cặp có ít hơn 15 đánh giá hai sao và ít hơn 40 đánh giá ba sao. Để đi kèm với chúng, tôi cần một số 'Leather Boots' cho phụ nữ từ Levi's. Để xếp lớp, tôi đang tìm một 'Canyonlands Half-Zip' phù hợp cho mùa Xuân/Thu mà được yêu thích, với hơn 550 đánh giá tổng cộng và hơn 450 đánh giá năm sao. Tôi cũng cần một món đồ màu xanh từ Patagonia cỡ 40 có ít hơn 10 đánh giá một sao. Cuối cùng, tôi đang mua hai món từ Bosideng: một 'Lurex Long-Sleeve Top' cỡ L với điểm trung bình trên 4.5 và hơn 1000 đánh giá tổng cộng, và một món màu be khác từ họ cũng có điểm trung bình lớn hơn 4.5."
+  },
+  {
+    "id": "23",
+    "query": "Tôi đang đại tu tủ quần áo và cần mua một vài thứ cho mọi mùa. Đầu tiên, cho mùa hè, tôi đang tìm một sản phẩm phổ biến từ Levi's có số lượng tồn kho lớn hơn 200 và tổng doanh số bán hàng hơn 5000. Tiếp theo, cho những tháng lạnh hơn, tôi cần một chiếc quần Lông vũ màu đen phù hợp cho mùa đông; chúng phải là lựa chọn phổ biến với tổng doanh số bán hàng trên 3500. Để hoàn thiện, tôi đang tìm kiếm một sản phẩm đa năng dùng được cho mọi mùa. Nó phải được đánh giá cao, với điểm trung bình trên 4.5 và hơn 3000 lượt đánh giá tổng cộng. Vì tôi cần gấp nên thời gian vận chuyển phải dưới 2 ngày và nó phải có số lượng tồn kho hơn 800."
+  },
+  {
+    "id": "24",
+    "query": "Tôi đang thực hiện một phiên mua sắm trực tuyến lớn để mua đồ cho cả năm. Đầu tiên, tôi đang tìm một món đồ từ Arc'teryx cỡ 43; để đảm bảo các đánh giá cân bằng, nó phải có hơn 5 đánh giá ba sao. Tiếp theo, tôi cần một món đồ phổ biến từ Columbia mà giao hàng nhanh, với thời gian vận chuyển dưới 2 ngày, hơn 1800 trong tổng doanh số bán hàng, và hơn 10 đánh giá ba sao. Cho mùa lạnh sắp tới, tôi cần một sản phẩm mùa đông với doanh số bán hàng cao hơn 8500 và hơn 200 đánh giá bốn sao. Cho mùa hè, tôi muốn một món đồ từ Puma cũng giao hàng trong dưới 2 ngày, với hơn 1500 đánh giá tổng cộng nhưng ít hơn 25 đánh giá hai sao. Tôi cũng đang tìm kiếm một món đồ Adidas màu xanh navy cụ thể có '3-Stripes Track Top' trong tên; nó phải có hơn 3000 đánh giá tổng cộng và ít hơn 15 đánh giá một sao. Cuối cùng, tôi sẽ mua một sản phẩm New Balance với đánh giá xuất sắc: hơn 150 đánh giá năm sao và ít hơn 5 đánh giá hai sao."
+  },
+  {
+    "id": "25",
+    "query": "Tôi đang phối một vài bộ trang phục mới và cần tìm một số món cụ thể. Đầu tiên, tôi đang tìm một chiếc 'Long-Sleeve Training Top' màu đen phù hợp cho mọi mùa; để đảm bảo nó được đánh giá cao, nó phải có hơn 200 đánh giá bốn sao. Để kết hợp với đó, tôi cần một số 'Utility Cargo Pants' màu kaki từ thương hiệu Vans mà được ưa chuộng, vì vậy chúng nên có doanh số bán hàng hàng tháng hơn 500. Trong khi tôi đang ở đó, tôi muốn một món đồ khác từ Vans cho mùa xuân/thu. Nó phải là một sản phẩm bán chạy, với tổng doanh số bán hàng trên 12,000, hơn 1,000 đánh giá tổng cộng, và ít hơn 10 đánh giá một sao. Cuối cùng, tôi cần gấp một món đồ màu xanh nhạt. Nó phải có thời gian vận chuyển dưới 3 ngày, số lượng hàng tồn kho lớn hơn 200, và ít hơn 15 đánh giá hai sao."
+  },
+  {
+    "id": "26",
+    "query": "Tôi đang thực hiện một đợt cập nhật tủ quần áo lớn trong năm. Đầu tiên, cho mùa đông, tôi đang tìm một chiếc ‘Sherpa Lined Hoodie’ cụ thể trong Đỏ rượu, cỡ XL. Nó cần có hơn 150 đánh giá 4 sao và thời gian vận chuyển dưới 2. Cho mùa hè, tôi cũng đang mua một sản phẩm nữ có 'Cổ chữ V' trong tên với thời gian vận chuyển dưới 5 ngày. Về giày dép, tôi cần một sản phẩm từ Puma cỡ '39' và Đen, với ít hơn 5 đánh giá 1 sao. Tôi cũng đang mua một sản phẩm màu đen phổ biến dành cho nữ từ The North Face có doanh số bán hàng tháng trên 400 và hơn 100 đánh giá 4 sao. Cuối cùng, tôi đang tìm một sản phẩm chất lượng cao cỡ XL từ Columbia có điểm trung bình lớn hơn 4.5 và ít hơn 50 đánh giá 3 sao."
+  },
+  {
+    "id": "27",
+    "query": "Tôi đang mua sắm trực tuyến gấp cho một chuyến đi sắp tới và cần mọi thứ đến nhanh chóng. Đầu tiên, tôi đang tìm một món đồ màu camel phù hợp cho mùa Xuân/Thu với điểm trung bình trên 4.5 và thời gian vận chuyển dưới 5 ngày. Tiếp theo, tôi cần một sản phẩm màu xám nhạt rất cụ thể có 'HOVR Phantom 3' trong tên. Nó phải có sẵn với số lượng trên 150, có ít hơn 5 đánh giá hai sao, và đến trong dưới 2 ngày. Tôi cũng muốn một món đồ màu hồng phổ biến với doanh số bán hàng hàng tháng trên 800 và hơn 100 đánh giá bốn sao, được giao trong vòng 5 ngày. Từ The North Face, tôi cần một sản phẩm màu xanh ô liu mà bán chạy—trên 700 hàng tháng—có hơn 100 đánh giá bốn sao, và có thể đến đây trong dưới 2 ngày. Từ New Balance, tôi đang tìm một món đồ cỡ M với hơn 800 trong kho, cũng với thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi cần một món đồ màu nâu với tổng doanh số bán hàng trên 9000, hơn 850 đánh giá tổng cộng nhưng ít hơn 30 đánh giá ba sao, đến trong vòng 5 ngày."
+  },
+  {
+    "id": "28",
+    "query": "Tôi đang làm mới tủ quần áo và cần giao nhanh một vài món cụ thể. Đầu tiên, tôi đang tìm một sản phẩm dùng được cho mọi mùa trong Xanh ô liu, cỡ M, có thể vận chuyển trong vòng dưới 2 ngày và có hơn 550 xếp hạng 5 sao. Tiếp theo, tôi cần một sản phẩm nữ phù hợp cho mùa Xuân/Thu và được đánh giá tốt, vì vậy nó phải có hơn 300 lượt đánh giá tổng cộng và trên 80 xếp hạng 4 sao. Tôi cũng đang tìm kiếm một sản phẩm rất cụ thể từ Arc'teryx có 'Aerios FL 2' trong tên, cỡ 37 và có điểm đánh giá trung bình lớn hơn 4.5. Ngoài ra, tôi muốn tìm một đôi 'Platform Sneakers' có điểm trung bình trên 4.5, hơn 70 đánh giá 4 sao và thời gian vận chuyển dưới 3 ngày. Cuối cùng, tôi đang tìm một chiếc 'Vertex Trail Shoe' màu tím cỡ 37 có thể giao trong vòng dưới 2 ngày."
+  },
+  {
+    "id": "29",
+    "query": "Tôi đang tân trang lại bộ sưu tập giày dép cho cả năm và có một số món cụ thể cần mua. Đầu tiên, tôi đang tìm Giày Chạy Bộ Urban Pulse Nam từ Adidas, phù hợp cho mọi mùa. Vì tôi muốn một sản phẩm phổ biến và được đánh giá tốt, nó phải có hơn 1600 đánh giá 5 sao và ít hơn 100 đánh giá 3 sao, cộng với thời gian vận chuyển dưới 2. Tiếp theo, cho thời tiết chuyển mùa, tôi cần một sản phẩm từ Timberland phù hợp cho Xuân/Thu và có tên chứa 'Chukka Boot'; nó phải có hơn 800 lượt đánh giá tổng cộng. Cuối cùng, cho những tháng lạnh hơn, tôi đang tìm kiếm một sản phẩm nam có 'Mùa đông Hiking Boots' trong tên. Tôi cần nó cỡ 41, với số lượng tồn kho hơn 100 và thời gian vận chuyển dưới 5."
+  },
+  {
+    "id": "30",
+    "query": "Tôi đang chuẩn bị cho một chuyến đi leo núi phút chót và cần đặt mua một số trang thiết bị. Đầu tiên, tôi cần một đôi Waterproof Trail Hiking Shoes trong Xanh ô liu, cỡ 38. Vì tôi cần chúng đáng tin cậy, tôi đang tìm một đôi có điểm đánh giá trung bình trên 4.5 và ít hơn 5 đánh giá 1 sao. Chuyến đi của tôi diễn ra rất sớm nên thời gian vận chuyển phải dưới 2. Tiếp theo, tôi cần một chiếc quần Hiking Trousers nữ trong Màu lạc đà được đánh giá cao, cụ thể là có hơn 400 xếp hạng 5 sao và trên 90 xếp hạng 4 sao. Để hoàn thiện bộ đồ, tôi đang tìm một chiếc Lightweight Baselayer Bạc cũng có thể giao trong vòng dưới 2 ngày. Tôi muốn chắc chắn đó là sản phẩm tốt, vì vậy nó phải có hơn 150 lượt đánh giá tổng cộng nhưng ít hơn 10 đánh giá 3 sao."
+  },
+  {
+    "id": "31",
+    "query": "Tôi đang mua sắm trực tuyến để chuẩn bị tủ quần áo cho mùa sắp tới. Để bắt đầu, tôi đang tìm một chiếc 'Cargo Pants' phù hợp cho Xuân/Thu. Tôi muốn một đôi được đánh giá cao và giao nhanh, vì vậy nó cần có hơn 2300 xếp hạng 5 sao và thời gian vận chuyển dưới 2 ngày. Đi kèm với chúng, tôi cần một sản phẩm cụ thể từ Vans trong Xanh lá cây đậm, cỡ L, với đánh giá xuất sắc—ít hơn 5 xếp hạng 2 sao và dưới 10 xếp hạng 3 sao. Tôi cũng muốn một sản phẩm màu nâu được đánh giá cao dành cho nam có điểm trung bình trên 4.5 và có thể giao trong vòng dưới 2 ngày. Tương tự, tôi đang tìm kiếm một sản phẩm màu lạc đà có hơn 15 đánh giá 4 sao và thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi đang tìm hai sản phẩm từ Converse. Sản phẩm đầu tiên phải phổ biến, với hơn 1000 lượt đánh giá tổng cộng, 400 doanh số bán hàng tháng, tồn kho hơn 300 và thời gian vận chuyển dưới 5 ngày. Sản phẩm Converse thứ hai phải cỡ L và có hồ sơ đánh giá tuyệt vời, với hơn 1200 lượt đánh giá tổng cộng, hơn 180 đánh giá 4 sao và ít hơn 15 đánh giá 2 sao."
+  },
+  {
+    "id": "32",
+    "query": "Tôi đang mua sắm trực tuyến gấp để cập nhật tủ quần áo và cần mọi thứ đến nhanh chóng. Đầu tiên, tôi đang tìm một món đồ phổ biến từ Levi's có doanh số bán hàng hàng tháng hơn 450. Vì tôi đang vội, thời gian vận chuyển phải dưới 2 ngày. Để đi kèm với đó, tôi cũng cần một món đồ từ Nike cỡ 42 phù hợp cho mọi mùa. Nó phải được đánh giá cao, với hơn 800 đánh giá bốn sao, và cũng cần có thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi đang tìm một món đồ màu bạc cỡ XXL. Tôi muốn chắc chắn rằng nó có sẵn và đã là một sản phẩm bán chạy ổn định, vì vậy nó phải có số lượng hàng tồn kho hơn 100 và tổng doanh số bán hàng hơn 550."
+  },
+  {
+    "id": "33",
+    "query": "Tôi đang chuẩn bị trang thiết bị cho chuyến đi dã ngoại sắp tới và cần đặt mua một vài thứ. Đầu tiên, tôi cần một chiếc 'Fleece Half-Zip' nữ từ Patagonia, và vì tôi cần gấp nên thời gian vận chuyển phải dưới hai ngày. Tôi cũng đang tìm một sản phẩm màu đỏ tía từ thương hiệu Vans; để đảm bảo nó được yêu thích, nó cần có hơn 1000 xếp hạng 5 sao. Để mặc nhiều lớp, tôi đặc biệt cần 'Quần lót dày Rho nữ' từ Arc'teryx có tổng doanh số bán hàng trên 2500 và ít hơn năm đánh giá 2 sao. Tiếp theo, tôi đang tìm kiếm 'Quần Tights Hiệu Suất Địa Hình cho Nữ' của Salomon cỡ M và màu đen, nhưng chỉ khi chúng rất phổ biến, với tổng doanh số bán hàng lớn hơn 8500. Cuối cùng, tôi cần một sản phẩm màu xám nhạt từ Anta có số lượng tồn kho hơn 1200."
+  },
+  {
+    "id": "34",
+    "query": "Tôi đang sắm sửa một số trang thiết bị mới cho các hoạt động mùa xuân và mùa thu. Trước tiên, tôi đang tìm một sản phẩm từ thương hiệu Salomon trong Xanh lá cây, và tôi muốn đảm bảo sản phẩm được nhiều người yêu thích bằng cách kiểm tra xem nó có ít hơn 10 đánh giá hai sao hay không. Đi kèm với đó, tôi cần một món đồ Salomon khác, cụ thể là trong Xanh ô liu, phù hợp cho Xuân/Thu, có cụm 'X-Adventure Trail Running' trong tên và thời gian vận chuyển dưới 2 ngày. Tôi cũng cần tìm một sản phẩm có cụm 'Phoenix Fleece' trong tên mà có thể giao nhanh, vì vậy nó phải có thời gian vận chuyển dưới 2 ngày, hơn 600 đánh giá năm sao và số lượng tồn kho lớn hơn 200. Tiếp theo, tôi cần một mặt hàng được đánh giá cao trong Xám với hơn 1100 lượt đánh giá tổng cộng, ít hơn 35 đánh giá ba sao và dưới 10 đánh giá một sao. Cuối cùng, tôi đang tìm một sản phẩm cỡ S phổ biến có doanh số bán hàng tháng trên 950 và cũng có thời gian vận chuyển dưới 2 ngày."
+  },
+  {
+    "id": "35",
+    "query": "Tôi đang thực hiện một cuộc làm mới tủ quần áo lớn cho năm tới và cần một vài món đồ cụ thể. Đầu tiên, cho một sự kiện sắp diễn ra, tôi cần một món đồ từ Gucci trong Nâu, cỡ 43. Vì đang gấp nên thời gian vận chuyển phải dưới 2 ngày và sản phẩm cần có hơn 5 đánh giá bốn sao. Tiếp theo, để chuẩn bị cho trời lạnh, tôi đang tìm một đôi 'Mùa đông Boots' từ Peacebird màu Màu kaki, với hơn 100 lượt đánh giá tổng cộng. Cho mùa Xuân và Thu mát mẻ hơn, tôi muốn một sản phẩm phổ biến từ Adidas với điểm trung bình trên 4.5, doanh số bán hàng tháng hơn 1000 và ít hơn 20 đánh giá một sao. Cuối cùng, tôi cần một mặt hàng phổ biến khác trong Xanh hải quân với doanh số bán hàng tháng trên 800 và hơn 90 đánh giá bốn sao; món này cũng cần có thời gian vận chuyển dưới 2 ngày."
+  },
+  {
+    "id": "36",
+    "query": "Tôi đang chuẩn bị trang thiết bị cho việc tập luyện nghiêm túc và cần đặt mua một số món đồ cụ thể. Đầu tiên, tôi đang tìm một đôi 'Trail Running Shoes' từ Arc'teryx trong Vàng. Tôi cần chúng gấp nên thời gian vận chuyển phải dưới 2 ngày và chúng phải có ít hơn 15 đánh giá ba sao. Tiếp theo, tôi cần hai món đồ cụ thể cỡ 36 từ Li-Ning: một đôi 'Blizzard Runner' với tổng doanh số bán hàng trên 1200 và ít hơn 10 đánh giá một sao, cùng một đôi 'Shadow Walker' dùng được mọi mùa với hơn 1200 lượt đánh giá tổng cộng và thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi cần hai món từ Under Armour. Một là sản phẩm màu Màu lạc đà với hơn 950 lượt đánh giá tổng cộng, ít hơn 10 đánh giá hai sao và thời gian vận chuyển dưới 2 ngày. Món còn lại là Xám nhạt với điểm trung bình trên 4.5 và hơn 700 xếp hạng năm sao."
+  },
+  {
+    "id": "37",
+    "query": "Tôi đã quyết định đi một chuyến đi leo núi gấp, vì vậy tôi cần nhận một số thiết bị rất nhanh chóng. Đầu tiên, tôi đang tìm một món đồ chung cho phụ nữ mà tôi có thể nhận sớm, vì vậy nó cần có thời gian vận chuyển dưới 5 ngày và phải có ít hơn 5 đánh giá hai sao. Cho chuyến đi leo núi, tôi đang tìm một chiếc 'Active Logo Training Top' cụ thể mà phổ biến và được đánh giá cao, vì vậy nó phải có tổng doanh số bán hàng trên 20,000 và điểm đánh giá trung bình lớn hơn 4.5, với thời gian vận chuyển dưới 2 ngày. Để đi kèm với đó, tôi cần một số 'Hiking Bottoms' màu cam cho phụ nữ với hơn 60 đánh giá bốn sao, cũng đến trong dưới 2 ngày. Cuối cùng, tôi đang tìm một món đồ màu xanh ô liu từ Patagonia với tổng doanh số bán hàng trên 4500 và điểm đánh giá trung bình trên 4.5, cũng cần có thời gian vận chuyển dưới 2 ngày."
+  },
+  {
+    "id": "38",
+    "query": "Tôi đang thực hiện một cuộc cập nhật tủ quần áo lớn và có một số thứ rất cụ thể tôi đang tìm kiếm. Đầu tiên, tôi cần tìm một sản phẩm có 'RS-X' trong tên có thể được giao trong dưới 2 ngày. Nó phải phổ biến, với tổng doanh số bán hàng trên 4800, hơn 40 đánh giá bốn sao, và điểm trung bình trên 4.5. Tiếp theo, tôi đang tìm một món đồ màu tím từ Zara cỡ L, và nó phải có hơn 400 đánh giá tổng cộng, bao gồm hơn 90 đánh giá bốn sao. Tôi cũng muốn một sản phẩm Nike được đánh giá cao có 'Air Glide Pro' trong tên, cụ thể là một sản phẩm có điểm trung bình trên 4.5 và hơn 1500 đánh giá năm sao. Sau đó, tôi cần một món đồ phổ biến cho nam từ Puma với doanh số bán hàng trên 6500 mà cũng có thể giao trong dưới 2 ngày. Cuối cùng, tôi đang mua một món đồ từ The North Face cỡ L có hơn 20 đánh giá ba sao."
+  },
+  {
+    "id": "39",
+    "query": "Tôi đang chuẩn bị cho chuyến đi mùa đông và cần đặt mua mọi thứ để giao nhanh. Đầu tiên, tôi đang tìm một món đồ mùa đông cụ thể từ Arc'teryx trong Đỏ rượu và cỡ 40, và nó phải có thời gian vận chuyển dưới 2 ngày. Đi kèm với đó, tôi cần một sản phẩm màu xanh dương từ thương hiệu Columbia. Tôi muốn đảm bảo nó phổ biến nên cần có hơn 180 xếp hạng năm sao và cũng phải được giao trong vòng dưới 2 ngày. Cuối cùng, tôi đang tìm kiếm một số đôi 'Mùa đông Hiking Shoes' chuyên dụng cho mùa đông từ Columbia dành cho nữ và có tổng số lượt đánh giá hơn 300."
+  },
+  {
+    "id": "40",
+    "query": "Tôi đang cập nhật tủ quần áo của mình và đã nhắm đến một vài món đồ cụ thể. Đầu tiên, tôi đang tìm một sản phẩm cỡ 39 được đánh giá cao, vì vậy nó phải có hơn 150 xếp hạng năm sao và tổng số lượt đánh giá lớn hơn 200. Tôi cũng cần một món đồ nữ phổ biến trong Xanh hải quân; để đảm bảo đó là sản phẩm bán chạy, tôi muốn nó có doanh số bán hàng tháng hơn 750. Cuối cùng, tôi đang tìm kiếm một món đồ mùa hè từ The North Face. Nó cần là cỡ L trong Đỏ rượu và có doanh số bán hàng tháng hơn 500."
+  },
+  {
+    "id": "41",
+    "query": "Tôi đang chuẩn bị trang thiết bị cho chuyến đi bộ đường dài sắp tới và cần đặt mua mọi thứ thật nhanh. Đầu tiên, tôi đang tìm một đôi \"Giày đi đường mòn Canyonview nữ\" cụ thể từ Patagonia; vì chuyến đi sắp đến nên thời gian vận chuyển phải dưới 2 ngày, và chúng cần có hơn 80 đánh giá bốn sao với ít hơn 15 đánh giá một sao. Tôi cũng đang để mắt đến một sản phẩm màu tím phổ biến từ The North Face có tên 'Vectiv Escape', sản phẩm này phải có điểm trung bình trên 4.5 và doanh số bán hàng tháng hơn 300. Để phối cùng chúng, tôi cần một số chiếc 'Vải lanh-Blend Shorts' dành cho nữ màu be cho mùa hè được đánh giá cao, với hơn 500 đánh giá năm sao và ít hơn 5 đánh giá hai sao. Cho những buổi tối mát mẻ hơn, tôi cần một món đồ màu be từ Uniqlo phù hợp cho xuân/thu với số lượng tồn kho hơn 80. Cuối cùng, tôi cần thêm một sản phẩm dành cho nữ có thể giao nhanh, với thời gian vận chuyển dưới 2 ngày, điểm trung bình lớn hơn 4.5, tồn kho hơn 400 và ít hơn 30 đánh giá một sao."
+  },
+  {
+    "id": "42",
+    "query": "Tôi có một chuyến đi đột xuất sắp tới, vì vậy tôi cần đặt một vài món đồ sẽ được giao nhanh chóng. Đầu tiên, tôi đang tìm một sản phẩm từ Anta cỡ 42 và màu Xám nhạt; vì đây là đơn hàng gấp, tôi muốn một mặt hàng phổ biến với hơn 950 lượt đánh giá tổng cộng và thời gian vận chuyển dưới 2. Tiếp theo, tôi cần một món đồ nam cho bản thân từ Under Armour trong Xanh lá cây đậm, món này cũng phải có thời gian vận chuyển dưới 2. Tôi cũng đang mua một sản phẩm được đánh giá rất cao từ thương hiệu Salomon. Để đảm bảo chất lượng, nó phải có hơn 550 đánh giá năm sao, với ít hơn 5 đánh giá một sao và hai sao, cùng thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi cần thêm một món đồ nam từ Anta trong Màu be, và tôi muốn đảm bảo chắc chắn còn hàng nên số lượng tồn kho phải hơn 200."
+  },
+  {
+    "id": "43",
+    "query": "Tôi đang thực hiện một cuộc làm mới tủ quần áo lớn và cần mọi thứ được giao nhanh, vì vậy đối với tất cả các món đồ này, thời gian vận chuyển phải dưới 2. Đầu tiên, tôi đang tìm một đôi 'Giày sneaker vải canvas Vaughn Nam' cụ thể cho Xuân/Thu, sản phẩm phải có điểm trung bình trên 4.5 và ít hơn 15 đánh giá ba sao. Cho thời tiết lạnh hơn, tôi cũng cần một sản phẩm nam từ Anta phù hợp cho Mùa đông và có cụm 'Thermal Fleece Pullover' trong tên. Sau đó, tôi đang tìm kiếm một món đồ từ Adidas màu xám nhạt và cỡ 44, với điểm đánh giá trung bình hơn 4.5. Để hoàn tất đơn hàng, tôi muốn tìm một mặt hàng phổ biến từ Nike có số lượng tồn kho hơn 800 và ít hơn 10 đánh giá một sao."
+  },
+  {
+    "id": "44",
+    "query": "Tôi có một chuyến đi sắp tới rất gần và cần một vài món đồ được giao nhanh. Đầu tiên, tôi đang tìm một sản phẩm có tên 'Blaze Runner' cỡ 41. Nó cần phù hợp cho mọi mùa và có ít hơn 5 đánh giá một sao. Tiếp theo, tôi cần một món đồ từ thương hiệu Salomon trong Xanh ô liu. Nó phải được đánh giá cao, với hơn 250 đánh giá năm sao và hơn 300 lượt đánh giá tổng cộng, cùng thời gian vận chuyển dưới 2. Tôi cũng cần một món đồ Ralph Lauren có cụm 'Mùa đông Boot' trong tên với hơn 400 lượt đánh giá tổng cộng và thời gian vận chuyển dưới 2. Sau đó, tôi đang tìm kiếm một món đồ nam từ Vans màu đen, với ít hơn 70 đánh giá ba sao và thời gian vận chuyển dưới 2. Cuối cùng, tôi đang tìm một sản phẩm màu xám nhạt phù hợp cho mọi mùa có cụm 'GORE-TEX' trong tên, và nó cũng phải được giao trong vòng chưa đầy 2 ngày."
+  },
+  {
+    "id": "45",
+    "query": "Tôi đang cập nhật tủ quần áo và tìm kiếm một vài món đồ cụ thể. Đầu tiên, tôi đang tìm một món đồ cho nam từ thương hiệu Levi's khá phổ biến, với doanh số bán hàng hàng tháng hơn 350 và hơn 5 đánh giá ba sao. Tôi cũng muốn một món đồ khác từ Levi's, lần này kích thước L và màu nâu, được yêu thích, với đánh giá trung bình trên 4.5 và doanh số bán hàng hàng tháng hơn 1200. Cho một thứ gì đó thoải mái hơn, tôi cần 'Fleece-Lined Track Pants' từ Anta kích thước L có hơn 300 đánh giá bốn sao. Vì tôi đang vội, thời gian vận chuyển của chúng phải dưới 2 ngày. Tôi cũng cần một số giày mới, cụ thể là Adidas 'Urban Explorer Running Shoes' kích thước 43, cũng phải có thời gian vận chuyển dưới 2 ngày. Cuối cùng, tôi đang tìm một sản phẩm cực kỳ phổ biến khác, đảm bảo nó có sẵn với số lượng hơn 400, có hơn 4000 đánh giá tổng cộng, và hơn 3500 trong số đó là đánh giá năm sao."
+  },
+  {
+    "id": "46",
+    "query": "Tôi đang thực hiện một cuộc làm mới tủ quần áo lớn và cần tìm một số món đồ cụ thể. Đầu tiên, tôi đang tìm một sản phẩm màu xanh rêu đậm dùng được mọi mùa từ Nike có thời gian vận chuyển dưới 2 và ít hơn 15 xếp hạng hai sao. Tôi cũng muốn cuối cùng thì mua được chiếc Nike Air Sprint 'Bubblegum' Giày Sneaker cho nam cỡ 44. Cho mùa hè, tôi cần một món đồ màu cam từ Gucci có cụm 'Interlocking G Vải cotton Polo' trong tên. Là một lựa chọn đáng tin cậy cho hàng ngày, tôi đang tìm kiếm chiếc Giày sneaker nam thường ngày thoải mái của Uniqlo, nhưng chỉ khi điểm trung bình lớn hơn 4.5. Tôi cũng cần một sản phẩm màu xanh dương phổ biến cỡ 44 với thời gian vận chuyển dưới 2 ngày và hơn 4000 lượt đánh giá tổng cộng. Cuối cùng, cho mùa đông, tôi muốn một món đồ màu kaki có từ 'Hoodie' trong tên, cũng có thể được giao trong vòng chưa đầy 2 ngày và có ít hơn 10 đánh giá hai sao."
+  },
+  {
+    "id": "47",
+    "query": "Tôi đang làm mới tủ quần áo lớn cho các mùa và dịp khác nhau. Đầu tiên, cho một sự kiện mùa hè, tôi đang tìm một món đồ màu bạc phổ biến từ Zara với doanh số bán hàng hàng tháng hơn 900, và vì tôi cần nó sớm, thời gian vận chuyển phải dưới 5 ngày. Tiếp theo, tôi cần một món đồ cơ bản cho nữ từ Uniqlo màu cà phê; tôi muốn một món đồ được kiểm chứng tốt, vì vậy nó phải có hơn 1800 đánh giá tổng cộng. Tôi cũng đang tìm kiếm một món đồ bán chạy nhất từ The North Face có tổng doanh số bán hàng hơn 2800 và đánh giá trung bình xuất sắc trên 4.5. Cuối cùng, để chuẩn bị cho mùa đông, tôi cần một món đồ màu be được đánh giá cao, cụ thể là có ít hơn 5 đánh giá một sao nhưng hơn 40 đánh giá bốn sao."
+  },
+  {
+    "id": "48",
+    "query": "Tôi đang nâng cấp lớn cho tủ quần áo và cần tìm một số món đồ cụ thể. Đầu tiên, tôi đang tìm một chiếc Áo cánh Lụa Gucci phổ biến cỡ M; nó phải có doanh số bán hàng tháng hơn 40, và vì tôi cần sớm nên thời gian vận chuyển phải dưới 2. Đi kèm với đó, tôi muốn một món đồ được đánh giá cao khác từ Gucci với hơn 400 đánh giá năm sao, ít hơn 10 đánh giá ba sao, dưới một đánh giá hai sao và cũng có thời gian vận chuyển dưới 2 ngày. Tiếp theo, tôi đang tìm kiếm hai món đồ từ Levi's. Một món phải có xếp hạng xuất sắc, với hơn 700 xếp hạng năm sao và dưới 10 xếp hạng hai sao. Món đồ Levi's còn lại cần có màu Màu lạc đà và ít hơn 5 đánh giá một sao. Cuối cùng, cho những tháng lạnh hơn, tôi đang tìm một chiếc Len Cổ lọ cho Mùa đông cỡ M, và nó phải có dưới một đánh giá hai sao."
+  },
+  {
+    "id": "49",
+    "query": "Tôi đang mua sắm trực tuyến nhanh chóng để làm mới tủ quần áo của mình. Đầu tiên, tôi đang tìm một món đồ phù hợp cho mọi mùa cho nữ; để đảm bảo tôi thấy một bộ ý kiến cân bằng, tôi muốn một món đồ có hơn 35 đánh giá ba sao. Vì tôi cần một vài thứ gấp, tôi cũng đang tìm kiếm một sản phẩm kích thước XL có sẵn với số lượng hàng tồn kho hơn 150 và có thời gian vận chuyển dưới 2. Cuối cùng, tôi đang tìm kiếm một món đồ màu trắng rất cụ thể có 'Princetown Leather' trong tên. Món này cũng cần đến trong dưới 2, và vì tôi đang tìm kiếm chất lượng đã được chứng minh, nó phải có hơn 600 đánh giá năm sao và ít hơn 20 đánh giá ba sao."
+  },
+  {
+    "id": "50",
+    "query": "Tôi đang mua sắm để cập nhật tủ quần áo cho năm. Đầu tiên, tôi đang tìm một món đồ phổ biến cho nam từ The North Face; cụ thể, nó cần có hơn 350 đánh giá năm sao. Tôi cũng cần một sản phẩm rất đáng tin cậy phù hợp cho mọi mùa cho nam, vì vậy tôi chỉ quan tâm đến một món đồ có ít hơn 5 đánh giá một sao. Để hoàn thiện cho thời tiết ôn hòa hơn, tôi đang tìm kiếm một món đồ phù hợp cho mùa xuân và thu. Đối với món này, tôi muốn đảm bảo chất lượng cao, vì vậy nó phải có điểm trung bình lớn hơn 4.5 và cũng có ít hơn 5 đánh giá một sao."
+  }
+]

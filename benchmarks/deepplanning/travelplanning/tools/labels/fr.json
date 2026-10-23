@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "Base de données non chargée",
+    "not_found": "Informations détaillées non trouvées pour l'attraction {name}",
+    "attraction_id": "ID de l'attraction",
+    "attraction_name": "Nom de l'attraction",
+    "city": "Ville",
+    "address": "Adresse",
+    "coordinates": "Coordonnées",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "description": "Description",
+    "rating": "Évaluation",
+    "visitor_rating": "(évaluation moyenne des visiteurs)",
+    "opening_hours": "Heures d'ouverture",
+    "to": "à",
+    "closed_dates": "Dates de fermeture",
+    "min_visit_hours": "Durée minimale de visite",
+    "max_visit_hours": "Durée maximale de visite",
+    "hours_unit": "heures",
+    "ticket_price": "Prix du billet",
+    "currency_unit": "RMB",
+    "attraction_type": "Type d'attraction",
+    "db_loaded": "✓ Base de données d'attractions chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données d'attractions non trouvée à {path}"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "Base de données non chargée",
+    "not_found": "Aucune recommandation d'attraction trouvée",
+    "recommendations": "Attractions recommandées :",
+    "attraction_suffix": "{name}, {desc}. C'est une attraction de type {atype}",
+    "db_loaded": "✓ Base de données d'attractions chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données d'attractions non trouvée à {path}"
+  },
+  "FlightQueryTool": {
+    "segment": "Segment {idx}",
+    "remaining_seats": "Places restantes",
+    "sufficient": "Disponible",
+    "no_info": "Aucune information trouvée, veuillez vérifier les paramètres d'entrée",
+    "not_found": "Aucune information de vol trouvée de {o} à {d} le {date}",
+    "db_loaded": "✓ Base de données de vols chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données de vols non trouvée à {path}"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "Base de données non chargée",
+    "not_found": "Aucune information d'hôtel trouvée à {dest} du {checkin} au {checkout}, veuillez vérifier les paramètres ou réduire les contraintes",
+    "db_loaded": "✓ Base de données d'hôtels chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données d'hôtels non trouvée à {path}"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "Base de données non chargée",
+    "not_found": "Informations de coordonnées non trouvées pour l'emplacement {place}, veuillez vérifier : 1. Si le nom du lieu provient d'autres résultats d'outils ; 2. Si le nom du lieu est exactement conforme aux résultats de l'outil, aucune abréviation, renommage ou description supplémentaire n'est autorisé",
+    "db_loaded": "✓ Base de données de coordonnées de localisation chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données de coordonnées de localisation non trouvée à {path}"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "Base de données non chargée",
+    "not_found": "Aucun restaurant recommandé trouvé près des coordonnées ({lat}, {lon}), veuillez vérifier la source des coordonnées",
+    "db_loaded": "✓ Base de données de recommandations de restaurants chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données de recommandations de restaurants non trouvée à {path}"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "Base de données non chargée",
+    "not_found": "Informations détaillées non trouvées pour le restaurant {name}",
+    "db_loaded": "✓ Base de données des détails des restaurants chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données des détails des restaurants non trouvée à {path}"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "Base de données non chargée",
+    "not_found": "Aucune information de transport trouvée de {origin} à {dest}",
+    "coord_not_in_range": "La coordonnée {coord} n'est pas dans la plage de requête, veuillez vérifier :\n1. Si la coordonnée provient d'un résultat de requête d'outil valide, pas d'une saisie manuelle ou d'une fabrication ;\n2. Si la précision de la coordonnée est exactement conforme au résultat de la requête, 6 décimales",
+    "db_loaded": "✓ Base de données des itinéraires routiers chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données des itinéraires routiers non trouvée à {path}"
+  },
+  "TrainQueryTool": {
+    "segment": "Segment {idx}",
+    "remaining_seats": "Places restantes",
+    "sufficient": "Disponible",
+    "no_info": "Aucune information trouvée",
+    "not_found": "Aucune information de train trouvée de {o} à {d} le {date}",
+    "station_sep": "Gare",
+    "db_loaded": "✓ Base de données des trains chargée : {count} enregistrements (chemin : {path})",
+    "db_not_found": "⚠ Avertissement : Base de données des trains non trouvée à {path}"
+  }
+}

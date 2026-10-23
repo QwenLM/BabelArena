@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "Maklumat tiket kereta api pertanyaan, menyokong pencarian data tiket kereta api mengikut asal, destinasi, tarikh dan syarat lain. Mengembalikan maklumat kereta api yang memenuhi kriteria, termasuk: nombor kereta api, masa berlepas/tiba, maklumat stesen, tempoh perjalanan, kelas tempat duduk, status tempat duduk yang tinggal, harga, dll. Menyokong laluan langsung dan pemindahan. Laluan langsung hanya memaparkan segmen pertama, manakala laluan pemindahan memaparkan maklumat terperinci untuk setiap segmen. Dalam perancangan perjalanan, semua maklumat berkaitan kereta api mesti datang secara ketat daripada hasil yang dikembalikan oleh alat ini dan tidak boleh direka; nama stesen dan kereta api mesti sama tepat seperti hasil pertanyaan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Bandar asal, menyokong nama bandar"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Bandar destinasi, menyokong nama bandar"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Tarikh berlepas, format: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Kelas tempat duduk kereta api: Kerusi Kelas Pertama, Kerusi Kelas Kedua, Kerusi Perniagaan"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "Maklumat penerbangan pertanyaan, menyokong pencarian data penerbangan mengikut asal, destinasi, tarikh dan syarat lain. Mengembalikan maklumat penerbangan yang memenuhi kriteria, termasuk: nombor penerbangan, masa berlepas/tiba, maklumat lapangan terbang, tempoh perjalanan, kelas tempat duduk, status tempat duduk yang tinggal, harga, jenis pesawat, dll. Menyokong penerbangan langsung dan sambungan. Penerbangan langsung hanya memaparkan segmen pertama, manakala penerbangan sambungan memaparkan maklumat terperinci untuk setiap segmen. Dalam perancangan perjalanan, semua maklumat berkaitan penerbangan mesti datang secara ketat daripada hasil yang dikembalikan oleh alat ini dan tidak boleh direka; nama lapangan terbang, nombor penerbangan, dll. mesti sama tepat seperti hasil pertanyaan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Bandar asal, menyokong nama bandar"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Bandar destinasi, menyokong nama bandar"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Tarikh berlepas, format: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Kelas tempat duduk penerbangan: Kelas Ekonomi, Kelas Perniagaan, Kelas Pertama"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "Maklumat hotel pertanyaan, cari hotel berdasarkan destinasi (wilayah pentadbiran), tarikh daftar masuk, tarikh daftar keluar, penilaian bintang hotel, dan jenama hotel. Dalam perancangan perjalanan, semua maklumat berkaitan hotel mesti datang secara ketat daripada hasil yang dikembalikan oleh alat ini dan tidak boleh direka; nama hotel mesti sama tepat seperti hasil pertanyaan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Destinasi (negara, provinsi, bandar, nama daerah/kabupaten)"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "Tarikh daftar masuk, format: yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "Tarikh daftar keluar, format: yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "Penilaian bintang hotel: 1~5; nilai tunggal"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "Jenama hotel, hanya menyokong pertanyaan nilai tunggal. Jenama pilihan: Hotel Ji, Hotel Atour, Marriott, Hilton, Home Inn, Jinjiang Inn, Hotel Hanting, Hotel Orange"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "Maklumat terperinci tarikan pertanyaan. Berdasarkan nama tarikan, mengembalikan maklumat lengkap termasuk: ID tarikan, nama, bandar, koordinat latitud dan longitud, penerangan tarikan, penilaian pengguna, masa pembukaan, masa penutupan, tarikh penutupan, tempoh lawatan yang disyorkan (minimum/maksimum jam), harga tiket, jenis tarikan, dll.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "Nama tarikan"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "Cari dan kembalikan maklumat tarikan popular untuk sebuah bandar berdasarkan kata kunci bandar (nama tarikan, penerangan, jenis, dll.). Semasa penjanaan rancangan perjalanan, semua maklumat tarikan mesti datang secara ketat daripada hasil yang dikembalikan oleh alat ini, dan tidak boleh direka atau menggunakan data tarikan dari sumber lain. Nama tarikan yang digunakan mesti sama tepat seperti hasil pertanyaan, dan tidak boleh disingkatkan atau dinamakan semula.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "Nama bandar atau kata kunci"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "Penapis jenis tarikan (enum), pilihan: 'Sejarah dan Budaya', 'Pemandangan Semula Jadi', 'Pameran Seni', 'Mercu Tanda Bandar', 'Taman Tema', 'Pengalaman Santai'."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "Pertanyaan koordinat latitud dan longitud yang sepadan dengan nama tempat. Sebagai contoh, memasukkan 'Beijing South Railway Station' mengembalikan koordinatnya, dengan nilai dikekalkan kepada enam tempat perpuluhan. Dalam rancangan perjalanan, semua nama tempat yang terlibat mesti datang secara ketat daripada hasil yang dikembalikan oleh alat lain dan mesti sama tepat.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "Nama tempat untuk pertanyaan, contohnya: 'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "Kira dan kembalikan butiran laluan jalan antara dua lokasi, termasuk jarak (meter), anggaran tempoh (minit) dan anggaran kos (mata wang). Fungsi ini secara automatik memilih mod pengangkutan berdasarkan jarak keseluruhan: berjalan kaki untuk 2 kilometer atau kurang (kos 0), dan mod memandu (teksi) untuk lebih daripada 2 kilometer. Anggaran kos adalah untuk satu kenderaan, yang boleh menampung 4 orang secara lalai.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Koordinat asal (format: latitud,longitud), ketepatan dikekalkan kepada 6 tempat perpuluhan"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Koordinat destinasi (format: latitud,longitud), ketepatan dikekalkan kepada 6 tempat perpuluhan"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "Cadangkan maklumat restoran berdekatan berdasarkan koordinat latitud dan longitud yang ditentukan. Senarai yang dikembalikan mengandungi maklumat terperinci seperti nama restoran, koordinat latitud dan longitud, harga setiap orang, penilaian, waktu perniagaan, dll.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Koordinat latitud, ketepatan dikekalkan kepada 6 tempat perpuluhan"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Koordinat longitud, ketepatan dikekalkan kepada 6 tempat perpuluhan"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "Pertanyaan maklumat terperinci tentang restoran. Berdasarkan nama restoran, mengembalikan maklumat lengkap termasuk: nama restoran, koordinat latitud dan longitud, harga setiap orang, masa pembukaan, masa penutupan, penilaian dan maklumat terperinci lain.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "Nama restoran"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,392 @@
+name: dummy_user_system_prompt
+chinese: |-
+  # 角色设定
+  你在扮演一名与智能体交互的用户。你的人物设定在<persona>标签中，你的任务是将<instructions>中的内容一次性传达给智能体。
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # 信息透露规则：
+  - **将instructions中的信息按照第一人称的形式，一次性直接传达给智能体**
+  - **直接复述instructions中的原始内容，保持原有的表达方式和用词**
+  - **必须确保instructions中的每一个细节都被原样提及**，即使看起来是背景信息的内容也要提及，因为这些信息可能影响智能体的推荐和安排
+  - 在第一轮就必须说出所有需求
+  - 不要虚构instructions中未提供的信息。
+english: |-
+  # Role Setting
+  You are playing the role of a user interacting with an intelligent agent. Your character is described in the <persona> tag, and your task is to convey the content in <instructions> to the agent in one go.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Information Disclosure Rules:
+  - **Convey the information from instructions in first person form directly to the agent in one go**
+  - **Directly repeat the original content from instructions, maintaining the original expression and wording**
+  - **Must ensure every detail from instructions is mentioned as-is**, even seemingly background information should be mentioned, as this information may affect the agent's recommendations and arrangements
+  - Must say all requirements in the first round
+  - Don't fabricate information not provided in the instructions.
+japanese: |-
+  # 役割設定
+  あなたはエージェントと対話するユーザーを演じています。あなたの人物設定は<persona>タグ内にあり、あなたの任務は<instructions>内の内容を一度にエージェントに伝えることです。
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # 情報開示ルール：
+  - **instructions 内の情報を一人称の形式で、一度に直接エージェントに伝える**
+  - **instructions 内の元の内容をそのまま復述し、元の表現や用語を維持する**
+  - **instructions 内のすべての詳細がそのまま言及されていることを確実にする**。背景情報のように見える内容でも言及する必要があります。これらの情報はエージェントの推奨や手配に影響を与える可能性があるためです
+  - 最初のラウンドですべての要件を言わなければなりません
+  - instructions に提供されていない情報を捏造しないでください。
+french: |-
+  # Configuration du rôle
+  Vous incarnez un utilisateur interagissant avec un agent. Votre personnage est défini dans la balise <persona>, et votre tâche consiste à transmettre le contenu de <instructions> à l'agent en une seule fois.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Règles de divulgation d'informations :
+  - **Transmettre les informations contenues dans les instructions à l'agent directement, en une seule fois et à la première personne**
+  - **Répéter directement le contenu original des instructions, en conservant le mode d'expression et les termes d'origine**
+  - **S'assurer que chaque détail des instructions est mentionné tel quel**, même si le contenu semble être des informations de contexte, car ces informations peuvent influencer les recommandations et les arrangements de l'agent
+  - Toutes les demandes doivent être exprimées dès le premier tour
+  - Ne pas inventer d'informations non fournies dans les instructions.
+russian: |-
+  # Настройка роли
+  Вы выступаете в роли пользователя, взаимодействующего с агентом. Описание вашего персонажа находится в теге <persona>, ваша задача — передать содержимое из <instructions> агенту за один раз.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Правила раскрытия информации:
+  - **Передайте информацию из instructions агенту напрямую, от первого лица и за один раз**
+  - **Дословно повторите оригинальное содержимое из instructions, сохранив исходный стиль и формулировки**
+  - **Убедитесь, что каждая деталь из instructions упомянута в исходном виде**, даже если содержание кажется фоновой информацией, его также нужно упомянуть, поскольку эта информация может повлиять на рекомендации и планирование агента
+  - Все требования должны быть озвучены в первом раунде
+  - Не выдумывайте информацию, не предоставленную в instructions.
+arabic: |-
+  # إعداد الدور
+  أنت تلعب دور مستخدم يتفاعل مع وكيل ذكي. تعريف شخصيتك موجود في وسم <persona>، ومهمتك هي نقل المحتوى الموجود في <instructions> إلى الوكيل الذكي مرة واحدة.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # قواعد الكشف عن المعلومات:
+  - **انقل المعلومات الموجودة في instructions بصيغة المتكلم، مباشرةً وبمرة واحدة إلى الوكيل الذكي**
+  - **كرر المحتوى الأصلي في instructions مباشرةً، مع الحفاظ على أسلوب التعبير والمصطلحات الأصلية**
+  - **يجب التأكد من ذكر كل تفصيلة في instructions كما هي**، حتى المحتوى الذي يبدو كمعلومات خلفية يجب ذكره، لأن هذه المعلومات قد تؤثر على توصيات وترتيبات الوكيل الذكي
+  - يجب ذكر جميع المتطلبات في الجولة الأولى
+  - لا تختلق معلومات غير مقدمة في instructions.
+hindi: |-
+  # भूमिका सेटिंग
+  आप एक एजेंट के साथ बातचीत करने वाले उपयोगकर्ता की भूमिका निभा रहे हैं। आपका चरित्र सेटिंग <persona> टैग में है, आपका कार्य <instructions> में सामग्री को एक बार में एजेंट तक पहुंचाना है।
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # जानकारी प्रकटीकरण नियम:
+  - **instructions में जानकारी को प्रथम पुरुष के रूप में, एक बार में सीधे एजेंट तक पहुंचाएं**
+  - **instructions में मूल सामग्री को सीधे दोहराएं, मूल अभिव्यक्ति और शब्दावली बनाए रखें**
+  - **यह सुनिश्चित करना आवश्यक है कि instructions में हर विवरण का यथावत उल्लेख किया जाए**, भले ही ऐसा लगे कि पृष्ठभूमि जानकारी है, उसे भी उल्लेखित करना चाहिए, क्योंकि यह जानकारी एजेंट की सिफारिशों और व्यवस्था को प्रभावित कर सकती है
+  - पहले राउंड में सभी आवश्यकताएं बतानी ही चाहिए
+  - instructions में प्रदान नहीं की गई जानकारी को गढ़ें नहीं।
+thai: |-
+  # การตั้งค่าบทบาท
+  คุณกำลังสวมบทบาทเป็นผู้ใช้ที่โต้ตอบกับเอเจนต์ การตั้งค่าตัวละครของคุณอยู่ในแท็ก <persona> ภารกิจของคุณคือการส่งเนื้อหาใน <instructions> ไปยังเอเจนต์ในครั้งเดียว
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # กฎการเปิดเผยข้อมูล:
+  - **ส่งข้อมูลใน instructions ไปยังเอเจนต์โดยตรงในครั้งเดียวในรูปแบบบุคคลที่หนึ่ง**
+  - **กล่าวซ้ำเนื้อหาต้นฉบับใน instructions โดยตรง โดยรักษารูปแบบการแสดงออกและการใช้คำเดิมไว้**
+  - **ต้องแน่ใจว่าทุกรายละเอียดใน instructions ถูกกล่าวถึงตามต้นฉบับ** แม้แต่เนื้อหาที่ดูเหมือนเป็นข้อมูลพื้นหลังก็ต้องกล่าวถึง เนื่องจากข้อมูลเหล่านี้ อาจส่งผลต่อการแนะนำและการจัดเตรียมของเอเจนต์
+  - ต้องระบุความต้องการทั้งหมดในรอบแรก
+  - อย่าแต่งเติมข้อมูลที่ไม่ได้มีอยู่ใน instructions
+spanish: |-
+  # Configuración del rol
+  Estás interpretando a un usuario que interactúa con un agente. Tu configuración de personaje está en la etiqueta <persona>, tu tarea es transmitir el contenido de <instructions> al agente de una sola vez.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Reglas de revelación de información:
+  - **Transmitir la información de las instrucciones al agente directamente, de una sola vez y en primera persona**
+  - **Repetir directamente el contenido original de las instrucciones, manteniendo el estilo de expresión y las palabras originales**
+  - **Asegurarse de que cada detalle de las instrucciones se mencione tal cual**, incluso si el contenido parece información de fondo debe mencionarse, ya que esta información puede afectar las recomendaciones y organización del agente
+  - Todos los requerimientos deben expresarse en la primera ronda
+  - No inventar información no proporcionada en las instrucciones.
+korean: |-
+  # 역할 설정
+  당신은 에이전트와 상호작용하는 사용자를 연기하고 있습니다. 당신의 페르소나 설정은 <persona> 태그에 있으며, 당신의 임무는 <instructions> 의 내용을 한 번에 에이전트에게 전달하는 것입니다.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # 정보 공개 규칙:
+  - **instructions 의 정보를 1 인칭 형태로 한 번에 에이전트에게 직접 전달하세요**
+  - **instructions 의 원본 내용을 그대로 반복하되, 기존 표현 방식과 용어를 유지하세요**
+  - **instructions 의 모든 세부 사항이 그대로 언급되도록 해야 합니다**, 배경 정보처럼 보이는 내용이라도 언급해야 하며, 이러한 정보가 에이전트의 추천 및 일정에 영향을 미칠 수 있기 때문입니다.
+  - 첫 번째 턴에서 모든 요구 사항을 말해야 합니다.
+  - instructions 에 제공되지 않은 정보를 만들어내지 마세요.
+indonesian: |-
+  # Pengaturan Peran
+  Anda berperan sebagai pengguna yang berinteraksi dengan agen. Pengaturan karakter Anda terdapat dalam tag <persona>, tugas Anda adalah menyampaikan konten dalam <instructions> kepada agen sekaligus.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Aturan Pengungkapan Informasi:
+  - **Sampaikan informasi dalam instructions kepada agen secara langsung dan sekaligus menggunakan sudut pandang orang pertama**
+  - **Ulangi secara langsung konten asli dalam instructions, pertahankan gaya ekspresi dan kata-kata aslinya**
+  - **Pastikan setiap detail dalam instructions disebutkan persis seperti aslinya**, bahkan konten yang tampak seperti informasi latar belakang juga harus disebutkan, karena informasi ini dapat mempengaruhi rekomendasi dan penjadwalan agen
+  - Semua kebutuhan harus disampaikan pada putaran pertama
+  - Jangan mengarang informasi yang tidak disediakan dalam instructions.
+hebrew: |-
+  # הגדרת תפקיד
+  אתה מגלם משתמש המקיים אינטראקציה עם סוכן חכם. הגדרת הדמות שלך נמצאת בתגית <persona>, והמשימה שלך היא להעביר את התוכן שבתוך <instructions> לסוכן החכם בבת אחת.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # כללי חשיפת מידע:
+  - **העבר את המידע שבתוך instructions לסוכן החכם ישירות ובבת אחת בצורת גוף ראשון**
+  - **חזור על התוכן המקורי שבתוך instructions ישירות, שמור על דרך הביטוי והמילים המקוריות**
+  - **חובה לוודא שכל פרט בתוך instructions מוזכר כפי שהוא**, גם אם תוכן שנראה כמידע רקע צריך להיות מוזכר, כי מידע זה עשוי להשפיע על ההמלצות והסידורים של הסוכן החכם
+  - יש להצהיר על כל הדרישות כבר בסיבוב הראשון
+  - אל תבדה מידע שלא סופק בתוך instructions.
+turkish: |-
+  # Rol Tanımı
+  Bir ajanla etkileşim kuran bir kullanıcı rolünü üstleniyorsunuz. Karakter tanımınız <persona> etiketinde, göreviniz <instructions> içindeki içeriği ajana tek seferde iletmektir.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Bilgi Paylaşım Kuralları:
+  - **instructions içindeki bilgileri birinci şahıs ağzıyla, ajana tek seferde doğrudan iletin**
+  - **instructions içindeki orijinal içeriği doğrudan tekrar edin, mevcut ifade tarzını ve kelime seçimini koruyun**
+  - **instructions içindeki her detayın olduğu gibi belirtildiğinden emin olun**, arka plan bilgisi gibi görünse bile belirtilmelidir, çünkü bu bilgiler ajanın önerilerini ve düzenlemelerini etkileyebilir
+  - İlk turda tüm gereksinimleri belirtmelisiniz
+  - instructions içinde sağlanmayan bilgileri uydurmayın.
+vietnamese: |-
+  # Cài đặt vai trò
+  Bạn đang đóng vai một người dùng tương tác với tác nhân. Hồ sơ nhân vật của bạn nằm trong thẻ <persona>, nhiệm vụ của bạn là truyền đạt nội dung trong <instructions> đến tác nhân một lần duy nhất.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Quy tắc tiết lộ thông tin:
+  - **Truyền đạt thông tin trong instructions dưới dạng ngôi thứ nhất, trực tiếp đến tác nhân một lần duy nhất**
+  - **Nhắc lại nguyên văn nội dung gốc trong instructions, giữ nguyên cách diễn đạt và từ ngữ**
+  - **Phải đảm bảo mọi chi tiết trong instructions đều được đề cập nguyên vẹn**, ngay cả những nội dung trông giống như thông tin nền cũng phải được nhắc đến, vì những thông tin này có thể ảnh hưởng đến đề xuất và sắp xếp của tác nhân
+  - Phải nêu ra tất cả các yêu cầu ngay trong lượt đầu tiên
+  - Không bịa đặt thông tin không có trong instructions.
+malay: |-
+  # Tetapan Watak
+  Anda sedang berperanan sebagai seorang pengguna yang berinteraksi dengan agen. Tetapan watak anda terdapat dalam tag <persona>, tugas anda adalah untuk menyampaikan kandungan dalam <instructions> kepada agen secara sekali gus.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Peraturan Pendedahan Maklumat:
+  - **Sampaikan maklumat dalam instructions kepada agen secara langsung dan sekali gus menggunakan bentuk orang pertama**
+  - **Ulangi secara langsung kandungan asal dalam instructions, kekalkan gaya penyampaian dan perkataan asal**
+  - **Pastikan setiap butiran dalam instructions disebut semula sebagaimana asal**, walaupun kandungan yang kelihatan seperti maklumat latar belakang perlu disebut, kerana maklumat ini mungkin mempengaruhi cadangan dan pengaturan agen
+  - Semua keperluan mesti dinyatakan pada pusingan pertama
+  - Jangan reka maklumat yang tidak disediakan dalam instructions.
+belarusian: |-
+  # Налада ролі
+  Вы адыгрываеце ролю карыстальніка, які ўзаемадзейнічае з агентам. Вашы наладкі персанажа знаходзяцца ў тэгу <persona>, ваша задача — аднаразова перадаць змест з <instructions> агенту.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Правілы раскрыцця інфармацыі:
+  - **Перадайце інфармацыю з instructions ад першай асобы, аднаразова і напрамую агенту**
+  - **Дакладна паўтарыце арыгінальны змест instructions, захоўваючы арыгінальны стыль выказвання і словы**
+  - **Неабходна пераканацца, што кожная дэталь у instructions згадана ў арыгінальным выглядзе**, нават калі змест выглядае як фонавая інфармацыя, яго трэба згадаць, таму што гэтая інфармацыя можа паўплываць на рэкамендацыі і планаванне агента
+  - У першым раўндзе неабходна агучыць усе патрабаванні
+  - Не выдумляйце інфармацыю, якая не прадастаўлена ў instructions.
+punjabi: |-
+  # ਭੂਮਿਕਾ ਸੈਟਿੰਗ
+  ਤੁਸੀਂ ਇੱਕ ਉਪਭੋਗਤਾ ਦੀ ਭੂਮਿਕਾ ਨਿਭਾ ਰਹੇ ਹੋ ਜੋ ਏਜੰਟ ਨਾਲ ਗੱਲਬਾਤ ਕਰ ਰਿਹਾ ਹੈ। ਤੁਹਾਡਾ ਕਿਰਦਾਰ ਸੈਟਿੰਗ <persona> ਟੈਗ ਵਿੱਚ ਹੈ, ਤੁਹਾਡਾ ਕੰਮ <instructions> ਵਿੱਚ ਸਮੱਗਰੀ ਨੂੰ ਇੱਕ ਵਾਰੀ ਏਜੰਟ ਤੱਕ ਪਹੁੰਚਾਉਣਾ ਹੈ।
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # ਜਾਣਕਾਰੀ ਪ੍ਰਗਟਾਉਣ ਦੇ ਨਿਯਮ:
+  - **instructions ਵਿੱਚ ਜਾਣਕਾਰੀ ਨੂੰ ਪਹਿਲੇ ਵਿਅਕਤੀ ਦੇ ਰੂਪ ਵਿੱਚ, ਇੱਕ ਵਾਰੀ ਸਿੱਧਾ ਏਜੰਟ ਤੱਕ ਪਹੁੰਚਾਓ**
+  - **instructions ਵਿੱਚ ਮੂਲ ਸਮੱਗਰੀ ਨੂੰ ਸਿੱਧਾ ਦੁਹਰਾਓ, ਮੂਲ ਪ੍ਰਗਟਾਵੇ ਦੇ ਢੰਗ ਅਤੇ ਸ਼ਬਦਾਵਲੀ ਨੂੰ ਬਰਕਰਾਰ ਰੱਖੋ**
+  - **ਇਹ ਯਕੀਨੀ ਬਣਾਉਣਾ ਜ਼ਰੂਰੀ ਹੈ ਕਿ instructions ਵਿੱਚ ਹਰ ਵੇਰਵੇ ਦਾ ਜ਼ਿਕਰ ਮੂਲ ਰੂਪ ਵਿੱਚ ਕੀਤਾ ਜਾਵੇ**, ਭਾਵੇਂ ਇਹ ਪਿਛੋਕੜ ਜਾਣਕਾਰੀ ਵਜੋਂ ਦਿਖਾਈ ਦਿੰਦਾ ਹੋਵੇ, ਇਸ ਜਾਣਕਾਰੀ ਦਾ ਜ਼ਿਕਰ ਕੀਤਾ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ, ਕਿਉਂਕਿ ਇਹ ਜਾਣਕਾਰੀ ਏਜੰਟ ਦੀਆਂ ਸਿਫਾਰਸ਼ਾਂ ਅਤੇ ਪ੍ਰਬੰਧਾਂ ਨੂੰ ਪ੍ਰਭਾਵਤ ਕਰ ਸਕਦੀ ਹੈ
+  - ਪਹਿਲੇ ਗੇੜ ਵਿੱਚ ਹੀ ਸਾਰੀਆਂ ਲੋੜਾਂ ਕਹਿਣੀਆਂ ਜ਼ਰੂਰੀ ਹਨ
+  - instructions ਵਿੱਚ ਨਾ ਦਿੱਤੀ ਗਈ ਜਾਣਕਾਰੀ ਨੂੰ ਗੜ੍ਹਨਾ ਨਹੀਂ ਚਾਹੀਦਾ।
+kazakh: |-
+  # Рөлдік баптау
+  Сіз агентпен өзара әрекеттесетін пайдаланушы рөлін ойнап жатырсыз. Сіздің кейіпкер сипаттамасыңыз <persona> тегінде, сіздің міндетіңіз <instructions> ішіндегі мазмұнды агентке бір ретте жеткізу.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # Ақпаратты ашу ережелері:
+  - **instructions ішіндегі ақпаратты бірінші жақтан, агентке бір ретте тікелей жеткізу**
+  - **instructions ішіндегі түпнұсқа мазмұнды тікелей қайталау, бастапқы мәнер мен сөздерді сақтау**
+  - **instructions ішіндегі әрбір деталь түпнұсқа күйінде аталуы тиіс**, тіпті ақпарат фондық ақпарат болып көрінсе де аталуы керек, өйткені бұл ақпарат агенттің ұсыныстары мен жоспарларына әсер етуі мүмкін
+  - Алғашқы кезеңде барлық сұраныстарды айту керек
+  - instructions ішінде берілмеген ақпаратты ойлап таппаңыз.
+khmer: |-
+  # ការកំណត់តួនាទី
+  អ្នកកំពុងដើរតួជាអ្នកប្រើប្រាស់ដែលកំពុងធ្វើអន្តរកម្មជាមួយភ្នាក់ងារ។ ការកំណត់តួអង្គរបស់អ្នកស្ថិតនៅក្នុងស្លាក <persona> ហើយភារកិច្ចរបស់អ្នកគឺត្រូវបញ្ជូនមាតិកានៅក្នុង <instructions> ទៅកាន់ភ្នាក់ងារម្តងគត់។
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # ច្បាប់នៃការបង្ហាញព័ត៌មាន៖
+  - **បញ្ជូនព័ត៌មាននៅក្នុង instructions តាមទម្រង់បុគ្គលទីមួយ ដោយផ្ទាល់ទៅកាន់ភ្នាក់ងារម្តងគត់**
+  - **រៀបរំឡើងវិញនូវមាតិកាដើមនៅក្នុង instructions ដោយផ្ទាល់ ដោយរក្សាវិធីសាស្ត្របញ្ចេញមតិ និងពាក្យសម្តីដើម**
+  - **ត្រូវប្រាកដថារាល់ចំណុចលម្អិតនៅក្នុង instructions ត្រូវបានលើកឡើងដូចដើម** ទោះបីជាមាតិកាដែលមើលទៅដូចជាព័ត៌មានផ្ទៃខាងក្រោយក៏ត្រូវលើកឡើងដែរ ព្រោះព័ត៌មានទាំងនេះអាចប៉ះពាល់ដល់ការណែនាំ និងការរៀបចំរបស់ភ្នាក់ងារ
+  - ត្រូវបញ្ចេញតម្រូវការទាំងអស់នៅក្នុងវគ្គទីមួយ
+  - កុំបង្កើតព័ត៌មានដែលមិនមានផ្តល់ជូននៅក្នុង instructions ។
+burmese: |-
+  # အခန်းကဏ္ဍ သတ်မှတ်ချက်
+  သင်သည် အေးဂျင့်တစ်ခုနှင့် ထိတွေ့ဆက်ဆံနေသော အသုံးပြုသူတစ်ဦးအဖြစ် သရုပ်ဆောင်နေသည်။ သင့်ဇာတ်ကောင် သတ်မှတ်ချက်ကို <persona> တက်ဂ်တွင် ထားရှိပြီး၊ သင့်တာဝန်မှာ <instructions> ရှိ အကြောင်းအရာများကို အေးဂျင့်ထံသို့ တစ်ကြိမ်တည်းဖြင့် လွှဲပြောင်းပေးရန် ဖြစ်သည်။
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # သတင်းအချက်အလက် ထုတ်ဖော်ပြောကြားမှု စည်းမျဉ်းများ-
+  - **instructions ရှိ အချက်အလက်များကို ပထမပုဂ္ဂိုလ် အနေအထားဖြင့် အေးဂျင့်ထံသို့ တစ်ကြိမ်တည်းတွင် တိုက်ရိုက်လွှဲပြောင်းပေးပါ**
+  - **instructions ရှိ မူလအကြောင်းအရာကို တိုက်ရိုက်ထပ်လောပြောပါ၊ မူလဖော်ပြချက်နှင့် စကားလုံးအသုံးအနှုန်းများကို ထိန်းသိမ်းထားပါ**
+  - **instructions ရှိ အသေးစိတ်အချက်အလက်တိုင်းကို မူလအတိုင်း ထည့်သွင်းဖော်ပြကြောင်း သေချာစေရမည်**၊ နောက်ခံသတင်းအချက်အလက်ကဲ့သို့ ထင်ရသော အကြောင်းအရာများကိုပင် ထည့်သွင်းဖော်ပြရမည်၊ အဘယ်ကြောင့်ဆိုသော် ဤအချက်အလက်များသည် အေးဂျင့်၏ အကြံပြုချက်နှင့် စီစဉ်မှုများကို သက်ရောက်မှုရှိနိုင်သောကြောင့် ဖြစ်သည်
+  - ပထမအကြိမ်တွင် လိုအပ်ချက်အားလုံးကို ပြောပြရမည်
+  - instructions တွင် ပေးထားခြင်းမရှိသော အချက်အလက်များကို တီထွင်ဖန်တီးမှု မပြုလုပ်ပါနှင့်။
+lao: |-
+  # ການຕັ້ງຄ່າບົດບາດ
+  ເຈົ້າກຳລັງສະແດງບົດບາດເປັນຜູ້ໃຊ້ທີ່ໂຕ້ຕອບກັບເອເຈັນ. ການຕັ້ງຄ່າຕົວລະຄອນຂອງເຈົ້າຢູ່ໃນແທັກ <persona>, ໜ້າທີ່ຂອງເຈົ້າແມ່ນສົ່ງຕໍ່ເນື້ອຫາໃນ <instructions> ໃຫ້ແກ່ເອເຈັນໃນຄັ້ງດຽວ.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # ກົດລະບຽບການເປີດເຜີຍຂໍ້ມູນ:
+  - **ສົ່ງຕໍ່ຂໍ້ມູນໃນ instructions ຕາມຮູບແບບບຸກຄົນທີໜຶ່ງ, ສົ່ງຕໍ່ໂດຍກົງໃຫ້ແກ່ເອເຈັນໃນຄັ້ງດຽວ**
+  - **ກ່າວຊ້ຳເນື້ອຫາດັ້ງເດີມໃນ instructions ໂດຍກົງ, ຮັກສາວິທີການສະແດງອອກ ແລະ ຄຳສັບຕາມເດີມ**
+  - **ຕ້ອງຮັບປະກັນວ່າທຸກລາຍລະອຽດໃນ instructions ຖືກເອ່ຍເຖິງຕາມເດີມ**, ເຖິງແມ່ນວ່າເນື້ອຫາທີ່ເບິ່ງຄືວ່າເປັນຂໍ້ມູນພື້ນຫຼັງກໍຕ້ອງເອ່ຍເຖິງ, ເພາະຂໍ້ມູນເຫຼົ່ານີ້ອາດສົ່ງຜົນກະທົບຕໍ່ການແນະນຳ ແລະ ການຈັດວາງຂອງເອເຈັນ
+  - ຕ້ອງລະບຸຄວາມຕ້ອງການທັງໝົດໃນຄັ້ງທຳອິດ
+  - ຢ່າປະພັນຂໍ້ມູນທີ່ບໍ່ໄດ້ມີໃຫ້ໃນ instructions.
+tamil: |-
+  # பாத்திர அமைப்பு
+  நீங்கள் ஒரு ஏஜெண்ட் உடன் தொடர்பு கொள்ளும் பயனராக நடிக்கிறீர்கள். உங்கள் பாத்திர அமைப்பு <persona> டேக்கில் உள்ளது, உங்கள் பணி <instructions> இ உள்ள உள்ளடக்கத்தை ஒரே முறையாக ஏஜெண்டிற்கு தெரிவிப்பதாகும்.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # தகவல் வெளிப்பாடு விதிகள்:
+  - **instructions இ உள்ள தகவல்களை முதல் நபர் வடிவத்தில், ஒரே முறையாக நேரடியாக ஏஜெண்டிற்கு தெரிவிக்கவும்**
+  - **instructions இ உள்ள அசல் உள்ளடக்கத்தை நேரடியாக மீண்டும் கூறவும், அசல் வெளிப்பாடு முறை மற்றும் சொற்களைப் பேணவும்**
+  - **instructions இ உள்ள ஒவ்வொரு விவரத்தையும் அப்படியே குறிப்பிட வேண்டும் என்பதை உறுதி செய்யவும்**, பின்னணி தகவலாகத் தோன்றினாலும் குறிப்பிட வேண்டும், ஏனெனில் இந்த தகவல்கள் ஏஜெண்டின் பரிந்துரைகள் மற்றும் ஏற்பாடுகளை பாதிக்கலாம்
+  - முதல் சுற்றிலேயே அனைத்து தேவைகளையும் கூற வேண்டும்
+  - instructions இ வழங்கப்படாத தகவல்களை கற்பனை செய்ய வேண்டாம்.
+telugu: |-
+  # పాత్ర సెట్టింగ్
+  మీరు ఏజెంట్‌తో సంకర్షణ చెందుతున్న వినియోగదారుగా నటిస్తున్నారు. మీ పాత్ర సెట్టింగ్ <persona> ట్యాగ్‌లో ఉంది, మీ పని <instructions>లోని కంటెంట్‌ను ఏజెంట్‌కు ఒకేసారి తెలియజేయడం.
+
+  <persona>
+  {persona}
+  </persona>
+  <instructions>
+  {instructions}
+  </instructions>
+
+  # సమాచార వెల్లడి నియమాలు:
+  - **instructionsలోని సమాచారాన్ని మొదటి వ్యక్తి రూపంలో, ఏజెంట్‌కు ఒకేసారి నేరుగా తెలియజేయండి**
+  - **instructionsలోని అసలు కంటెంట్‌ను నేరుగా పునరావృతం చేయండి, అసలు వ్యక్తీకరణ మరియు పదాలను నిర్వహించండి**
+  - **instructionsలోని ప్రతి వివరం అలాగే ప్రస్తావించబడిందని నిర్ధారించుకోవాలి**, అది నేపథ్య సమాచారంగా కనిపించినా సరే ప్రస్తావించాలి, ఎందుకంటే ఈ సమాచారం ఏజెంట్ యొక్క సిఫార్సులు మరియు ఏర్పాట్లను ప్రభావితం చేయవచ్చు
+  - మొదటి రౌండ్‌లోనే అన్ని అవసరాలను చెప్పాలి
+  - instructionsలో అందించని సమాచారాన్ని కల్పించకూడదు.

@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "列車チケット情報を照会し、出発地、目的地、日付、その他の条件で列車チケットデータを検索することをサポートします。基準を満たす列車情報を返し、列車番号、出発/到着時間、駅情報、旅行時間、座席クラス、残席状況、価格などを含みます。直行ルートと乗り継ぎルートをサポートします。直行ルートは最初の区間のみを表示し、乗り継ぎルートは各区間の詳細情報を表示します。旅行計画では、すべての列車関連情報はこのツールから返された結果に厳密に基づく必要があり、捏造してはなりません。駅名と列車名はクエリ結果と完全に一致している必要があります。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "出発都市、都市名をサポート"
+          },
+          "destination": {
+            "type": "string",
+            "description": "目的地都市、都市名をサポート"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "出発日、形式: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "列車の座席クラス: ファーストクラスシート, 二等座席, ビジネスシート"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "フライト情報を照会し、出発地、目的地、日付、その他の条件でフライトデータを検索することをサポートします。基準を満たすフライト情報を返し、フライト番号、出発/到着時間、空港情報、旅行時間、座席クラス、残席状況、価格、機種などを含みます。直行便と乗り継ぎ便をサポートします。直行便は最初の区間のみを表示し、乗り継ぎ便は各区間の詳細情報を表示します。旅行計画では、すべてのフライト関連情報はこのツールから返された結果に厳密に基づく必要があり、捏造してはなりません。空港名、フライト番号などはクエリ結果と完全に一致している必要があります。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "出発都市、都市名をサポート"
+          },
+          "destination": {
+            "type": "string",
+            "description": "目的地都市、都市名をサポート"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "出発日、形式: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "フライトの座席クラス: エコノミークラス, ビジネスクラス, ファーストクラス"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "ホテル情報を照会し、目的地（行政区域）、チェックイン日、チェックアウト日、ホテルの星評価、ホテルブランドに基づいてホテルを検索します。旅行計画では、すべてのホテル関連情報はこのツールから返された結果に厳密に基づく必要があり、捏造してはなりません。ホテル名はクエリ結果と完全に一致している必要があります。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "目的地（国、州、市、地区/郡名）"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "チェックイン日、形式: yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "チェックアウト日、形式: yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "ホテルの星評価: 1~5; 単一の値"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "ホテルブランド、単一の値クエリのみをサポート。オプションのブランド: ジーホテル, アトゥールホテル, マリオット, ヒルトン, ホームイン, ジンジャンイン, ハンティングホテル, オレンジホテル"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "観光地の詳細情報を照会します。観光地名に基づいて、観光地ID、名前、都市、緯度と経度の座標、観光地の説明、ユーザー評価、開館時間、閉館時間、休館日、推奨訪問時間（最小/最大時間）、チケット価格、観光地の種類などを含む完全な情報を返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "観光地名"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "都市のキーワード（観光地名、説明、種類など）に基づいて人気のある観光地情報を検索して返します。旅行計画の生成中、すべての観光地情報はこのツールから返された結果に厳密に基づく必要があり、捏造したり他のソースからの観光地データを使用したりしてはなりません。使用される観光地名はクエリ結果と完全に一致している必要があり、省略や改名はできません。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "都市名またはキーワード"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "アトラクションタイプフィルター（列挙型）、オプション：'歴史と文化'、'自然の風景'、'美術展'、'都市のランドマーク'、'Theme Park'、'レジャー体験'"
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "地名に対応する緯度と経度の座標を照会します。例えば、'Beijing South Railway Station'を入力すると、その座標が返され、値は小数点以下6桁まで保持されます。旅行計画では、関与するすべての地名は他のツールから返された結果に厳密に基づく必要があり、完全に一致している必要があります。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "クエリする場所名、例：'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "2つの場所間の道路ルートの詳細を計算して返します。距離（メートル）、推定所要時間（分）、推定費用（通貨）を含みます。この機能は、総距離に基づいて自動的に交通手段を選択します：2キロメートル以下の場合は徒歩（費用0）、2キロメートルを超える場合は運転（タクシー）モード。推定費用は1台の車両に対するもので、デフォルトで4人が乗車可能です。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "出発地の座標（形式：緯度、経度）、精度は小数点以下6桁を保持"
+          },
+          "destination": {
+            "type": "string",
+            "description": "目的地の座標（形式：緯度、経度）、精度は小数点以下6桁を保持"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "指定された緯度と経度の座標に基づいて近くのレストラン情報を推薦します。返されるリストには、レストラン名、緯度と経度の座標、1人あたりの価格、評価、営業時間などの詳細情報が含まれます。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "緯度座標、精度は小数点以下6桁を保持"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "経度座標、精度は小数点以下6桁を保持"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "レストランの詳細情報を照会します。レストラン名に基づいて、レストラン名、緯度と経度の座標、1人あたりの価格、開店時間、閉店時間、評価、その他の詳細情報を含む完全な情報を返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "レストラン名"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "מטפל בשאילתות שפה טבעית רחבות ופתוחות. הוא מבצע חיפוש סמנטי על מידע מפתח של מוצרים (שם, מותג, קטגוריה, תגיות) כדי לאחזר במהירות סט ראשוני של מוצרים רלוונטיים. זהו השלב הראשון בחקר המשתמש.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "שאילתת שפה טבעית של המשתמש. לדוגמה, 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "אופציונלי. מגביל את מספר ה-product_ids המוחזרים. ברירת המחדל היא 20 כדי למנוע תוצאות גדולות מדי."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "מסנן רשימה נתונה של מזהי מוצרים לפי שם מותג אחד או יותר. אם ניתנים מספר שמות מותגים, הוא מחזיר מוצרים התואמים לכל אחד מהמותגים (לוגיקת OR).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה אופציונלית של product_ids לסינון. אם לא מסופק, מסנן מתוך כל קטלוג המוצרים."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה של שמות מותגים להתאמה. לדוגמה, ['UNIQLO'] או ['Nike', 'ZARA']"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "מסנן רשימה נתונה של מזהי מוצרים לפי צבע אחד או יותר. אם ניתנים מספר צבעים, הוא מחזיר מוצרים התואמים לכל אחד מהצבעים (לוגיקת OR). התאמת צבעים בודקת את שדה ה'צבע' של המוצר. אם product_ids לא מסופק, מסנן מתוך כל קטלוג המוצרים.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה אופציונלית של product_ids לסינון. אם לא מסופק, מסנן מתוך כל קטלוג המוצרים."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה של שמות צבעים להתאמה. לדוגמה, ['White'] או ['Black', 'Blue']"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "מסנן רשימה נתונה של מזהי מוצרים לפי מידה אחת או יותר. אם ניתנות מספר מידות, הוא מחזיר מוצרים התואמים לכל אחת מהמידות (לוגיקת OR). התאמת מידות בודקת את שדה ה'מידה' של המוצר (למשל, 'M', 'L', '42', '140cm'). אם product_ids לא מסופק, מסנן מתוך כל קטלוג המוצרים.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה אופציונלית של product_ids לסינון. אם לא מסופק, מסנן מתוך כל קטלוג המוצרים."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימת גדלים להתאמה. לדוגמה, [\"M\"] או [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "מסנן רשימה של מזהי מוצרים על בסיס קופונים זמינים. כלי זה מתאים את כל המוצרים ש'קופונים זמינים' שלהם מכיל את שמות הקופונים המסופקים. לדוגמה, שימוש ב-['Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200'] יתאים מוצרים שיש להם את שני הקופונים הללו ברשימת הקופונים הזמינים שלהם.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה אופציונלית של product_ids לסינון. אם לא מסופק, מסנן מתוך כל קטלוג המוצרים."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימת שמות קופונים להתאמה. לדוגמה, [\"Cross-store: ¥30 off every ¥300\"] או [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "מסנן רשימה של מזהי מוצרים על בסיס תכונה מספרית, מפעיל השוואה וערך סף.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה אופציונלית של product_ids לסינון. אם לא מסופק, מסנן מתוך כל קטלוג המוצרים."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "ממד התכונה המספרי לסינון.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "אופרטור ההשוואה.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "הערך המספרי להשוואה."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "ממיין רשימה נתונה של מזהי מוצרים לפי מימד וסדר מסוימים.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה אופציונלית של product_ids למיון. אם לא סופקה, ממיין מתוך כל קטלוג המוצרים."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "ממד התכונה לשימוש כבסיס המיון.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "סדר המיון. ברירת המחדל היא 'desc' (יורד).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "מאחזר את המידע המלא והמפורט עבור רשימה של מזהי מוצרים.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "רשימה של מזהים ייחודיים של מוצרים להבאת פרטים עבורם."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "מחשב את זמן המשלוח המשוער בימים עבור מוצר. הוא משתמש במקור המשלוח של המוצר ובכתובת היעד של המשתמש. התוצאה הסופית היא מספר שלם של ימים.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "המזהה הייחודי של המוצר למציאת מקור המשלוח שלו."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "כתובת היעד של המשתמש, שחייבת להיות שם המחוז כתוב בפיניין, כגון 'guangdong', 'beijing', 'shanghai', וכו'. רק פיניין מתקבל עבור פרמטר קלט זה."
+          },
+          "provider": {
+            "type": "string",
+            "description": "אופציונלי. שם ספק המשלוח להתאמת זמן האספקה. ספקים נתמכים כוללים 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default'. אם לא סופק, משתמש בספק ברירת המחדל של המוצר."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "מאחזר מידע על המשתמש מהמסד נתונים, כולל כתובת המשתמש, מידות גוף ופרטי פרופיל אחרים. אם user_id מסופק, מחזיר את המידע הספציפי של אותו משתמש; אם לא, מחזיר את המידע של המשתמש הנוכחי/ברירת המחדל.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "אופציונלי. המזהה הייחודי של המשתמש לשליפה. אם לא סופק, מחזיר את מידע המשתמש ברירת המחדל."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "מוסיף מוצר לעגלת הקניות. מאמת שהמוצר קיים בקטלוג המוצרים ובודק זמינות מלאי. אם המוצר כבר בעגלה, הוא מגדיל את הכמות. הכלי מעדכן אוטומטית את סיכום העגלה (סך כל הפריטים והמחיר הכולל) לאחר ההוספה. מחזיר את העגלה המעודכנת עם כל הפריטים ומידע הסיכום.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "המזהה הייחודי של המוצר להוספה לעגלה. חייב להיות קיים בקטלוג המוצרים."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "אופציונלי. הכמות להוספה. חייב להיות מספר שלם חיובי. ברירת המחדל היא 1. הכלי בודק אם הוספת כמות זו תעלה על stock_quantity של המוצר (כולל פריטים שכבר בעגלה)."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "מסיר מוצר מעגלת הקניות או מפחית את כמותו. מאמת שהמוצר קיים בקטלוג המוצרים ונמצא כרגע בעגלה. אם הכמות להסרה שווה או עולה על כמות העגלה, הפריט מוסר לחלוטין. הכלי מעדכן אוטומטית את סיכום העגלה ומסיר פריטים עם כמות אפס. מחזיר את העגלה המעודכנת עם כל הפריטים ומידע הסיכום.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "המזהה הייחודי של המוצר להסרה מהעגלה. חייב להיות קיים בקטלוג המוצרים ולהיות כרגע בעגלה."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "אופציונלי. הכמות להסרה. חייב להיות מספר שלם חיובי. ברירת המחדל היא 1. אם הכמות שווה או עולה על כמות העגלה, הפריט מוסר לחלוטין."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "מאחזר את המידע הנוכחי של עגלת הקניות כולל כל הפריטים וסטטיסטיקות הסיכום. מחזיר רשימה של פריטי עגלה (כל אחד עם product_id, שם, כמות ומחיר) ואובייקט סיכום המכיל total_items_count (סכום כל הכמויות) ו-total_price (סכום כל מחירי הפריטים * כמויות). אין צורך בפרמטרים - מחזיר את מצב העגלה הנוכחי.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "מוסיף קופון לעגלת הקניות. מאמת שהקופון קיים ברשימת הקופונים התקפים, בודק בעלות המשתמש על הקופון ומוודא שסך העגלה עומד בדרישת הסף של הקופון. אם אותו קופון כבר בעגלה, הוא מעדכן את הכמות. הכלי מעדכן אוטומטית את סיכום העגלה (סך כל הפריטים והמחיר הכולל לאחר הנחה) לאחר ההוספה. מחזיר את העגלה המעודכנת עם כל הפריטים, הקופונים בשימוש ומידע הסיכום.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "שם הקופון להוספה לעגלה. חייב להיות אחד מהקופונים התקפים מרשימת הקופונים. דוגמאות: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "אופציונלי. הכמות של הקופונים להוספה. חייב להיות מספר שלם חיובי. ברירת המחדל היא 1. הכלי בודק אם למשתמש יש מספיק קופונים ואם סך העגלה מספיק לכמות המבוקשת."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "מסיר קופון מעגלת הקניות או מפחית את כמותו. מאמת שהקופון קיים ברשימת הקופונים התקפים ונמצא כרגע בעגלה. אם הכמות להסרה שווה או עולה על כמות העגלה, הקופון מוסר לחלוטין. הכלי מעדכן אוטומטית את סיכום העגלה (סך כל הפריטים והמחיר הכולל לאחר הנחה) ומסיר קופונים עם כמות אפס. מחזיר את העגלה המעודכנת עם כל הפריטים, הקופונים בשימוש ומידע הסיכום.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "שם הקופון להסרה מהעגלה. חייב להיות אחד מהקופונים התקפים וכרגע בעגלה."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "אופציונלי. הכמות של הקופונים להסרה. חייב להיות מספר שלם חיובי. ברירת המחדל היא 1. אם הכמות שווה או עולה על כמות העגלה, הקופון מוסר לחלוטין."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

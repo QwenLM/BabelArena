@@ -1,0 +1,122 @@
+BabelArena
+==========
+
+This repository redistributes four existing agent benchmarks, each extended
+with multilingual task data. The evaluation code and task content are the work
+of their upstream authors; what is added here is the multilingual data, the
+frozen `standard` task subsets, and the unified runner.
+
+
+benchmarks/tau3/
+----------------
+Derived from tau2-bench (tau3-bench) by Sierra Research.
+    https://github.com/sierra-research/tau2-bench
+Licensed under the MIT License; see benchmarks/tau3/LICENSE.
+
+Papers to cite are listed in the Citation section of the top-level README.md
+(tau-bench, tau^2-bench, tau-Knowledge, tau-Voice, and the SABER task-fix work).
+
+Modifications in this distribution:
+  - Translated policies, tasks, tool descriptions, databases, and user-simulator
+    prompts for 23 languages. (Partial German artifacts carried in the source
+    tree had no localized database behind them and were dropped.)
+  - A frozen `standard` task subset (data/task_subsets/standard/), default.
+  - LLM calls go through src/tau2/utils/llm_utils.py, an OpenAI-compatible HTTP
+    client, rather than upstream's litellm path.
+  - Voice-mode task data and audio assets removed; upstream's shipped baseline
+    result archive removed; the translation tooling under tools/ removed.
+
+
+benchmarks/vitabench/
+---------------------
+Derived from VitaBench by Meituan LongCat.
+    https://github.com/meituan-longcat/vitabench
+See benchmarks/vitabench/LICENSE.
+
+    NOTE: the LICENSE file carried in the upstream tree names Sierra Research,
+    reflecting that VitaBench adapted part of the tau2-bench codebase. Confirm
+    with the VitaBench authors which copyright line should apply to a
+    redistribution before publishing.
+
+Modifications in this distribution:
+  - Translated tasks, tool schemas, and evaluator prompts for 23 languages.
+  - A frozen `standard` task subset (data/task_subsets/standard/), made the
+    default in src/vita/cli.py.
+  - src/vita/utils/utils.py: DATA_DIR now honours a VITA_DATA_DIR environment
+    variable, modelled on tau3's existing TAU2_DATA_DIR, so the data can live
+    outside the source tree.
+  - src/vita/utils/llm_utils.py: developer comments translated to English, and
+    a fix so that an "empty turn" response (thinking only, no content and no
+    named tool call) is not written to the request cache -- caching it made
+    every retry of that task replay the same dead turn.
+
+
+benchmarks/deepplanning/
+------------------------
+Derived from DeepPlanning by the Qwen team.
+    https://huggingface.co/datasets/Qwen/DeepPlanning
+
+    *** UNRESOLVED: no license file. ***
+
+    The upstream tree ships no LICENSE, and its README defers to "individual
+    domain directories", which also contain none. The license terms for the
+    DeepPlanning code and data must be established with the Qwen team before
+    this suite is published. Until then, treat benchmarks/deepplanning/ as
+    not cleared for redistribution.
+
+Modifications in this distribution:
+  - Translated queries, tool schemas, prompts, and per-language rendered seed
+    databases for 23 languages.
+  - A frozen `standard` task subset (task_subsets/standard/), default.
+  - The translation and database-rendering pipeline (translation/, and the
+    build scripts under scripts/) removed; documentation updated accordingly.
+  - New data_paths.py resolves seed-database locations through a
+    DEEPPLANNING_DATA_DIR environment variable (default: in-tree, as upstream),
+    so the databases can live outside the source tree. travelplanning/run.py,
+    shoppingplanning/run.py, shoppingplanning/run.sh and task_selection.py were
+    updated to go through it.
+  - run_all.sh accepts DEEPPLANNING_MODELS_CONFIG in its preflight check, not
+    only an in-tree models_config.json.
+  - travelplanning/run.sh: exits non-zero when a model failed. It counted and
+    printed failures but still exited 0, so run_all.sh reported the domain as
+    completed and any wrapper above it saw a successful run that had produced no
+    results.
+  - travelplanning/run.sh: honours DEEPPLANNING_TASK_IDS (as the shopping runner
+    already did) and TRAVEL_CONVERSION_MODEL, whose value was previously ignored
+    in favour of a hardcoded conversion model.
+  - shoppingplanning/run.sh: resumes inside a DEEPPLANNING_RUN_DIR. A level that
+    already has its summary is skipped, one whose inference finished is only
+    re-evaluated, and any other leftovers are cleared and the level redone.
+    Previously any existing output aborted the script, so an interrupted run
+    could not be completed under the same directory.
+
+
+benchmarks/claw/
+----------------
+Derived from Claw-Eval by Bowen Ye, Rang Li et al.
+    https://claw-eval.github.io  (arXiv 2604.06132)
+Claw-Eval's tasks draw from and adapt tasks contributed by OpenClaw,
+PinchBench, OfficeQA, OneMillion-Bench, Finance Agent and Terminal-Bench 2.0.
+
+    *** UNRESOLVED: no license file. ***
+
+    Upstream's README declares the MIT License and links a LICENSE file, but none is
+    present in this tree or anywhere in the history of the fork it was copied
+    from. Obtain upstream's LICENSE and copyright line before publishing.
+
+Modifications in this distribution (details: benchmarks/claw/VENDORED.md):
+  - Task prompts, fixtures, graders and user-simulator prompts for 23
+    languages, and a frozen `standard` task subset (task_subsets/standard/).
+  - An Anthropic Messages agent provider (anthropic_native.py), a Gemini
+    generateContent route for the user simulator, a reasoning echo switch,
+    fail-fast on oversized judge requests, and an optional time-limit
+    multiplier (CLAW_EVAL_TIMEOUT_MULT, default off).
+  - Local credentials, internal per-model run configs, an internal results log,
+    one-off sweep scripts, the failure-analysis module and the translation
+    tooling removed.
+
+
+Third-party models
+------------------
+Running this suite calls external model APIs. Nothing here grants rights to any
+model; the terms of whichever endpoint you configure apply.

@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "ລວມທັງໝົດ {base_total} ບໍ່ພຽງພໍສໍາລັບການປະສົມປະສານຂອງຄູປອງນີ້ (ຕ້ອງການຢ່າງນ້ອຍ {total_threshold_required})",
+    "coupon_name_required": "coupon_name ຈະຕ້ອງມີ",
+    "quantity_positive": "ຈໍານວນຕ້ອງເປັນຕົວເລກບວກ",
+    "coupon_not_found": "ບໍ່ພົບຄູປອງ: '{coupon_name}'. ຄູປອງທີ່ຖືກຕ້ອງແມ່ນ: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "ຈໍານວນຄູປອງບໍ່ພຽງພໍ: ຜູ້ໃຊ້ມີ {user_coupon_count} ຂອງ '{coupon_name}', ລົດເຂັນໃຊ້ຢູ່ແລ້ວ {existing_cart_count}, ບໍ່ສາມາດເພີ່ມ {quantity} ໄດ້ອີກ",
+    "vip_coupon_required": "ຄູປອງ VIP '{coupon_name}' ຕ້ອງການສະຖານະ VIP, ແຕ່ຜູ້ໃຊ້ບໍ່ແມ່ນ VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id ຈະຕ້ອງມີ",
+    "quantity_positive": "ຈໍານວນຕ້ອງເປັນຕົວເລກບວກ",
+    "product_not_found": "ບໍ່ພົບສິນຄ້າ: product_id '{product_id}'",
+    "insufficient_stock": "ສິນຄ້າບໍ່ພຽງພໍ: ສິນຄ້າ '{product_name}' (ID: {product_id}) ມີ {stock_quantity} ຢູ່ໃນສາງ, ລົດເຂັມມີຢູ່ແລ້ວ {existing_quantity}, ບໍ່ສາມາດເພີ່ມ {quantity} ອີກ",
+    "save_cart_failed": "ບໍ່ສຳເລັດໃນການບັນທຶກລົດເຂັມ: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "ພາລາມິເຕີຕ້ອງເປັນສະຕຣິງ JSON ທີ່ຖືກຕ້ອງ! ຂໍ້ຜິດພາດ: {err}",
+    "missing_required_arg": "ຂາດຂໍ້ຖາມທີ່ຈຳເປັນ: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ບໍ່ພົບສິນຄ້າທີ່ມີ ID '{product_id}'.",
+    "shipping_origin_not_found": "ບໍ່ພົບຕົ້ນທາງການສົ່ງສຳລັບສິນຄ້າ '{product_id}'.",
+    "cannot_determine_province": "ບໍ່ສາມາດກຳນົດແຂວງທີ່ຖືກຕ້ອງຈາກທີ່ຢູ່ຕົ້ນທາງ: '{address}'.",
+    "cannot_determine_destination_province": "ບໍ່ສາມາດກຳນົດແຂວງທີ່ຖືກຕ້ອງຈາກທີ່ຢູ່ປາຍທາງ: '{address}'.",
+    "valid_province_required": "ກະລຸນາໃຫ້ຊື່ແຂວງຂອງຈີນທີ່ຖືກຕ້ອງ.",
+    "cannot_map_to_region": "ບໍ່ສາມາດແປແຂວງເປັນພື້ນທີ່ພູມສາດໄດ້."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name ຈະຕ້ອງມີ",
+    "quantity_positive": "ຈໍານວນຕ້ອງເປັນຕົວເລກບວກ",
+    "invalid_coupon_name": "ຊື່ຄູປອງບໍ່ຖືກຕ້ອງ: '{coupon_name}'. ຄູປອງທີ່ຖືກຕ້ອງແມ່ນ: {valid_coupons_str}",
+    "coupon_not_in_cart": "ຄູປອງບໍ່ຢູ່ໃນກະຕ່າ: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "ຈຳນວນຄູປອງບໍ່ພຽງພໍໃນກະຕ່າ: ກະຕ່າມີ {cart_count} ຂອງ '{coupon_name}', ບໍ່ສາມາດລຶບ {quantity}",
+    "save_cart_failed": "ບໍ່ສຳເລັດໃນການບັນທຶກລົດເຂັມ: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id ຈະຕ້ອງມີ",
+    "quantity_positive": "ຈໍານວນຕ້ອງເປັນຕົວເລກບວກ",
+    "product_not_found": "ບໍ່ພົບສິນຄ້າ: product_id '{product_id}'",
+    "product_not_in_cart": "ສິນຄ້າບໍ່ຢູ່ໃນກະຕ່າ: product_id '{product_id}'",
+    "save_cart_failed": "ບໍ່ສຳເລັດໃນການບັນທຶກລົດເຂັມ: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "ບາງ product_ids ບໍ່ພົບໃນຖານຂໍ້ມູນ: {missing_ids}",
+    "invalid_coupon_names": "ຊື່ຄູປອງບໍ່ຖືກຕ້ອງ: {coupon_names}. ຄູປອງທີ່ຖືກຕ້ອງແມ່ນ: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "ບາງ product_ids ບໍ່ພົບໃນຖານຂໍ້ມູນ: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "ບາງ product_ids ບໍ່ພົບໃນຖານຂໍ້ມູນ: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "ບາງ product_ids ບໍ່ພົບໃນຖານຂໍ້ມູນ: {missing_ids}",
+    "missing_range_params": "ຂາດພາລາມິເຕີທີ່ຈຳເປັນ: condition_key, operator, ຫຼື value.",
+    "condition_key_not_found": "condition_key ບໍ່ສາມາດພົບໃນຂໍ້ມູນຜະລິດຕະພັນ, ກະລຸນາກວດສອບອີກຄັ້ງ."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "ບາງ product_ids ບໍ່ພົບໃນຖານຂໍ້ມູນ: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "ຜູ້ໃຊ້ທີ່ມີ user_id '{user_id}' ບໍ່ພົບ"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "ດັດຊະນີ BM25 ບໍ່ສາມາດໃຊ້ງານໄດ້. ກວດສອບການໂຫຼດຖານຂໍ້ມູນ."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "ຂາດພາລາມິເຕີທີ່ຈຳເປັນ: sort_by.",
+    "invalid_order": "ຄ່າທີ່ບໍ່ຖືກຕ້ອງສຳລັບ 'order': '{order}'. ຕ້ອງເປັນ 'asc' ຫຼື 'desc'.",
+    "sort_error": "ເກີດຂໍ້ຜິດພາດໃນຂະບວນການຈັດລຽງຕາມຄີ '{sort_by}': {e}",
+    "sort_key_not_found": "ຄີສຳລັບການຈັດລຽງ '{sort_by}' ບໍ່ສາມາດພົບໃນຂໍ້ມູນຜະລິດຕະພັນ ຫຼື ເປັນ null. ກະລຸນາກວດສອບອີກຄັ້ງ."
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "数据库未加载",
+    "not_found": "未找到景点 {name} 的详细信息",
+    "attraction_id": "景点ID",
+    "attraction_name": "景点名称",
+    "city": "所属城市",
+    "address": "地址",
+    "coordinates": "经纬度坐标",
+    "latitude": "纬度",
+    "longitude": "经度",
+    "description": "景点简介",
+    "rating": "用户评分",
+    "visitor_rating": "（游客平均评价）",
+    "opening_hours": "开放时间",
+    "to": "至",
+    "closed_dates": "闭馆日期",
+    "min_visit_hours": "建议最短游玩时长",
+    "max_visit_hours": "建议最长游玩时长",
+    "hours_unit": "小时",
+    "ticket_price": "门票价格",
+    "currency_unit": "元",
+    "attraction_type": "景点类型",
+    "db_loaded": "✓ 景点数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 景点数据库未找到于 {path}"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "数据库未加载",
+    "not_found": "未找到景点推荐",
+    "recommendations": "推荐的景点有：\n",
+    "attraction_suffix": "{name}，{desc}这是一个{atype}类型的景点",
+    "db_loaded": "✓ 景点数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 景点数据库未找到于 {path}"
+  },
+  "FlightQueryTool": {
+    "segment": "第{idx}段",
+    "remaining_seats": "剩余票数量",
+    "sufficient": "充足",
+    "no_info": "未查询到信息，请检查输入参数",
+    "not_found": "未找到从 {o} 到 {d} 在 {date} 的航班信息",
+    "db_loaded": "✓ 航班数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 航班数据库未找到于 {path}"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "数据库未加载",
+    "not_found": "未找到满足条件的 {dest} 在 {checkin} 到 {checkout} 的酒店信息,请检查参数信息或减少约束条件",
+    "db_loaded": "✓ 酒店数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 酒店数据库未找到于 {path}"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "数据库未加载",
+    "not_found": "未找到地点 {place} 的坐标信息, 请检查：1. 地点名称是否来自其他工具的返回结果; 2. 地点名称是否与工具返回结果保持完全一致，不得缩写、改名或添加额外描述",
+    "db_loaded": "✓ 地点坐标数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 地点坐标数据库未找到于 {path}"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "数据库未加载",
+    "not_found": "未找到坐标 ({lat}, {lon}) 附近的推荐餐厅, 请检查坐标来源",
+    "db_loaded": "✓ 餐厅推荐数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 餐厅推荐数据库未找到于 {path}"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "数据库未加载",
+    "not_found": "未找到餐厅 {name} 的详细信息",
+    "db_loaded": "✓ 餐厅详情数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 餐厅详情数据库未找到于 {path}"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "数据库未加载",
+    "not_found": "未找到从 {origin} 到 {dest} 的交通信息",
+    "coord_not_in_range": "坐标 {coord} 不在查询范围内，请检查：\n1. 坐标是否源自有效的工具查询结果，而非手动输入或编造；\n2. 坐标数值精度是否与查询结果保持完全一致,6位小数",
+    "db_loaded": "✓ 交通距离数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 交通距离数据库未找到于 {path}"
+  },
+  "TrainQueryTool": {
+    "segment": "第{idx}段",
+    "remaining_seats": "剩余票数量",
+    "sufficient": "充足",
+    "no_info": "未查询到信息",
+    "not_found": "未找到从 {o} 到 {d} 在 {date} 的火车票信息",
+    "station_sep": "站",
+    "db_loaded": "✓ 火车票数据库加载成功: {count} 条记录 (路径: {path})",
+    "db_not_found": "⚠ 警告: 火车票数据库未找到于 {path}"
+  }
+}

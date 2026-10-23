@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "يتعامل مع استفسارات اللغة الطبيعية المفتوحة والواسعة. يقوم بإجراء بحث دلالي على معلومات المنتج الرئيسية (الاسم، العلامة التجارية، الفئة، العلامات) لاسترجاع مجموعة أولية من المنتجات ذات الصلة بسرعة. هذه هي الخطوة الأولى في استكشاف المستخدم.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "استفسار المستخدم بلغة طبيعية. على سبيل المثال، 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "اختياري. يحد من عدد product_ids المعادة. الافتراضي هو 20 لمنع النتائج الكبيرة بشكل مفرط."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "يصفّي قائمة معينة من معرفات المنتجات بواسطة اسم علامة تجارية أو أكثر. إذا تم توفير أسماء علامات تجارية متعددة، فإنه يعيد المنتجات التي تطابق أي من العلامات التجارية (منطق OR).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة اختيارية من product_ids للتصفية. إذا لم يتم توفيرها، يصفّي من كتالوج المنتجات بالكامل."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة بأسماء العلامات التجارية للمطابقة. على سبيل المثال، [\"UNIQLO\"] أو [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "يصفّي قائمة معينة من معرفات المنتجات بواسطة لون أو أكثر. إذا تم توفير ألوان متعددة، فإنه يعيد المنتجات التي تطابق أي من الألوان (منطق OR). يتحقق مطابقة اللون من حقل 'color' للمنتج. إذا لم يتم توفير product_ids، يصفّي من كتالوج المنتجات بالكامل.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة اختيارية من product_ids للتصفية. إذا لم يتم توفيرها، يصفّي من كتالوج المنتجات بالكامل."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة بأسماء الألوان للمطابقة. على سبيل المثال، [\"White\"] أو [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "يصفّي قائمة معينة من معرفات المنتجات بواسطة حجم أو أكثر. إذا تم توفير أحجام متعددة، فإنه يعيد المنتجات التي تطابق أي من الأحجام (منطق OR). يتحقق مطابقة الحجم من حقل 'size' للمنتج (مثل 'M', 'L', '42', '140cm'). إذا لم يتم توفير product_ids، يصفّي من كتالوج المنتجات بالكامل.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة اختيارية من product_ids للتصفية. إذا لم يتم توفيرها، يصفّي من كتالوج المنتجات بالكامل."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة الأحجام للمطابقة. على سبيل المثال، [\"M\"] أو [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "يصفّي قائمة معرفات المنتجات بناءً على القسائم القابلة للتطبيق. تطابق هذه الأداة جميع المنتجات التي تحتوي `applicable_coupons` على أسماء القسائم المقدمة. على سبيل المثال، استخدام [\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"] سيطابق المنتجات التي تحتوي على كلا هاتين القسيمتين في قائمة applicable_coupons الخاصة بها.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة اختيارية من product_ids للتصفية. إذا لم يتم توفيرها، يصفّي من كتالوج المنتجات بالكامل."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة أسماء القسائم للمطابقة. على سبيل المثال، [\"Cross-store: ¥30 off every ¥300\"] أو [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "يصفّي قائمة معرفات المنتجات بناءً على ميزة رقمية، عامل مقارنة، وقيمة عتبة.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة اختيارية من product_ids للتصفية. إذا لم يتم توفيرها، يصفّي من كتالوج المنتجات بالكامل."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "البعد الرقمي للميزة للتصفية.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "عامل المقارنة.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "القيمة الرقمية للمقارنة."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "يرتب قائمة معينة من معرفات المنتجات وفقًا لبعد محدد وترتيب.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة اختيارية من product_ids للفرز. إذا لم يتم توفيرها، يتم الفرز من الكتالوج الكامل للمنتجات."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "البعد المميز لاستخدامه كأساس للفرز.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "ترتيب الفرز. الافتراضي هو 'desc' (تنازلي).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "يسترجع المعلومات الكاملة والمفصلة لقائمة من معرفات المنتجات.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "قائمة من معرفات المنتجات الفريدة لجلب التفاصيل لها."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "يحسب الوقت المقدر للتسليم بالأيام لمنتج. يستخدم أصل شحن المنتج وعنوان وجهة المستخدم. النتيجة النهائية هي عدد صحيح من الأيام.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "المعرف الفريد للمنتج للعثور على أصل الشحن."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "عنوان وجهة المستخدم، والذي يجب أن يكون اسم المقاطعة مكتوبًا بالبينين، مثل 'guangdong', 'beijing', 'shanghai'، إلخ. يتم قبول البينين فقط لهذه المعلمة."
+          },
+          "provider": {
+            "type": "string",
+            "description": "اختياري. اسم مزود الشحن لضبط وقت التسليم. تشمل المزودات المدعومة 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default'. إذا لم يتم توفيره، يستخدم مزود المنتج الافتراضي."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "يسترجع معلومات المستخدم من قاعدة البيانات، بما في ذلك عنوان المستخدم، قياسات الجسم، وتفاصيل الملف الشخصي الأخرى. إذا تم توفير user_id، يعيد معلومات المستخدم المحددة؛ إذا لم يكن كذلك، يعيد معلومات المستخدم الافتراضي/الحالي.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "اختياري. المعرف الفريد للمستخدم للاسترجاع. إذا لم يتم توفيره، يتم إرجاع معلومات المستخدم الافتراضية."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "يضيف منتجًا إلى عربة التسوق. يتحقق من وجود المنتج في كتالوج المنتجات ويفحص توفر المخزون. إذا كان المنتج موجودًا بالفعل في العربة، فإنه يزيد الكمية. تقوم الأداة بتحديث ملخص العربة تلقائيًا (إجمالي عدد العناصر والسعر الإجمالي) بعد الإضافة. يعيد العربة المحدثة مع جميع العناصر ومعلومات الملخص.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "المعرف الفريد للمنتج لإضافته إلى السلة. يجب أن يكون موجودًا في كتالوج المنتجات."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "اختياري. الكمية للإضافة. يجب أن تكون عددًا صحيحًا موجبًا. الافتراضي هو 1. يتحقق الأداة مما إذا كانت إضافة هذه الكمية ستتجاوز stock_quantity للمنتج (بما في ذلك العناصر الموجودة بالفعل في السلة)."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "يزيل منتجًا من عربة التسوق أو يقلل كميته. يتحقق من وجود المنتج في كتالوج المنتجات وأنه موجود حاليًا في العربة. إذا كانت الكمية المراد إزالتها تساوي أو تتجاوز كمية العربة، يتم إزالة العنصر بالكامل. تقوم الأداة بتحديث ملخص العربة تلقائيًا وتزيل العناصر ذات الكمية الصفرية. يعيد العربة المحدثة مع جميع العناصر ومعلومات الملخص.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "المعرف الفريد للمنتج لإزالته من السلة. يجب أن يكون موجودًا في كتالوج المنتجات ويكون حاليًا في السلة."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "اختياري. الكمية للإزالة. يجب أن تكون عددًا صحيحًا موجبًا. الافتراضي هو 1. إذا كانت الكمية تساوي أو تتجاوز كمية السلة، يتم إزالة العنصر بالكامل."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "يسترجع معلومات عربة التسوق الحالية بما في ذلك جميع العناصر والإحصائيات الملخصة. يعيد قائمة بعناصر العربة (كل منها مع product_id، الاسم، الكمية، والسعر) وكائن ملخص يحتوي على total_items_count (مجموع جميع الكميات) وtotal_price (مجموع جميع أسعار العناصر * الكميات). لا توجد معلمات مطلوبة - يعيد الحالة الحالية للعربة.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "يضيف قسيمة إلى عربة التسوق. يتحقق من وجود القسيمة في قائمة القسائم الصالحة، يفحص ملكية المستخدم للقسيمة ويتأكد من أن إجمالي العربة يفي بمتطلبات عتبة القسيمة. إذا كانت القسيمة نفسها موجودة بالفعل في العربة، فإنه يحدث الكمية. تقوم الأداة بتحديث ملخص العربة تلقائيًا (إجمالي عدد العناصر والسعر الإجمالي بعد الخصم) بعد الإضافة. يعيد العربة المحدثة مع جميع العناصر، القسائم المستخدمة، ومعلومات الملخص.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "اسم القسيمة لإضافتها إلى السلة. يجب أن تكون واحدة من القسائم الصالحة من قائمة القسائم. أمثلة: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "اختياري. كمية القسائم للإضافة. يجب أن تكون عددًا صحيحًا موجبًا. الافتراضي هو 1. يتحقق الأداة مما إذا كان المستخدم يمتلك ما يكفي من القسائم وإذا كان إجمالي السلة كافيًا للكمية المطلوبة."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "يزيل قسيمة من عربة التسوق أو يقلل كميتها. يتحقق من وجود القسيمة في قائمة القسائم الصالحة وأنها موجودة حاليًا في العربة. إذا كانت الكمية المراد إزالتها تساوي أو تتجاوز كمية العربة، يتم إزالة القسيمة بالكامل. تقوم الأداة بتحديث ملخص العربة تلقائيًا (إجمالي عدد العناصر والسعر الإجمالي بعد الخصم) وتزيل القسائم ذات الكمية الصفرية. يعيد العربة المحدثة مع جميع العناصر، القسائم المستخدمة، ومعلومات الملخص.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "اسم القسيمة لإزالتها من السلة. يجب أن تكون واحدة من القسائم الصالحة وحاليًا في السلة."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "اختياري. كمية القسائم التي يجب إزالتها. يجب أن تكون عددًا صحيحًا موجبًا. الافتراضي هو 1. إذا كانت الكمية تساوي أو تتجاوز كمية السلة، يتم إزالة القسيمة بالكامل."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

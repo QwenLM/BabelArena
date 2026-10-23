@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "Pangkalan data tidak dimuatkan",
+    "not_found": "Maklumat terperinci tidak dijumpai untuk tarikan {name}",
+    "attraction_id": "ID Tarikan",
+    "attraction_name": "Nama Tarikan",
+    "city": "Bandar",
+    "address": "Alamat",
+    "coordinates": "Koordinat",
+    "latitude": "Latitud",
+    "longitude": "Longitud",
+    "description": "Penerangan",
+    "rating": "Penilaian",
+    "visitor_rating": "(penilaian purata pelawat)",
+    "opening_hours": "Waktu Buka",
+    "to": "hingga",
+    "closed_dates": "Tarikh Tutup",
+    "min_visit_hours": "Tempoh Lawatan Minimum",
+    "max_visit_hours": "Tempoh Lawatan Maksimum",
+    "hours_unit": "jam",
+    "ticket_price": "Harga Tiket",
+    "currency_unit": "RMB",
+    "attraction_type": "Jenis Tarikan",
+    "db_loaded": "✓ Pangkalan data tarikan dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data tarikan tidak ditemui di {path}"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "Pangkalan data tidak dimuatkan",
+    "not_found": "Tiada cadangan tarikan ditemui",
+    "recommendations": "Tarikan yang disyorkan:",
+    "attraction_suffix": "{name}, {desc}. Ini adalah tarikan jenis {atype}",
+    "db_loaded": "✓ Pangkalan data tarikan dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data tarikan tidak ditemui di {path}"
+  },
+  "FlightQueryTool": {
+    "segment": "Segmen {idx}",
+    "remaining_seats": "Tempat Duduk Yang Masih Ada",
+    "sufficient": "Tersedia",
+    "no_info": "Tiada maklumat ditemui, sila semak parameter input",
+    "not_found": "Tiada maklumat penerbangan ditemui dari {o} ke {d} pada {date}",
+    "db_loaded": "✓ Pangkalan data penerbangan dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data penerbangan tidak ditemui di {path}"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "Pangkalan data tidak dimuatkan",
+    "not_found": "Tiada maklumat hotel ditemui di {dest} dari {checkin} hingga {checkout}, sila semak parameter atau kurangkan kekangan",
+    "db_loaded": "✓ Pangkalan data hotel dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data hotel tidak ditemui di {path}"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "Pangkalan data tidak dimuatkan",
+    "not_found": "Maklumat koordinat tidak ditemui untuk lokasi {place}, sila semak: 1. Sama ada nama tempat berasal dari hasil alat lain; 2. Sama ada nama tempat adalah tepat konsisten dengan hasil alat, tiada singkatan, penamaan semula atau penerangan tambahan dibenarkan",
+    "db_loaded": "✓ Pangkalan data koordinat lokasi dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data koordinat lokasi tidak ditemui di {path}"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "Pangkalan data tidak dimuatkan",
+    "not_found": "Tiada restoran yang disyorkan ditemui berhampiran koordinat ({lat}, {lon}), sila semak sumber koordinat",
+    "db_loaded": "✓ Pangkalan data cadangan restoran dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data cadangan restoran tidak ditemui di {path}"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "Pangkalan data tidak dimuatkan",
+    "not_found": "Maklumat terperinci tidak ditemui untuk restoran {name}",
+    "db_loaded": "✓ Pangkalan data butiran restoran dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data butiran restoran tidak ditemui di {path}"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "Pangkalan data tidak dimuatkan",
+    "not_found": "Tiada maklumat pengangkutan ditemui dari {origin} ke {dest}",
+    "coord_not_in_range": "Koordinat {coord} tidak dalam julat pertanyaan, sila periksa:\n1. Sama ada koordinat berasal dari hasil pertanyaan alat yang sah, bukan input manual atau rekaan;\n2. Sama ada ketepatan koordinat adalah tepat konsisten dengan hasil pertanyaan, 6 tempat perpuluhan",
+    "db_loaded": "✓ Pangkalan data laluan jalan dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data laluan jalan tidak ditemui di {path}"
+  },
+  "TrainQueryTool": {
+    "segment": "Segmen {idx}",
+    "remaining_seats": "Tempat Duduk Yang Masih Ada",
+    "sufficient": "Tersedia",
+    "no_info": "Tiada maklumat ditemui",
+    "not_found": "Tiada maklumat kereta api ditemui dari {o} ke {d} pada {date}",
+    "station_sep": "Stesen",
+    "db_loaded": "✓ Pangkalan data kereta api dimuatkan: {count} rekod (laluan: {path})",
+    "db_not_found": "⚠ Amaran: Pangkalan data kereta api tidak ditemui di {path}"
+  }
+}

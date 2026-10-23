@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "ຈັດການຄຳຖາມທີ່ກວ້າງຂວາງ, ບໍ່ຈົດຈຳຂອງພາສາທີ່ເປັນທຳມະຊາດ. ມັນປະຕິບັດການຄົ້ນຫາຄວາມໝາຍທີ່ຂອງຂໍ້ມູນສິນຄ້າທີ່ສຳຄັນ (ຊື່, ຍີ່ຫໍ້, ປະເພດ, ປ້າຍ) ພື້ນຖານເພື່ອດຶງສິນຄ້າທີ່ກ່ຽວຂ້ອງມາໃຫ້ໄວ. ນີ້ແມ່ນຂັ້ນຕອນທຳອິດໃນການສຳຫຼວດຂອງຜູ້ໃຊ້.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "ຄຳຖາມພາສາທຳມະຊາດຂອງຜູ້ໃຊ້. ຕົວຢ່າງ, 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "ທາງເລືອກ. ຈຳກັດຈຳນວນ product_ids ທີ່ສົ່ງຄືນ. ຄ່າເລີ່ມຕົ້ນແມ່ນ 20 ເພື່ອປ້ອງກັນຜົນທີ່ໃຫຍ່ເກີນໄປ."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "ການຄັດກອງລາຍຊື່ສິນຄ້າທີ່ໃຫ້ມາດ້ວຍຊື່ຍີ່ຫໍ້ຫຼາຍກວ່າຫນຶ່ງ. ຖ້າມີຊື່ຍີ່ຫໍ້ຫຼາຍກວ່າຫນຶ່ງ, ມັນຈະສົ່ງຄືນສິນຄ້າທີ່ກົງກັບຍີ່ຫໍ້ໃດໆ (ຕົວເລກ OR).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ທາງເລືອກຂອງ product_ids ທີ່ຈະກັ່ນຕອງ. ຖ້າບໍ່ໄດ້ສະໜອງ, ຈະກັ່ນຕອງຈາກທັງໝົດຂອງສິນຄ້າ."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ຂອງຊື່ຍີ່ຫໍ້ທີ່ຈະກົດຄວາມສົມພັນ. ຕົວຢ່າງ, [\"UNIQLO\"] ຫຼື [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "ການຄັດກອງລາຍຊື່ສິນຄ້າທີ່ໃຫ້ມາດ້ວຍສີຫຼາຍກວ່າຫນຶ່ງ. ຖ້າມີສີຫຼາຍກວ່າຫນຶ່ງ, ມັນຈະສົ່ງຄືນສິນຄ້າທີ່ກົງກັບສີໃດໆ (ຕົວເລກ OR). ການກວດສອບສີຈະກວດສອບຂໍ້ມູນ 'color' ຂອງສິນຄ້າ. ຖ້າ product_ids ບໍ່ໄດ້ຖືກໃຫ້ມາ, ຄັດກອງຈາກທຸກສິນຄ້າໃນຄັງສິນຄ້າ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ທາງເລືອກຂອງ product_ids ທີ່ຈະກັ່ນຕອງ. ຖ້າບໍ່ໄດ້ສະໜອງ, ຈະກັ່ນຕອງຈາກທັງໝົດຂອງສິນຄ້າ."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ຂອງຊື່ສີທີ່ຈະກົດຄວາມສົມພັນ. ຕົວຢ່າງ, [\"White\"] ຫຼື [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "ການຄັດກອງລາຍຊື່ສິນຄ້າທີ່ໃຫ້ມາດ້ວຍຂະຫນາດຫຼາຍກວ່າຫນຶ່ງ. ຖ້າມີຂະຫນາດຫຼາຍກວ່າຫນຶ່ງ, ມັນຈະສົ່ງຄືນສິນຄ້າທີ່ກົງກັບຂະຫນາດໃດໆ (ຕົວເລກ OR). ການກວດສອບຂະຫນາດຈະກວດສອບຂໍ້ມູນ 'size' ຂອງສິນຄ້າ (ຕົວຢ່າງ, 'M', 'L', '42', '140cm'). ຖ້າ product_ids ບໍ່ໄດ້ຖືກໃຫ້ມາ, ຄັດກອງຈາກທຸກສິນຄ້າໃນຄັງສິນຄ້າ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ທາງເລືອກຂອງ product_ids ທີ່ຈະກັ່ນຕອງ. ຖ້າບໍ່ໄດ້ສະໜອງ, ຈະກັ່ນຕອງຈາກທັງໝົດຂອງສິນຄ້າ."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ຂອງຂະໜາດທີ່ຈະກົດຄວາມສົມພັນ. ຕົວຢ່າງ, [\"M\"] ຫຼື [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "ການຄັດກອງລາຍຊື່ສິນຄ້າຕາມຄູປອງທີ່ໃຊ້ໄດ້. ເຄື່ອງມືນີ້ຈະກົງກັບສິນຄ້າທັງໝົດທີ່ມີ `applicable_coupons` ທີ່ມີຊື່ຄູປອງທີ່ໃຫ້ມາ. ຕົວຢ່າງ, ການໃຊ້ [\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"] ຈະກົງກັບສິນຄ້າທີ່ມີຄູປອງທັງສອງນີ້ໃນລາຍຊື່ applicable_coupons ຂອງພວກເຂົາ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ທາງເລືອກຂອງ product_ids ທີ່ຈະກັ່ນຕອງ. ຖ້າບໍ່ໄດ້ສະໜອງ, ຈະກັ່ນຕອງຈາກທັງໝົດຂອງສິນຄ້າ."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ຂອງຊື່ຄູປອງທີ່ຈະກົດຄວາມສົມພັນ. ຕົວຢ່າງ, [\"Cross-store: ¥30 off every ¥300\"] ຫຼື [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "ການຄັດກອງລາຍຊື່ສິນຄ້າຕາມຄຸນສົມບັດທາງຈຳນວນ, ຕົວດຳເນີນການປຽບທຽບ, ແລະຄ່າຂອງຂີດຈຳກັດ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ທາງເລືອກຂອງ product_ids ທີ່ຈະກັ່ນຕອງ. ຖ້າບໍ່ໄດ້ສະໜອງ, ຈະກັ່ນຕອງຈາກທັງໝົດຂອງສິນຄ້າ."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "ຂະໜາດຂອງຄຸນສົມບັດທີ່ຈະກັ່ນຕອງ.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "ຕົວດຳເນີນການປຽບທຽບ.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "ຄ່າຈຳນວນທີ່ຈະປຽບທຽບກັບ."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "ຈັດລຽງລາຍຊື່ສິນຄ້າທີ່ໃຫ້ມາຕາມມິຕິທີ່ກຳນົດແລະລຽງລຳດັບ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ທີ່ສາມາດເລືອກໄດ້ຂອງ product_ids ທີ່ຈະຈັດລຽງ. ຖ້າບໍ່ໄດ້ມີການສະໜອງ, ຈະຈັດລຽງຈາກທັງໝົດຂອງສິນຄ້າ."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "ຂະໜານຂອງຄຸນສົມບັດທີ່ຈະໃຊ້ເປັນພື້ນຖານສຳລັບການຈັດລຽງ.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "ລຳດັບການຈັດລຽງ. ຄ່າເລີ່ມຕົ້ນແມ່ນ 'desc' (ລົງມາ).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "ດຶງຂໍ້ມູນທີ່ຄົບຖ້ວນ, ລະອຽດສຳລັບລາຍຊື່ສິນຄ້າ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "ລາຍຊື່ຂອງລະຫັດສິນຄ້າທີ່ແຕກຕ່າງກັນເພື່ອດຶງລາຍລະອຽດ."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "ຄິດໄລ່ເວລາສົ່ງສິນຄ້າທີ່ຄາດຄະເນໃນຈຳນວນວັນ. ມັນໃຊ້ຕົ້ນທາງການສົ່ງຂອງສິນຄ້າ ແລະ ທີ່ຢູ່ປາຍທາງຂອງຜູ້ໃຊ້. ຜົນສຸດທ້າຍແມ່ນຈະເປັນຈຳນວນວັນເປັນຈຳນວນຕົວເລກ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "ລະຫັດສິນຄ້າທີ່ແຕກຕ່າງກັນເພື່ອຊອກຫາຕົ້ນກຳເນີດການສົ່ງສິນຄ້າ."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "ທີ່ຢູ່ປາຍທາງຂອງຜູ້ໃຊ້, ຊຶ່ງຕ້ອງເປັນຊື່ແຂວງທີ່ຂຽນເປັນ pinyin, ຄື 'guangdong', 'beijing', 'shanghai', ແລະອື່ນໆ. ພຽງແຕ່ pinyin ເທົ່ານັ້ນທີ່ຍອມຮັບສຳລັບພາລາມິເຕີນີ້."
+          },
+          "provider": {
+            "type": "string",
+            "description": "ທີ່ສາມາດເລືອກໄດ້. ຊື່ຜູ້ສົ່ງສິນຄ້າທີ່ຈະປັບເວລາສົ່ງ. ຜູ້ສົ່ງທີ່ສະໜອງລວມມີ 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default'. ຖ້າບໍ່ໄດ້ມີການສະໜອງ, ຈະໃຊ້ຜູ້ສົ່ງສິນຄ້າທີ່ເລີ່ມຕົ້ນຂອງສິນຄ້າ."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "ດຶງຂໍ້ມູນຜູ້ໃຊ້ຈາກຖານຂໍ້ມູນ, ລວມທັງທີ່ຢູ່ຂອງຜູ້ໃຊ້, ຂໍ້ມູນຂະຫຍາຍຂອງຮ່າງກາຍ, ແລະ ລາຍລະອຽດໂປຣໄຟອື່ນໆ. ຖ້າມີ user_id ຖືກສະໜອງ, ຈະສົ່ງຄືນຂໍ້ມູນສະເພາະຂອງຜູ້ໃຊ້ນັ້ນ; ຖ້າບໍ່ມີ, ຈະສົ່ງຄືນຂໍ້ມູນຂອງຜູ້ໃຊ້ປະຈຸບັນ/ຄ່າເລີ່ມຕົ້ນ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "ທາງເລືອກ. ໝາຍເລກລະບຸພິເສດຂອງຜູ້ໃຊ້ທີ່ຈະດຶງຂໍ້ມູນ. ຖ້າບໍ່ໄດ້ລະບຸ, ຈະສົ່ງຄືນຂໍ້ມູນຜູ້ໃຊ້ເລີ່ມຕົ້ນ."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "ເພີ່ມສິນຄ້າໃສ່ກະຕ່າຊື້ເຄື່ອງ. ກວດສອບວ່າສິນຄ້າມີຢູ່ໃນລາຍການສິນຄ້າ ແລະ ກວດສອບຄວາມພໍໃຊ້ຂອງສະຕັອກ. ຖ້າສິນຄ້າມີຢູ່ແລ້ວໃນກະຕ່າ, ມັນຈະເພີ່ມຈຳນວນ. ເຄື່ອງມືຈະອັບເດດສະຫຼຸບກະຕ່າອັດຕະໂນມັດ (ຈຳນວນລວມຂອງລາຍການ ແລະ ລາຄາລວມ) ຫຼັງຈາກເພີ່ມ. ສົ່ງຄືນກະຕ່າທີ່ອັບເດດພ້ອມລາຍການທັງໝົດ ແລະ ຂໍ້ມູນສະຫຼຸບ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "ໝາຍເລກລະບຸພິເສດຂອງຜະລິດຕະພັນທີ່ຈະເພີ່ມໃສ່ກະຕ່າ. ຕ້ອງມີຢູ່ໃນລາຍການຜະລິດຕະພັນ."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ທາງເລືອກ. ຈຳນວນທີ່ຈະເພີ່ມ. ຕ້ອງເປັນຈຳນວນເຕັມບວກ. ເລີ່ມຕົ້ນທີ່ 1. ເຄື່ອງມືຈະກວດສອບວ່າການເພີ່ມຈຳນວນນີ້ຈະເກີນ stock_quantity ຂອງຜະລິດຕະພັນຫຼືບໍ່ (ລວມທັງລາຍການທີ່ມີຢູ່ໃນກະຕ່າແລ້ວ)."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "ລຶບສິນຄ້າອອກຈາກກະຕ່າຊື້ເຄື່ອງ ຫຼື ລົດຈຳນວນຂອງມັນ. ກວດສອບວ່າສິນຄ້າມີຢູ່ໃນລາຍການສິນຄ້າ ແລະ ມີຢູ່ໃນກະຕ່າປະຈຸບັນ. ຖ້າຈຳນວນທີ່ຈະລຶບເທົ່າກັບ ຫຼື ມາກກວ່າຈຳນວນກະຕ່າ, ລາຍການຈະຖືກລຶບອອກສິ້ນເຊີງ. ເຄື່ອງມືຈະອັບເດດສະຫຼຸບກະຕ່າອັດຕະໂນມັດ ແລະ ລຶບລາຍການທີ່ມີຈຳນວນເປັນສູນ. ສົ່ງຄືນກະຕ່າທີ່ອັບເດດພ້ອມລາຍການທັງໝົດ ແລະ ຂໍ້ມູນສະຫຼຸບ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "ໝາຍເລກລະບຸພິເສດຂອງຜະລິດຕະພັນທີ່ຈະລຶບອອກຈາກກະຕ່າ. ຕ້ອງມີຢູ່ໃນລາຍການຜະລິດຕະພັນແລະຢູ່ໃນກະຕ່າຂະນະນີ້."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ທາງເລືອກ. ຈຳນວນທີ່ຈະລຶບອອກ. ຕ້ອງເປັນຈຳນວນເຕັມບວກ. ເລີ່ມຕົ້ນທີ່ 1. ຖ້າຈຳນວນທີ່ລຶບອອກເທົ່າກັບຫຼືເກີນຈຳນວນໃນກະຕ່າ, ລາຍການຈະຖືກລຶບອອກທັງໝົດ."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "ດຶງຂໍ້ມູນກະຕ່າຊື້ເຄື່ອງປະຈຸບັນລວມທັງລາຍການທັງໝົດ ແລະ ສະຖິຕິສະຫຼຸບ. ສົ່ງຄືນລາຍການກະຕ່າ (ແຕ່ລະລາຍການມີ product_id, ຊື່, ຈຳນວນ, ແລະ ລາຄາ) ແລະ ວັດຖຸສະຫຼຸບທີ່ມີ total_items_count (ຜົນລວມຂອງຈຳນວນທັງໝົດ) ແລະ total_price (ຜົນລວມຂອງລາຄາລາຍການ * ຈຳນວນ). ບໍ່ຕ້ອງການພາລາມິເຕີ - ສົ່ງຄືນສະຖານະປະຈຸບັນຂອງກະຕ່າ.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "ເພີ່ມຄູປອງໃສ່ກະຕ່າຊື້ເຄື່ອງ. ກວດສອບວ່າຄູປອງມີຢູ່ໃນລາຍການຄູປອງທີ່ຖືກຕ້ອງ, ກວດສອບການຄອບຄອງຂອງຜູ້ໃຊ້ຂອງຄູປອງ ແລະ ກວດສອບວ່າລາຄາລວມຂອງກະຕ່າສົມບັດກັບຄວາມຕ້ອງການຂອງຄູປອງ. ຖ້າຄູປອງດຽວກັນມີຢູ່ແລ້ວໃນກະຕ່າ, ມັນຈະອັບເດດຈຳນວນ. ເຄື່ອງມືຈະອັບເດດສະຫຼຸບກະຕ່າອັດຕະໂນມັດ (ຈຳນວນລວມຂອງລາຍການ ແລະ ລາຄາລວມຫຼັງສ່ວນຫຼຸດ) ຫຼັງຈາກເພີ່ມ. ສົ່ງຄືນກະຕ່າທີ່ອັບເດດພ້ອມລາຍການທັງໝົດ, ຄູປອງທີ່ໃຊ້ແລ້ວ, ແລະ ຂໍ້ມູນສະຫຼຸບ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "ຊື່ຂອງຄູປອງທີ່ຈະເພີ່ມໃສ່ກະຕ່າ. ຕ້ອງເປັນຄູປອງທີ່ຖືກຕ້ອງຈາກລາຍການຄູປອງ. ຕົວຢ່າງ: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ທາງເລືອກ. ຈຳນວນຄູປອງທີ່ຈະເພີ່ມ. ຕ້ອງເປັນຈຳນວນເຕັມບວກ. ເລີ່ມຕົ້ນທີ່ 1. ເຄື່ອງມືຈະກວດສອບວ່າຜູ້ໃຊ້ມີຄູປອງພຽງພໍແລະຍອດລວມຂອງກະຕ່າພຽງພໍສຳລັບຈຳນວນທີ່ຮ້ອງຂໍ."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "ລຶບຄູປອງອອກຈາກກະຕ່າຊື້ເຄື່ອງ ຫຼື ລົດຈຳນວນຂອງມັນ. ກວດສອບວ່າຄູປອງມີຢູ່ໃນລາຍການຄູປອງທີ່ຖືກຕ້ອງ ແລະ ມີຢູ່ໃນກະຕ່າປະຈຸບັນ. ຖ້າຈຳນວນທີ່ຈະລຶບເທົ່າກັບ ຫຼື ມາກກວ່າຈຳນວນກະຕ່າ, ຄູປອງຈະຖືກລຶບອອກສິ້ນເຊີງ. ເຄື່ອງມືຈະອັບເດດສະຫຼຸບກະຕ່າອັດຕະໂນມັດ (ຈຳນວນລວມຂອງລາຍການ ແລະ ລາຄາລວມຫຼັງສ່ວນຫຼຸດ) ແລະ ລຶບຄູປອງທີ່ມີຈຳນວນເປັນສູນ. ສົ່ງຄືນກະຕ່າທີ່ອັບເດດພ້ອມລາຍການທັງໝົດ, ຄູປອງທີ່ໃຊ້ແລ້ວ, ແລະ ຂໍ້ມູນສະຫຼຸບ.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "ຊື່ຂອງຄູປອງທີ່ຈະລຶບອອກຈາກກະຕ່າ. ຕ້ອງເປັນຄູປອງທີ່ຖືກຕ້ອງແລະຢູ່ໃນກະຕ່າຂະນະນີ້."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ທາງເລືອກ. ຈຳນວນຄູປອງທີ່ຈະລຶບ. ຕ້ອງເປັນຈຳນວນເຕັມບວກ. ຄ່າເລີ່ມຕົ້ນເທົ່າ 1. ຖ້າຈຳນວນຄູປອງເທົ່າກັບຫຼືເກີນຈຳນວນໃນກະຕ່າ, ຄູປອງຈະຖືກລຶບອອກໂດຍສິ້ນເຊີງ."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

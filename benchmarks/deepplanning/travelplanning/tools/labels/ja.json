@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "データベースが読み込まれていません",
+    "not_found": "アトラクション{name}の詳細情報が見つかりません",
+    "attraction_id": "アトラクションID",
+    "attraction_name": "アトラクション名",
+    "city": "市",
+    "address": "住所",
+    "coordinates": "座標",
+    "latitude": "緯度",
+    "longitude": "経度",
+    "description": "説明",
+    "rating": "評価",
+    "visitor_rating": "（平均訪問者評価）",
+    "opening_hours": "営業時間",
+    "to": "から",
+    "closed_dates": "休業日",
+    "min_visit_hours": "最短訪問時間",
+    "max_visit_hours": "最長訪問時間",
+    "hours_unit": "時間",
+    "ticket_price": "チケット価格",
+    "currency_unit": "RMB",
+    "attraction_type": "アトラクションタイプ",
+    "db_loaded": "✓ アトラクションデータベースがロードされました: {count} 件のレコード (パス: {path})",
+    "db_not_found": "⚠ 警告: アトラクションデータベースが {path} に見つかりません"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "データベースが読み込まれていません",
+    "not_found": "アトラクションのおすすめが見つかりません",
+    "recommendations": "おすすめのアトラクション:",
+    "attraction_suffix": "{name}, {desc}。これは {atype} タイプのアトラクションです",
+    "db_loaded": "✓ アトラクションデータベースがロードされました: {count} 件のレコード (パス: {path})",
+    "db_not_found": "⚠ 警告: アトラクションデータベースが {path} に見つかりません"
+  },
+  "FlightQueryTool": {
+    "segment": "セグメント {idx}",
+    "remaining_seats": "残りの座席",
+    "sufficient": "利用可能",
+    "no_info": "情報が見つかりません。入力パラメータを確認してください",
+    "not_found": "{date} に {o} から {d} へのフライト情報が見つかりません",
+    "db_loaded": "✓ フライトデータベースがロードされました: {count} 件のレコード (パス: {path})",
+    "db_not_found": "⚠ 警告: フライトデータベースが {path} に見つかりません"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "データベースが読み込まれていません",
+    "not_found": "{checkin} から {checkout} までの {dest} のホテル情報が見つかりません。パラメータを確認するか、制約を減らしてください",
+    "db_loaded": "✓ ホテルデータベースがロードされました: {count} 件のレコード (パス: {path})",
+    "db_not_found": "⚠ 警告: ホテルデータベースが {path} に見つかりません"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "データベースが読み込まれていません",
+    "not_found": "{place} の場所の座標情報が見つかりません。以下を確認してください: 1. 場所名が他のツールの結果から来ているか; 2. 場所名がツールの結果と完全に一致しているか、略語、名前変更、追加説明は許可されません",
+    "db_loaded": "✓ 場所座標データベースがロードされました: {count} 件のレコード (パス: {path})",
+    "db_not_found": "⚠ 警告: 場所座標データベースが {path} に見つかりません"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "データベースが読み込まれていません",
+    "not_found": "座標 ({lat}, {lon}) 付近のおすすめレストランが見つかりません。座標のソースを確認してください",
+    "db_loaded": "✓ レストラン推薦データベースがロードされました: {count} 件 (パス: {path})",
+    "db_not_found": "⚠ 警告: レストラン推薦データベースが {path} に見つかりません"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "データベースが読み込まれていません",
+    "not_found": "レストラン {name} の詳細情報が見つかりません",
+    "db_loaded": "✓ レストラン詳細データベースがロードされました: {count} 件 (パス: {path})",
+    "db_not_found": "⚠ 警告: レストラン詳細データベースが {path} に見つかりません"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "データベースが読み込まれていません",
+    "not_found": "{origin} から {dest} への交通情報が見つかりません",
+    "coord_not_in_range": "座標 {coord} がクエリ範囲に含まれていません。以下を確認してください:\n1. 座標が有効なツールクエリ結果から来ているか、手動入力や捏造ではないか;\n2. 座標の精度がクエリ結果と完全に一致しているか、6桁の小数点",
+    "db_loaded": "✓ 道路ルートデータベースがロードされました: {count} 件 (パス: {path})",
+    "db_not_found": "⚠ 警告: 道路ルートデータベースが {path} に見つかりません"
+  },
+  "TrainQueryTool": {
+    "segment": "セグメント {idx}",
+    "remaining_seats": "残りの座席",
+    "sufficient": "利用可能",
+    "no_info": "情報が見つかりません",
+    "not_found": "{date} に {o} から {d} への列車情報が見つかりません",
+    "station_sep": "駅",
+    "db_loaded": "✓ 列車データベースがロードされました: {count} 件 (パス: {path})",
+    "db_not_found": "⚠ 警告: 列車データベースが {path} に見つかりません"
+  }
+}

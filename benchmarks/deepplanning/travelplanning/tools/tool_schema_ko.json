@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "기차표 정보를 조회하고 출발지, 목적지, 날짜 및 기타 조건으로 기차표 데이터를 검색할 수 있습니다. 조건에 맞는 기차 정보를 반환하며, 포함되는 정보는 다음과 같습니다: 기차 번호, 출발/도착 시간, 역 정보, 여행 시간, 좌석 등급, 남은 좌석 상태, 가격 등. 직행 및 환승 경로를 지원합니다. 직행 경로는 첫 번째 구간만 표시되며, 환승 경로는 각 구간에 대한 자세한 정보를 표시합니다. 여행 계획 시 모든 기차 관련 정보는 이 도구에서 반환된 결과에서 엄격히 가져와야 하며, 임의로 만들어서는 안 됩니다; 역 및 기차 이름은 쿼리 결과와 정확히 동일해야 합니다.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "출발 도시, 도시 이름 지원"
+          },
+          "destination": {
+            "type": "string",
+            "description": "목적지 도시, 도시 이름 지원"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "출발 날짜, 형식: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "기차 좌석 등급: 퍼스트 클래스석, 2등석, 비즈니스석"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "항공편 정보를 조회하고 출발지, 목적지, 날짜 및 기타 조건으로 항공편 데이터를 검색할 수 있습니다. 조건에 맞는 항공편 정보를 반환하며, 포함되는 정보는 다음과 같습니다: 항공편 번호, 출발/도착 시간, 공항 정보, 여행 시간, 좌석 등급, 남은 좌석 상태, 가격, 항공기 유형 등. 직항 및 연결 항공편을 지원합니다. 직항 항공편은 첫 번째 구간만 표시되며, 연결 항공편은 각 구간에 대한 자세한 정보를 표시합니다. 여행 계획 시 모든 항공편 관련 정보는 이 도구에서 반환된 결과에서 엄격히 가져와야 하며, 임의로 만들어서는 안 됩니다; 공항 이름, 항공편 번호 등은 쿼리 결과와 정확히 동일해야 합니다.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "출발 도시, 도시 이름 지원"
+          },
+          "destination": {
+            "type": "string",
+            "description": "목적지 도시, 도시 이름 지원"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "출발 날짜, 형식: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "항공편 좌석 등급: 이코노미 클래스, 비즈니스 클래스, 퍼스트 클래스"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "호텔 정보를 조회하고 목적지(행정 구역), 체크인 날짜, 체크아웃 날짜, 호텔 등급, 호텔 브랜드를 기준으로 호텔을 검색합니다. 여행 계획 시 모든 호텔 관련 정보는 이 도구에서 반환된 결과에서 엄격히 가져와야 하며, 임의로 만들어서는 안 됩니다; 호텔 이름은 쿼리 결과와 정확히 동일해야 합니다.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "목적지(국가, 주, 도시, 구/군 이름)"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "체크인 날짜, 형식: yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "체크아웃 날짜, 형식: yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "호텔 등급: 1~5; 단일 값"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "호텔 브랜드, 단일 값 쿼리만 지원. 선택 가능한 브랜드: 지 호텔, 아투어 호텔, 메리어트, 힐튼, 홈인, 진장 인, 한팅 호텔, 오렌지 호텔"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "관광지 상세 정보를 조회합니다. 관광지 이름을 기준으로 다음과 같은 완전한 정보를 반환합니다: 관광지 ID, 이름, 도시, 위도 및 경도 좌표, 관광지 설명, 사용자 평점, 개장 시간, 폐장 시간, 휴무일, 추천 방문 시간(최소/최대 시간), 입장료, 관광지 유형 등.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "관광지 이름"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "도시 키워드(관광지 이름, 설명, 유형 등)를 기반으로 도시의 인기 관광지 정보를 검색하고 반환합니다. 여행 계획 생성 시 모든 관광지 정보는 이 도구에서 반환된 결과에서 엄격히 가져와야 하며, 임의로 만들어서는 안 되며 다른 출처의 관광지 데이터를 사용할 수 없습니다. 사용되는 관광지 이름은 쿼리 결과와 정확히 동일해야 하며, 약어로 사용하거나 이름을 변경할 수 없습니다.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "도시 이름 또는 키워드"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "관광지 유형 필터 (열거형), 옵션: '역사 및 문화', '자연 경관', '미술 전시회', '도시 랜드마크', 'Theme Park', '레저 체험'."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "장소 이름에 해당하는 위도 및 경도 좌표를 조회합니다. 예를 들어, 'Beijing South Railway Station'을 입력하면 해당 좌표를 반환하며, 값은 소수점 여섯째 자리까지 유지됩니다. 여행 계획에서 관련된 모든 장소 이름은 다른 도구에서 반환된 결과에서 엄격히 가져와야 하며, 정확히 동일해야 합니다.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "조회할 장소 이름, 예: 'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "두 위치 간의 도로 경로 세부 정보를 계산하고 반환합니다. 포함되는 정보는 거리(미터), 예상 소요 시간(분), 예상 비용(통화)입니다. 이 기능은 총 거리에 따라 자동으로 교통 수단을 선택합니다: 2킬로미터 이하일 경우 도보(비용 0), 2킬로미터 이상일 경우 운전(택시) 모드. 예상 비용은 차량 한 대 기준이며, 기본적으로 4명이 탑승할 수 있습니다.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "출발지 좌표 (형식: 위도,경도), 소수점 6자리까지 정밀도 유지"
+          },
+          "destination": {
+            "type": "string",
+            "description": "목적지 좌표 (형식: 위도,경도), 소수점 6자리까지 정밀도 유지"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "지정된 위도 및 경도 좌표를 기준으로 인근 레스토랑 정보를 추천합니다. 반환된 목록에는 레스토랑 이름, 위도 및 경도 좌표, 1인당 가격, 평점, 영업 시간 등의 자세한 정보가 포함됩니다.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "위도 좌표, 소수점 6자리까지 정밀도 유지"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "경도 좌표, 소수점 6자리까지 정밀도 유지"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "레스토랑에 대한 상세 정보를 조회합니다. 레스토랑 이름을 기준으로 다음과 같은 완전한 정보를 반환합니다: 레스토랑 이름, 위도 및 경도 좌표, 1인당 가격, 개장 시간, 폐장 시간, 평점 및 기타 상세 정보.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "레스토랑 이름"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

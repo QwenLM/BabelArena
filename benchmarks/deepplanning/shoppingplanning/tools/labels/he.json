@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "סך העגלה {base_total} אינו מספיק עבור שילוב זה של קופונים (נדרש לפחות {total_threshold_required})",
+    "coupon_name_required": "נדרש coupon_name",
+    "quantity_positive": "הכמות חייבת להיות מספר חיובי",
+    "coupon_not_found": "קופון לא נמצא: '{coupon_name}'. קופונים תקפים הם: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "כמות קופונים לא מספקת: למשתמש יש {user_coupon_count} של '{coupon_name}', העגלה כבר משתמשת ב-{existing_cart_count}, לא ניתן להוסיף {quantity} נוספים",
+    "vip_coupon_required": "קופון VIP '{coupon_name}' דורש סטטוס VIP, אך המשתמש אינו VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "נדרש product_id",
+    "quantity_positive": "הכמות חייבת להיות מספר חיובי",
+    "product_not_found": "מוצר לא נמצא: product_id '{product_id}'",
+    "insufficient_stock": "מלאי לא מספיק: למוצר '{product_name}' (ID: {product_id}) יש {stock_quantity} במלאי, בעגלה כבר יש {existing_quantity}, לא ניתן להוסיף {quantity} נוספים",
+    "save_cart_failed": "נכשל בשמירת העגלה: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "הפרמטרים חייבים להיות מחרוזת JSON תקינה! שגיאה: {err}",
+    "missing_required_arg": "חסר ארגומנט נדרש: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "מוצר עם ID '{product_id}' לא נמצא.",
+    "shipping_origin_not_found": "מקור משלוח לא נמצא עבור מוצר '{product_id}'.",
+    "cannot_determine_province": "לא ניתן לקבוע מחוז תקין מכתובת המקור: '{address}'.",
+    "cannot_determine_destination_province": "לא ניתן לקבוע מחוז תקין מכתובת היעד: '{address}'.",
+    "valid_province_required": "אנא ספק שם מחוז סיני תקף.",
+    "cannot_map_to_region": "לא ניתן למפות מחוזות לאזורים גיאוגרפיים."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "נדרש coupon_name",
+    "quantity_positive": "הכמות חייבת להיות מספר חיובי",
+    "invalid_coupon_name": "שם קופון לא תקף: '{coupon_name}'. קופונים תקפים הם: {valid_coupons_str}",
+    "coupon_not_in_cart": "הקופון לא בעגלה: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "כמות קופונים לא מספקת בעגלה: בעגלה יש {cart_count} של '{coupon_name}', לא ניתן להסיר {quantity}",
+    "save_cart_failed": "נכשל בשמירת העגלה: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "נדרש product_id",
+    "quantity_positive": "הכמות חייבת להיות מספר חיובי",
+    "product_not_found": "מוצר לא נמצא: product_id '{product_id}'",
+    "product_not_in_cart": "המוצר לא בעגלה: product_id '{product_id}'",
+    "save_cart_failed": "נכשל בשמירת העגלה: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "חלק מה-product_ids לא נמצאו במסד הנתונים: {missing_ids}",
+    "invalid_coupon_names": "שמות קופונים לא תקפים: {coupon_names}. קופונים תקפים הם: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "חלק מה-product_ids לא נמצאו במסד הנתונים: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "חלק מה-product_ids לא נמצאו במסד הנתונים: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "חלק מה-product_ids לא נמצאו במסד הנתונים: {missing_ids}",
+    "missing_range_params": "חסרים פרמטרים נדרשים: condition_key, operator, או value.",
+    "condition_key_not_found": "לא ניתן למצוא את condition_key בנתוני המוצר, אנא בדוק שוב."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "חלק מה-product_ids לא נמצאו במסד הנתונים: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "משתמש עם user_id '{user_id}' לא נמצא"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "מדד BM25 אינו זמין. בדוק טעינת מסד הנתונים."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "חסר פרמטר נדרש: sort_by.",
+    "invalid_order": "ערך לא חוקי עבור 'order': '{order}'. חייב להיות 'asc' או 'desc'.",
+    "sort_error": "אירעה שגיאה במהלך מיון לפי מפתח '{sort_by}': {e}",
+    "sort_key_not_found": "מפתח המיון '{sort_by}' לא נמצא בנתוני המוצר או שהוא null. אנא בדוק שוב."
+  }
+}

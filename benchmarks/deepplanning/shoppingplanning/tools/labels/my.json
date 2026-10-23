@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "ဈေးခြင်းတောင်း စုစုပေါင်း {base_total} သည် ဤကူပွန်ပေါင်းစပ်မှုအတွက် မလုံလောက်ပါ (အနည်းဆုံး {total_threshold_required} လိုအပ်သည်)",
+    "coupon_name_required": "coupon_name လိုအပ်သည်",
+    "quantity_positive": "အရေအတွက်သည် အပေါင်းဖြစ်ရမည်",
+    "coupon_not_found": "ကူပွန် မတွေ့ပါ: '{coupon_name}'. မှန်ကန်သော ကူပွန်များမှာ: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "ကူပွန် အရေအတွက် မလုံလောက်ပါ: အသုံးပြုသူတွင် '{coupon_name}' ၏ {user_coupon_count} ရှိပြီး၊ ဈေးခြင်းတောင်းတွင် {existing_cart_count} အသုံးပြုပြီးဖြစ်သည်၊ {quantity} ထပ်မံထည့်၍မရပါ",
+    "vip_coupon_required": "VIP ကူပွန် '{coupon_name}' သည် VIP အဆင့်လိုအပ်သည်၊ သို့သော် အသုံးပြုသူသည် VIP မဟုတ်ပါ"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id လိုအပ်သည်",
+    "quantity_positive": "အရေအတွက်သည် အပေါင်းဖြစ်ရမည်",
+    "product_not_found": "ထုတ်ကုန် မတွေ့ပါ: product_id '{product_id}'",
+    "insufficient_stock": "ကုန်ပစ္စည်းလက်ကျန်မလုံလောက်ပါ: ကုန်ပစ္စည်း '{product_name}' (ID: {product_id}) တွင် {stock_quantity} လက်ကျန်ရှိပြီး၊ ကုန်ပစ္စည်းတောင်းခံစာတွင် {existing_quantity} ရှိပြီးသားဖြစ်သောကြောင့် {quantity} ထပ်မံထည့်၍မရပါ",
+    "save_cart_failed": "ကုန်ပစ္စည်းတောင်းခံစာကို သိမ်းဆည်း၍မရပါ: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "ပါရာမီတာများသည် မှန်ကန်သော JSON စာကြောင်းဖြစ်ရမည်! အမှား: {err}",
+    "missing_required_arg": "လိုအပ်သော အကြောင်းပြချက်မရှိပါ: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID '{product_id}' ဖြင့် ကုန်ပစ္စည်းကို မတွေ့ပါ။",
+    "shipping_origin_not_found": "ကုန်ပစ္စည်း '{product_id}' အတွက် ပို့ဆောင်မှုမူလနေရာကို မတွေ့ပါ။",
+    "cannot_determine_province": "မူလလိပ်စာမှ မှန်ကန်သော ပြည်နယ်ကို သတ်မှတ်၍မရပါ: '{address}'။",
+    "cannot_determine_destination_province": "သွားရောက်ရာလိပ်စာမှ မှန်ကန်သော ပြည်နယ်ကို သတ်မှတ်၍မရပါ: '{address}'။",
+    "valid_province_required": "တရုတ်ပြည်နယ်အမည်မှန်ကို ပေးပါ။",
+    "cannot_map_to_region": "ပြည်နယ်များကို ပထဝီဒေသများနှင့် မဖြည့်နိုင်ပါ။"
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name လိုအပ်သည်",
+    "quantity_positive": "အရေအတွက်သည် အပေါင်းဖြစ်ရမည်",
+    "invalid_coupon_name": "ကူပွန်အမည်မမှန်ပါ: '{coupon_name}'. မှန်ကန်သောကူပွန်များမှာ: {valid_coupons_str}",
+    "coupon_not_in_cart": "ကူပွန်သည် ကုန်ပစ္စည်းတောင်းမှာမရှိပါ: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "ကုန်ပစ္စည်းတောင်းမှာ ကူပွန်အရေအတွက်မလုံလောက်ပါ: ကုန်ပစ္စည်းတောင်းမှာ {cart_count} ရှိသော '{coupon_name}', {quantity} ကို ဖယ်ရှား၍မရပါ",
+    "save_cart_failed": "ကုန်ပစ္စည်းတောင်းခံစာကို သိမ်းဆည်း၍မရပါ: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id လိုအပ်သည်",
+    "quantity_positive": "အရေအတွက်သည် အပေါင်းဖြစ်ရမည်",
+    "product_not_found": "ထုတ်ကုန် မတွေ့ပါ: product_id '{product_id}'",
+    "product_not_in_cart": "ကုန်ပစ္စည်းတောင်းမှာ ကုန်ပစ္စည်းမရှိပါ: product_id '{product_id}'",
+    "save_cart_failed": "ကုန်ပစ္စည်းတောင်းခံစာကို သိမ်းဆည်း၍မရပါ: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "အချို့သော product_ids ကို ဒေတာဘေ့စ်တွင် မတွေ့ပါ: {missing_ids}",
+    "invalid_coupon_names": "ကူပွန်အမည်များမမှန်ပါ: {coupon_names}. မှန်ကန်သောကူပွန်များမှာ: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "အချို့သော product_ids ကို ဒေတာဘေ့စ်တွင် မတွေ့ပါ: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "အချို့သော product_ids ကို ဒေတာဘေ့စ်တွင် မတွေ့ပါ: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "အချို့သော product_ids ကို ဒေတာဘေ့စ်တွင် မတွေ့ပါ: {missing_ids}",
+    "missing_range_params": "လိုအပ်သော ပါရာမီတာများ ပျောက်ဆုံးနေသည်: condition_key, operator, သို့မဟုတ် value။",
+    "condition_key_not_found": "condition_key ကို ထုတ်ကုန်ဒေတာတွင် မတွေ့ရှိနိုင်ပါ၊ ကျေးဇူးပြု၍ ထပ်စစ်ပါ။"
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "အချို့သော product_ids ကို ဒေတာဘေ့စ်တွင် မတွေ့ပါ: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' ဖြင့် အသုံးပြုသူကို မတွေ့ရှိပါ"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 အညွှန်း မရရှိနိုင်ပါ။ ဒေတာဘေ့စကို စစ်ဆေးပါ။"
+  },
+  "SortProductsTool": {
+    "sort_by_required": "လိုအပ်သော ပါရာမီတာ ပျောက်ဆုံးနေသည်: sort_by။",
+    "invalid_order": "'order' အတွက် မမှန်ကန်သော တန်ဖိုး: '{order}'။ 'asc' သို့မဟုတ် 'desc' ဖြစ်ရမည်။",
+    "sort_error": "'{sort_by}' ကီးဖြင့် အစီအစဉ်ချနေစဉ် အမှားအယွင်းတစ်ခု ဖြစ်ပေါ်ခဲ့သည်- {e}",
+    "sort_key_not_found": "'{sort_by}' အစီအစဉ်ချ ကီးကို ထုတ်ကုန်ဒေတာတွင် ရှာမတွေ့နိုင်ပါ သို့မဟုတ် null ဖြစ်နေသည်။ ကျေးဇူးပြု၍ ထပ်မံစစ်ဆေးပါ။"
+  }
+}

@@ -1,0 +1,139 @@
+# Single source of model configuration for all four benchmarks.
+#
+# Copy to configs/models.yaml and edit. `bench` reads this file, expands
+# ${ENV_VAR} references from the environment, and renders the per-benchmark
+# config files each runner expects:
+#
+#   .runtime/tau3_models.yaml         -> TAU2_MODEL_CONFIG_PATH
+#   .runtime/vita_models.yaml         -> VITA_MODEL_CONFIG_PATH
+#   .runtime/deepplanning_models.json -> DEEPPLANNING_MODELS_CONFIG
+#   .runtime/claw_<run-id>.yaml       -> claw-eval batch --config
+#
+# claw's file has one section per role -- the agent, roles.evaluator as its
+# judge, roles.user as its user simulator -- so it is written per run. It
+# carries no key: api_key there is a ${REQUEST_KEY_<NAME>} reference claw expands
+# itself, from a variable `bench` sets when it starts. claw has no max_tokens
+# field, so max_tokens (and `thinking`) go into its request body, and
+# max_input_tokens becomes its context_window.
+#
+# Never put a literal API key in this file -- always reference an environment
+# variable, so the file stays safe to commit. `bench` refuses to run if it
+# finds something that looks like a bare key here.
+#
+# Any OpenAI-compatible endpoint works (OpenAI, Azure, DashScope, vLLM, an
+# internal gateway, ...). One base_url + key pair covers every model listed
+# unless a model overrides it.
+#
+# base_url must be the FULL endpoint, ending in /chat/completions: tau3 and
+# vitabench POST it verbatim. deepplanning drives the OpenAI SDK, which appends
+# that path itself, so `bench` strips the suffix when rendering deepplanning's
+# and claw's configs. Write the full URL once and all four work.
+#
+# A model may carry a `claw:` block of settings only claw understands; it is
+# applied last to that model's section of claw's config and never reaches the
+# other runners. See the last two models below.
+
+default:
+  base_url: ${REQUEST_BASE_URL}   # e.g. https://host/v1/chat/completions
+  temperature: 0.0
+  max_input_tokens: 128000
+  headers:
+    Authorization: "Bearer ${REQUEST_API_KEY}"
+    Content-Type: "application/json"
+
+models:
+  # ---- Agent models (the systems under evaluation) --------------------------
+  - name: gpt-4.1
+    max_tokens: 8192
+    max_input_tokens: 32768
+
+  - name: claude-sonnet-4
+    max_tokens: 32768
+    max_input_tokens: 200000
+
+  # A reasoning model. `thinking` / `reasoning_effort` are passed through to the
+  # endpoint untouched -- use whichever your provider accepts, not both.
+  - name: my-reasoning-model
+    max_tokens: 32768
+    reasoning_effort: high
+
+  # A model behind a different endpoint: override just the keys that differ.
+  # Every ${VAR} in this file must be set before `bench` runs, even for models
+  # you do not use, so this one is left commented out.
+  # - name: local-vllm-model
+  #   base_url: http://127.0.0.1:8000/v1
+  #   max_tokens: 16384
+  #   headers:
+  #     Authorization: "Bearer ${LOCAL_VLLM_KEY}"
+
+  # ---- Support models -------------------------------------------------------
+  # The user simulator (tau3, vitabench) and the LLM judge (vitabench) are part
+  # of the measurement apparatus. Keep them fixed across the systems you compare
+  # -- changing them changes the scale, and results stop being comparable.
+  - name: gpt-4.1-user-simulator
+    model_name: gpt-4.1          # actual id sent to the endpoint
+    max_tokens: 8192
+    temperature: 0.0
+
+  - name: claude-sonnet-4-judge
+    model_name: claude-sonnet-4
+    max_tokens: 8192
+    temperature: 0.0
+
+  # deepplanning's travel domain runs a conversion pass that reformats the
+  # agent's free-text plan into scoreable JSON before evaluation. It is not the
+  # system under test, but a wrong choice here silently depresses travel scores.
+  - name: conversion-model
+    model_name: gpt-4.1
+    max_tokens: 8192
+    temperature: 0.0
+
+  # ---- claw-only settings ---------------------------------------------------
+  # An agent claw should call through the Anthropic Messages protocol instead
+  # of the OpenAI-compatible one. `temperature: null` means "do not send it",
+  # for endpoints that reject the parameter on reasoning models.
+  - name: claude-native
+    model_name: claude-opus-5
+    temperature: null
+    max_tokens: 16384
+    claw:
+      provider: anthropic_native
+      base_url: https://your-gateway/anthropic/v1
+      # Media types claw may attach when a task prompt references a file.
+      # The default, [text], skips such attachments (files the agent opens
+      # through its tools are unaffected). Published claw numbers use the
+      # default -- leave it unset to stay comparable with them.
+      # input_modalities: [text, image]
+
+  # A Gemini user simulator reached through its native generateContent route
+  # (claw only; tau3 and vitabench ignore the block), forced non-thinking.
+  # claw sends the key as `x-goog-api-key: Bearer <key>`, the form the gateway
+  # the published runs used expects. Google's own endpoint takes the bare key,
+  # so point this at a gateway that accepts the Bearer form, or use the default
+  # OpenAI-compatible route instead.
+  - name: gemini-user-native
+    model_name: gemini-3.5-flash
+    extra_body:
+      google:
+        thinking_config:
+          thinking_budget: 0
+    claw:
+      api_format: vertex
+      base_url: https://your-gateway/vertex/v1beta
+
+# Which of the models above fill the non-agent roles. `bench` uses these unless
+# overridden by --user-model / --evaluator-model / --conversion-model /
+# --lang-judge-model. claw requires both `user` and `evaluator`.
+#
+# The paper's setup, to compare with its numbers: user = Gemini-3.5-Flash
+# (thinking off), evaluator = GPT-5.6-Sol (thinking off), conversion =
+# Gemini-3.5-Flash (thinking off), lang_judge = Gemini-3.7-Flash.
+roles:
+  user: gpt-4.1-user-simulator
+  evaluator: claude-sonnet-4-judge
+  conversion: conversion-model
+  # Judges `bench run --lang-consistency` / `bench lang-check`. Falls back to
+  # `evaluator` when unset. It must read all 23 languages well -- a judge that
+  # is weak in Khmer will report Khmer drift that is not there, so keep it
+  # fixed across everything you compare.
+  lang_judge: claude-sonnet-4-judge

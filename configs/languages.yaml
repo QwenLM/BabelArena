@@ -1,0 +1,63 @@
+# Canonical language registry for the multilingual agent benchmark suite.
+#
+# The four sub-benchmarks each grew their own language-identifier convention.
+# This table is the single place that maps between them, so `bench` can accept
+# one spelling and hand each sub-benchmark the form it actually expects:
+#
+#   code    ISO-639-1 short code. The canonical form accepted by `bench`.
+#   name    lowercase English name. Also accepted by `bench`.
+#   tau3    value for the TAU2_LANGUAGE env var (tau3 has no --language flag).
+#   vita    value for `vita run --language`.
+#   deep    value for deepplanning's --language / DEEPPLANNING_LANGUAGE.
+#   claw    value for `claw-eval batch --language` (it takes the ISO code;
+#           the task files it selects are named task_<code>.yaml).
+#
+# All 23 languages below are shipped complete by all four benchmarks, verified
+# against the data files rather than the upstream READMEs (which disagree with
+# each other on the count). For claw that means every task of the standard
+# subset has its task_<code>.yaml, or was written in that language.
+#
+# German is deliberately absent. tau3's tree carried partial German artifacts
+# (policy / tasks / tools) but no localized database in any domain, so a German
+# run had nothing to score against; those files were dropped rather than
+# shipped as a language that cannot actually run.
+#
+# Two spellings that are easy to get wrong:
+#   - Eastern Panjabi is `pa`. tau3 wants the two-word display form
+#     "Eastern Panjabi"; vitabench calls the same language "punjabi".
+#   - Burmese is `my`, not `bu` or `mm`.
+
+languages:
+  - {code: en, name: english,         tau3: English,         vita: english,     deep: english,         claw: en}
+  - {code: zh, name: chinese,         tau3: Chinese,         vita: chinese,     deep: chinese,         claw: zh}
+  - {code: ja, name: japanese,        tau3: Japanese,        vita: japanese,    deep: japanese,        claw: ja}
+  - {code: fr, name: french,          tau3: French,          vita: french,      deep: french,          claw: fr}
+  - {code: ru, name: russian,         tau3: Russian,         vita: russian,     deep: russian,         claw: ru}
+  - {code: ar, name: arabic,          tau3: Arabic,          vita: arabic,      deep: arabic,          claw: ar}
+  - {code: es, name: spanish,         tau3: Spanish,         vita: spanish,     deep: spanish,         claw: es}
+  - {code: ko, name: korean,          tau3: Korean,          vita: korean,      deep: korean,          claw: ko}
+  - {code: id, name: indonesian,      tau3: Indonesian,      vita: indonesian,  deep: indonesian,      claw: id}
+  - {code: hi, name: hindi,           tau3: Hindi,           vita: hindi,       deep: hindi,           claw: hi}
+  - {code: th, name: thai,            tau3: Thai,            vita: thai,        deep: thai,            claw: th}
+  - {code: he, name: hebrew,          tau3: Hebrew,          vita: hebrew,      deep: hebrew,          claw: he}
+  - {code: tr, name: turkish,         tau3: Turkish,         vita: turkish,     deep: turkish,         claw: tr}
+  - {code: vi, name: vietnamese,      tau3: Vietnamese,      vita: vietnamese,  deep: vietnamese,      claw: vi}
+  - {code: ms, name: malay,           tau3: Malay,           vita: malay,       deep: malay,           claw: ms}
+  - {code: be, name: belarusian,      tau3: Belarusian,      vita: belarusian,  deep: belarusian,      claw: be}
+  - {code: pa, name: eastern_panjabi, tau3: Eastern Panjabi, vita: punjabi,     deep: eastern_panjabi, claw: pa}
+  - {code: kk, name: kazakh,          tau3: Kazakh,          vita: kazakh,      deep: kazakh,          claw: kk}
+  - {code: km, name: khmer,           tau3: Khmer,           vita: khmer,       deep: khmer,           claw: km}
+  - {code: my, name: burmese,         tau3: Burmese,         vita: burmese,     deep: burmese,         claw: my}
+  - {code: lo, name: lao,             tau3: Lao,             vita: lao,         deep: lao,             claw: lo}
+  - {code: ta, name: tamil,           tau3: Tamil,           vita: tamil,       deep: tamil,           claw: ta}
+  - {code: te, name: telugu,          tau3: Telugu,          vita: telugu,      deep: telugu,          claw: te}
+
+# Extra spellings `bench` normalises to a code above.
+aliases:
+  punjabi: pa
+  panjabi: pa
+  eastern panjabi: pa
+  myanmar: my
+  mandarin: zh
+  zh-cn: zh
+  zh-hans: zh

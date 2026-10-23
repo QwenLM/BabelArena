@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "ఈ కూపన్ల కలయికకు కార్ట్ మొత్తం {base_total} సరిపోదు (కనీసం {total_threshold_required} అవసరం)",
+    "coupon_name_required": "coupon_name అవసరం",
+    "quantity_positive": "పరిమాణం సానుకూల సంఖ్యగా ఉండాలి",
+    "coupon_not_found": "కూపన్ కనుగొనబడలేదు: '{coupon_name}'. చెల్లుబాటు అయ్యే కూపన్లు: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "తగినంత కూపన్ పరిమాణం లేదు: వినియోగదారుని వద్ద {user_coupon_count} '{coupon_name}' ఉన్నాయి, కార్ట్ ఇప్పటికే {existing_cart_count} ఉపయోగిస్తుంది, {quantity} మరిన్ని జోడించలేరు",
+    "vip_coupon_required": "VIP కూపన్ '{coupon_name}' కు VIP స్థాయి అవసరం, కానీ వినియోగదారు VIP కాదు"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id అవసరం",
+    "quantity_positive": "పరిమాణం సానుకూల సంఖ్యగా ఉండాలి",
+    "product_not_found": "ఉత్పత్తి కనుగొనబడలేదు: product_id '{product_id}'",
+    "insufficient_stock": "తగినంత స్టాక్ లేదు: ఉత్పత్తి '{product_name}' (ID: {product_id}) వద్ద {stock_quantity} స్టాక్‌లో ఉంది, కార్ట్‌లో ఇప్పటికే {existing_quantity} ఉంది, {quantity} మరిన్ని జోడించలేరు",
+    "save_cart_failed": "కార్ట్ సేవ్ చేయడంలో విఫలమైంది: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "పారామితులు చెల్లుబాటు అయ్యే JSON స్ట్రింగ్ అయి ఉండాలి! లోపం: {err}",
+    "missing_required_arg": "అవసరమైన ఆర్గుమెంట్ లేదు: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID '{product_id}' ఉన్న ఉత్పత్తి కనబడలేదు.",
+    "shipping_origin_not_found": "ఉత్పత్తి '{product_id}' కోసం షిప్పింగ్ మూలం కనబడలేదు.",
+    "cannot_determine_province": "మూల చిరునామా నుండి సరైన ప్రావిన్స్‌ను నిర్ణయించలేకపోయాము: '{address}'.",
+    "cannot_determine_destination_province": "గమ్యస్థాన చిరునామా నుండి సరైన ప్రావిన్స్‌ను నిర్ణయించలేకపోయాము: '{address}'.",
+    "valid_province_required": "దయచేసి చైనీస్ ప్రావిన్స్ పేరు సరైనదిగా ఇవ్వండి.",
+    "cannot_map_to_region": "ప్రావిన్సులను భౌగోళిక ప్రాంతాలకు మ్యాప్ చేయలేకపోయాము."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name అవసరం",
+    "quantity_positive": "పరిమాణం సానుకూల సంఖ్యగా ఉండాలి",
+    "invalid_coupon_name": "చెల్లని కూపన్ పేరు: '{coupon_name}'. చెల్లుబాటు అయ్యే కూపన్లు: {valid_coupons_str}",
+    "coupon_not_in_cart": "కూపన్ కార్ట్‌లో లేదు: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "కార్ట్‌లో కూపన్ పరిమాణం తక్కువ: కార్ట్‌లో '{coupon_name}' {cart_count} ఉంది, {quantity} తీసివేయలేము",
+    "save_cart_failed": "కార్ట్ సేవ్ చేయడంలో విఫలమైంది: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id అవసరం",
+    "quantity_positive": "పరిమాణం సానుకూల సంఖ్యగా ఉండాలి",
+    "product_not_found": "ఉత్పత్తి కనుగొనబడలేదు: product_id '{product_id}'",
+    "product_not_in_cart": "ఉత్పత్తి కార్ట్‌లో లేదు: product_id '{product_id}'",
+    "save_cart_failed": "కార్ట్ సేవ్ చేయడంలో విఫలమైంది: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "కొన్ని product_ids డేటాబేస్‌లో కనుగొనబడలేదు: {missing_ids}",
+    "invalid_coupon_names": "చెల్లని కూపన్ పేర్లు: {coupon_names}. చెల్లుబాటు అయ్యే కూపన్లు: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "కొన్ని product_ids డేటాబేస్‌లో కనుగొనబడలేదు: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "కొన్ని product_ids డేటాబేస్‌లో కనుగొనబడలేదు: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "కొన్ని product_ids డేటాబేస్‌లో కనుగొనబడలేదు: {missing_ids}",
+    "missing_range_params": "కావలసిన పరామితులు లేవు: condition_key, operator, లేదా value.",
+    "condition_key_not_found": "condition_key ఉత్పత్తి డేటాలో కనబడలేదు, దయచేసి మళ్లీ తనిఖీ చేయండి."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "కొన్ని product_ids డేటాబేస్‌లో కనుగొనబడలేదు: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' ఉన్న వినియోగదారు కనబడలేదు"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 సూచిక అందుబాటులో లేదు. డేటాబేస్ లోడింగ్ తనిఖీ చేయండి."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "కావలసిన పరామితి లేదు: sort_by.",
+    "invalid_order": "'order' కోసం చెల్లని విలువ: '{order}'. 'asc' లేదా 'desc' ఉండాలి.",
+    "sort_error": "కీ '{sort_by}' పై సార్టింగ్ సమయంలో లోపం సంభవించింది: {e}",
+    "sort_key_not_found": "సార్టింగ్ కీ '{sort_by}' ఉత్పత్తి డేటాలో కనబడలేదు లేదా శూన్యం. దయచేసి మళ్లీ తనిఖీ చేయండి."
+  }
+}

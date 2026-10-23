@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "Cart total {base_total} is insufficient for this combination of coupons (requires at least {total_threshold_required})",
+    "coupon_name_required": "coupon_name is required",
+    "quantity_positive": "quantity must be a positive number",
+    "coupon_not_found": "Coupon not found: '{coupon_name}'. Valid coupons are: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "Insufficient coupon quantity: User owns {user_coupon_count} of '{coupon_name}', cart already uses {existing_cart_count}, cannot add {quantity} more",
+    "vip_coupon_required": "VIP coupon '{coupon_name}' requires VIP status, but user is not a VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id is required",
+    "quantity_positive": "quantity must be a positive number",
+    "product_not_found": "Product not found: product_id '{product_id}'",
+    "insufficient_stock": "Insufficient stock: Product '{product_name}' (ID: {product_id}) has {stock_quantity} in stock, cart already has {existing_quantity}, cannot add {quantity} more",
+    "save_cart_failed": "Failed to save cart: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "Parameters must be a valid JSON string! Error: {err}",
+    "missing_required_arg": "Missing required argument: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "Product with ID '{product_id}' not found.",
+    "shipping_origin_not_found": "Shipping origin not found for product '{product_id}'.",
+    "cannot_determine_province": "Could not determine a valid province from origin address: '{address}'.",
+    "cannot_determine_destination_province": "Could not determine a valid province from destination address: '{address}'.",
+    "valid_province_required": "Please provide a valid Chinese province name.",
+    "cannot_map_to_region": "Could not map provinces to geographical regions."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name is required",
+    "quantity_positive": "quantity must be a positive number",
+    "invalid_coupon_name": "Invalid coupon name: '{coupon_name}'. Valid coupons are: {valid_coupons_str}",
+    "coupon_not_in_cart": "Coupon not in cart: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "Insufficient coupon quantity in cart: Cart has {cart_count} of '{coupon_name}', cannot remove {quantity}",
+    "save_cart_failed": "Failed to save cart: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id is required",
+    "quantity_positive": "quantity must be a positive number",
+    "product_not_found": "Product not found: product_id '{product_id}'",
+    "product_not_in_cart": "Product not in cart: product_id '{product_id}'",
+    "save_cart_failed": "Failed to save cart: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "Some product_ids not found in database: {missing_ids}",
+    "invalid_coupon_names": "Invalid coupon names: {coupon_names}. Valid coupons are: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "Some product_ids not found in database: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "Some product_ids not found in database: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "Some product_ids not found in database: {missing_ids}",
+    "missing_range_params": "Missing required parameters: condition_key, operator, or value.",
+    "condition_key_not_found": "condition_key cannot be found in product data, please check again."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "Some product_ids not found in database: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "User with user_id '{user_id}' not found"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 index is not available. Check database loading."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "Missing required parameter: sort_by.",
+    "invalid_order": "Invalid value for 'order': '{order}'. Must be 'asc' or 'desc'.",
+    "sort_error": "An error occurred during sorting on key '{sort_by}': {e}",
+    "sort_key_not_found": "Sort key '{sort_by}' cannot be found in product data or is null. Please check again."
+  }
+}

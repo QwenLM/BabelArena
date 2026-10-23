@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "இந்த கூப்பன்களின் சேர்க்கைக்கு {base_total} என்ற கூடை மொத்தம் போதுமானதல்ல (குறைந்தது {total_threshold_required} தேவை)",
+    "coupon_name_required": "coupon_name தேவை",
+    "quantity_positive": "அளவு ஒரு நேர்மறை எண் ஆக இருக்க வேண்டும்",
+    "coupon_not_found": "கூப்பன் கிடைக்கவில்லை: '{coupon_name}'. செல்லுபடியாகும் கூப்பன்கள்: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "போதுமான கூப்பன் அளவு இல்லை: பயனாளர் '{coupon_name}' என்ற {user_coupon_count} உடையவர், கூடை ஏற்கனவே {existing_cart_count} பயன்படுத்துகிறது, மேலும் {quantity} சேர்க்க முடியாது",
+    "vip_coupon_required": "VIP கூப்பன் '{coupon_name}' VIP நிலையை தேவை, ஆனால் பயனாளர் VIP அல்ல"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id தேவை",
+    "quantity_positive": "அளவு ஒரு நேர்மறை எண் ஆக இருக்க வேண்டும்",
+    "product_not_found": "தயாரிப்பு கிடைக்கவில்லை: product_id '{product_id}'",
+    "insufficient_stock": "பொருள் '{product_name}' (ID: {product_id}) கையிருப்பில் {stock_quantity} உள்ளது, வண்டியில் ஏற்கனவே {existing_quantity} உள்ளது, மேலும் {quantity} சேர்க்க முடியாது",
+    "save_cart_failed": "வண்டியை சேமிக்க முடியவில்லை: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "அளவுருக்கள் சரியான JSON சரமாக இருக்க வேண்டும்! பிழை: {err}",
+    "missing_required_arg": "தேவையான வாதம் இல்லை: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID '{product_id}' கொண்ட பொருள் கிடைக்கவில்லை.",
+    "shipping_origin_not_found": "ID '{product_id}' கொண்ட பொருளுக்கான கப்பல் மூலத்தை கண்டறிய முடியவில்லை.",
+    "cannot_determine_province": "மூல முகவரியில் இருந்து சரியான மாகாணத்தை கண்டறிய முடியவில்லை: '{address}'.",
+    "cannot_determine_destination_province": "இலக்கு முகவரியில் இருந்து சரியான மாகாணத்தை கண்டறிய முடியவில்லை: '{address}'.",
+    "valid_province_required": "சரியான சீன மாகாணத்தின் பெயரை வழங்கவும்.",
+    "cannot_map_to_region": "மாகாணங்களை புவியியல் பகுதிகளுக்கு வரைபடம் செய்ய முடியவில்லை."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name தேவை",
+    "quantity_positive": "அளவு ஒரு நேர்மறை எண் ஆக இருக்க வேண்டும்",
+    "invalid_coupon_name": "செல்லுபடியாகாத கூப்பன் பெயர்: '{coupon_name}'. செல்லுபடியாகும் கூப்பன்கள்: {valid_coupons_str}",
+    "coupon_not_in_cart": "கூப்பன் வண்டியில் இல்லை: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "வண்டியில் போதுமான கூப்பன் அளவு இல்லை: வண்டியில் {cart_count} '{coupon_name}' உள்ளது, {quantity} நீக்க முடியாது",
+    "save_cart_failed": "வண்டியை சேமிக்க முடியவில்லை: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id தேவை",
+    "quantity_positive": "அளவு ஒரு நேர்மறை எண் ஆக இருக்க வேண்டும்",
+    "product_not_found": "தயாரிப்பு கிடைக்கவில்லை: product_id '{product_id}'",
+    "product_not_in_cart": "வண்டியில் பொருள் இல்லை: product_id '{product_id}'",
+    "save_cart_failed": "வண்டியை சேமிக்க முடியவில்லை: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "சில product_ids தரவுத்தளத்தில் கிடைக்கவில்லை: {missing_ids}",
+    "invalid_coupon_names": "செல்லுபடியாகாத கூப்பன் பெயர்கள்: {coupon_names}. செல்லுபடியாகும் கூப்பன்கள்: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "சில product_ids தரவுத்தளத்தில் கிடைக்கவில்லை: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "சில product_ids தரவுத்தளத்தில் கிடைக்கவில்லை: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "சில product_ids தரவுத்தளத்தில் கிடைக்கவில்லை: {missing_ids}",
+    "missing_range_params": "தேவையான அளவுருக்கள் இல்லை: condition_key, operator, அல்லது value.",
+    "condition_key_not_found": "condition_key தயாரிப்பு தரவுகளில் காணப்படவில்லை, தயவுசெய்து மீண்டும் சரிபார்க்கவும்."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "சில product_ids தரவுத்தளத்தில் கிடைக்கவில்லை: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' கொண்ட பயனர் காணப்படவில்லை"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 குறியீடு கிடைக்கவில்லை. தரவுத்தள ஏற்றுதலை சரிபார்க்கவும்."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "தேவையான அளவுரு இல்லை: sort_by.",
+    "invalid_order": "'order' க்கான தவறான மதிப்பு: '{order}'. 'asc' அல்லது 'desc' ஆக இருக்க வேண்டும்.",
+    "sort_error": "குறியீடு '{sort_by}' இல் வரிசைப்படுத்தும்போது ஒரு பிழை ஏற்பட்டது: {e}",
+    "sort_key_not_found": "வரிசைப்படுத்தும் முக்கியம் '{sort_by}' தயாரிப்பு தரவுகளில் காணப்படவில்லை அல்லது null ஆக உள்ளது. தயவுசெய்து மீண்டும் சரிபார்க்கவும்."
+  }
+}

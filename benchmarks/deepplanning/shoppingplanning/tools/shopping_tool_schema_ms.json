@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "Mengendalikan pertanyaan bahasa semula jadi yang luas dan terbuka. Ia melakukan carian semantik pada maklumat produk utama (nama, jenama, kategori, tag) untuk mendapatkan set awal produk yang relevan dengan cepat. Ini adalah langkah pertama dalam penerokaan pengguna.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Pertanyaan bahasa semula jadi pengguna. contohnya, 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Pilihan. Mengehadkan bilangan product_ids yang dikembalikan. Lalai kepada 20 untuk mengelakkan hasil yang terlalu besar."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "Menapis senarai ID produk yang diberikan mengikut satu atau lebih nama jenama. Jika beberapa nama jenama diberikan, ia mengembalikan produk yang sepadan dengan mana-mana jenama tersebut (logik OR).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai pilihan product_ids untuk ditapis. Jika tidak diberikan, menapis dari keseluruhan katalog produk."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai nama jenama untuk dipadankan. contohnya, [\"UNIQLO\"] atau [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "Menapis senarai ID produk yang diberikan mengikut satu atau lebih warna. Jika beberapa warna diberikan, ia mengembalikan produk yang sepadan dengan mana-mana warna tersebut (logik OR). Padanan warna memeriksa medan 'color' produk. Jika product_ids tidak diberikan, menapis dari keseluruhan katalog produk.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai pilihan product_ids untuk ditapis. Jika tidak diberikan, menapis dari keseluruhan katalog produk."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai nama warna untuk dipadankan. contohnya, [\"White\"] atau [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "Menapis senarai ID produk yang diberikan mengikut satu atau lebih saiz. Jika beberapa saiz diberikan, ia mengembalikan produk yang sepadan dengan mana-mana saiz tersebut (logik OR). Padanan saiz memeriksa medan 'size' produk (contohnya, 'M', 'L', '42', '140cm'). Jika product_ids tidak diberikan, menapis dari keseluruhan katalog produk.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai pilihan product_ids untuk ditapis. Jika tidak diberikan, menapis dari keseluruhan katalog produk."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai saiz untuk dipadankan. cth., [\"M\"] atau [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "Menapis senarai ID produk berdasarkan kupon yang boleh digunakan. Alat ini memadankan semua produk yang `applicable_coupons` mengandungi nama kupon yang diberikan. contohnya, menggunakan [\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"] akan memadankan produk yang mempunyai kedua-dua kupon ini dalam senarai applicable_coupons mereka.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai pilihan product_ids untuk ditapis. Jika tidak diberikan, menapis dari keseluruhan katalog produk."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai nama kupon untuk dipadankan. cth., [\"Cross-store: ¥30 off every ¥300\"] atau [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "Menapis senarai ID produk berdasarkan ciri berangka, operator perbandingan, dan nilai ambang.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai pilihan product_ids untuk ditapis. Jika tidak diberikan, menapis dari keseluruhan katalog produk."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "Dimensi ciri berangka untuk ditapis.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "Operator perbandingan.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "Nilai berangka untuk dibandingkan."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "Menyusun senarai ID produk yang diberikan mengikut dimensi dan susunan yang ditentukan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai pilihan product_ids untuk disusun. Jika tidak disediakan, menyusun dari keseluruhan katalog produk."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Dimensi ciri untuk digunakan sebagai asas penyusunan.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "Susunan penyusunan. Lalai kepada 'desc' (menurun).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "Mengambil maklumat lengkap dan terperinci untuk senarai ID produk.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Senarai pengenal pasti produk unik untuk mendapatkan butiran."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "Mengira anggaran masa penghantaran dalam hari untuk produk. Ia menggunakan asal penghantaran produk dan alamat destinasi pengguna. Hasil akhir adalah bilangan hari dalam bentuk integer.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Pengenal pasti unik produk untuk mencari asal penghantaran."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "Alamat destinasi pengguna, yang mesti nama provinsi ditulis dalam pinyin, seperti 'guangdong', 'beijing', 'shanghai', dll. Hanya pinyin diterima untuk parameter input ini."
+          },
+          "provider": {
+            "type": "string",
+            "description": "Pilihan. Nama penyedia penghantaran untuk menyesuaikan masa penghantaran. Penyedia yang disokong termasuk 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default'. Jika tidak disediakan, menggunakan penyedia lalai produk."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "Mengambil maklumat pengguna dari pangkalan data, termasuk alamat pengguna, ukuran badan, dan butiran profil lain. Jika user_id diberikan, mengembalikan maklumat khusus pengguna tersebut; jika tidak, mengembalikan maklumat pengguna lalai/semasa.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Pilihan. Pengenal pasti unik pengguna untuk mendapatkan. Jika tidak disediakan, mengembalikan maklumat pengguna lalai."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "Menambah produk ke dalam troli belanja. Mengesahkan bahawa produk wujud dalam katalog produk dan memeriksa ketersediaan stok. Jika produk sudah ada dalam troli, ia meningkatkan kuantiti. Alat ini secara automatik mengemas kini ringkasan troli (jumlah item dan jumlah harga) selepas menambah. Mengembalikan troli yang dikemas kini dengan semua item dan maklumat ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Pengenal pasti unik produk untuk ditambah ke dalam troli. Mesti wujud dalam katalog produk."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Pilihan. Kuantiti untuk ditambah. Mesti integer positif. Lalai kepada 1. Alat memeriksa jika menambah kuantiti ini akan melebihi stock_quantity produk (termasuk item yang sudah ada dalam troli)."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "Mengeluarkan produk dari troli belanja atau mengurangkan kuantitinya. Mengesahkan bahawa produk wujud dalam katalog produk dan sedang berada dalam troli. Jika kuantiti untuk dikeluarkan sama atau melebihi kuantiti dalam troli, item tersebut dikeluarkan sepenuhnya. Alat ini secara automatik mengemas kini ringkasan troli dan mengeluarkan item dengan kuantiti sifar. Mengembalikan troli yang dikemas kini dengan semua item dan maklumat ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Pengenal pasti unik produk untuk dikeluarkan dari troli. Mesti wujud dalam katalog produk dan sedang berada dalam troli."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Pilihan. Kuantiti untuk dikeluarkan. Mesti integer positif. Lalai kepada 1. Jika kuantiti sama atau melebihi kuantiti dalam troli, item dikeluarkan sepenuhnya."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "Mengambil maklumat troli belanja semasa termasuk semua item dan statistik ringkasan. Mengembalikan senarai item troli (setiap satu dengan product_id, nama, kuantiti, dan harga) dan objek ringkasan yang mengandungi total_items_count (jumlah semua kuantiti) dan total_price (jumlah semua harga item * kuantiti). Tiada parameter diperlukan - mengembalikan keadaan semasa troli.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "Menambah kupon ke dalam troli belanja. Mengesahkan bahawa kupon wujud dalam senarai kupon yang sah, memeriksa pemilikan pengguna terhadap kupon dan memastikan jumlah troli memenuhi keperluan ambang kupon. Jika kupon yang sama sudah ada dalam troli, ia mengemas kini kuantiti. Alat ini secara automatik mengemas kini ringkasan troli (jumlah item dan jumlah harga selepas diskaun) selepas menambah. Mengembalikan troli yang dikemas kini dengan semua item, kupon yang digunakan, dan maklumat ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Nama kupon untuk ditambah ke dalam troli. Mesti salah satu kupon sah dari senarai kupon. Contoh: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Pilihan. Kuantiti kupon untuk ditambah. Mesti integer positif. Lalai kepada 1. Alat memeriksa jika pengguna memiliki cukup kupon dan jika jumlah troli mencukupi untuk kuantiti yang diminta."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "Mengeluarkan kupon dari troli belanja atau mengurangkan kuantitinya. Mengesahkan bahawa kupon wujud dalam senarai kupon yang sah dan sedang berada dalam troli. Jika kuantiti untuk dikeluarkan sama atau melebihi kuantiti dalam troli, kupon tersebut dikeluarkan sepenuhnya. Alat ini secara automatik mengemas kini ringkasan troli (jumlah item dan jumlah harga selepas diskaun) dan mengeluarkan kupon dengan kuantiti sifar. Mengembalikan troli yang dikemas kini dengan semua item, kupon yang digunakan, dan maklumat ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Nama kupon untuk dikeluarkan dari troli. Mesti salah satu kupon sah dan sedang berada dalam troli."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Pilihan. Kuantiti kupon untuk dikeluarkan. Mesti merupakan integer positif. Lalai kepada 1. Jika kuantiti sama atau melebihi kuantiti troli, kupon akan dikeluarkan sepenuhnya."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

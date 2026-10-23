@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "कार्ट कुल {base_total} इस कूपन संयोजन के लिए अपर्याप्त है (कम से कम {total_threshold_required} की आवश्यकता है)",
+    "coupon_name_required": "coupon_name आवश्यक है",
+    "quantity_positive": "मात्रा एक सकारात्मक संख्या होनी चाहिए",
+    "coupon_not_found": "कूपन नहीं मिला: '{coupon_name}'. मान्य कूपन हैं: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "अपर्याप्त कूपन मात्रा: उपयोगकर्ता के पास '{coupon_name}' के {user_coupon_count} हैं, कार्ट पहले से {existing_cart_count} का उपयोग कर रहा है, {quantity} और नहीं जोड़ सकते",
+    "vip_coupon_required": "VIP कूपन '{coupon_name}' के लिए VIP स्थिति की आवश्यकता है, लेकिन उपयोगकर्ता VIP नहीं है"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id आवश्यक है",
+    "quantity_positive": "मात्रा एक सकारात्मक संख्या होनी चाहिए",
+    "product_not_found": "उत्पाद नहीं मिला: product_id '{product_id}'",
+    "insufficient_stock": "अपर्याप्त स्टॉक: उत्पाद '{product_name}' (ID: {product_id}) के पास {stock_quantity} स्टॉक में है, कार्ट में पहले से {existing_quantity} है, {quantity} और नहीं जोड़ सकते",
+    "save_cart_failed": "कार्ट को सहेजने में विफल: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "पैरामीटर एक मान्य JSON स्ट्रिंग होना चाहिए! त्रुटि: {err}",
+    "missing_required_arg": "आवश्यक तर्क गायब: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID '{product_id}' वाला उत्पाद नहीं मिला।",
+    "shipping_origin_not_found": "उत्पाद '{product_id}' के लिए शिपिंग मूल नहीं मिला।",
+    "cannot_determine_province": "मूल पते से एक मान्य प्रांत निर्धारित नहीं कर सके: '{address}'।",
+    "cannot_determine_destination_province": "गंतव्य पते से एक मान्य प्रांत निर्धारित नहीं कर सके: '{address}'।",
+    "valid_province_required": "कृपया एक मान्य चीनी प्रांत का नाम प्रदान करें।",
+    "cannot_map_to_region": "प्रांतों को भौगोलिक क्षेत्रों से मिलान नहीं कर सका।"
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name आवश्यक है",
+    "quantity_positive": "मात्रा एक सकारात्मक संख्या होनी चाहिए",
+    "invalid_coupon_name": "अमान्य कूपन नाम: '{coupon_name}'. मान्य कूपन हैं: {valid_coupons_str}",
+    "coupon_not_in_cart": "कूपन कार्ट में नहीं है: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "कार्ट में कूपन की अपर्याप्त मात्रा: कार्ट में '{coupon_name}' के {cart_count} हैं, {quantity} नहीं हटा सकते",
+    "save_cart_failed": "कार्ट को सहेजने में विफल: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id आवश्यक है",
+    "quantity_positive": "मात्रा एक सकारात्मक संख्या होनी चाहिए",
+    "product_not_found": "उत्पाद नहीं मिला: product_id '{product_id}'",
+    "product_not_in_cart": "उत्पाद कार्ट में नहीं है: product_id '{product_id}'",
+    "save_cart_failed": "कार्ट को सहेजने में विफल: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "कुछ product_ids डेटाबेस में नहीं मिले: {missing_ids}",
+    "invalid_coupon_names": "अमान्य कूपन नाम: {coupon_names}. मान्य कूपन हैं: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "कुछ product_ids डेटाबेस में नहीं मिले: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "कुछ product_ids डेटाबेस में नहीं मिले: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "कुछ product_ids डेटाबेस में नहीं मिले: {missing_ids}",
+    "missing_range_params": "आवश्यक पैरामीटर गायब हैं: condition_key, operator, या value।",
+    "condition_key_not_found": "condition_key उत्पाद डेटा में नहीं पाया जा सकता है, कृपया फिर से जांचें।"
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "कुछ product_ids डेटाबेस में नहीं मिले: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' वाला उपयोगकर्ता नहीं मिला"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 सूचकांक उपलब्ध नहीं है। कृपया डेटाबेस लोडिंग की जांच करें।"
+  },
+  "SortProductsTool": {
+    "sort_by_required": "आवश्यक पैरामीटर गायब है: sort_by।",
+    "invalid_order": "'order' के लिए अमान्य मान: '{order}'। 'asc' या 'desc' होना चाहिए।",
+    "sort_error": "कुंजी '{sort_by}' पर सॉर्टिंग के दौरान एक त्रुटि हुई: {e}",
+    "sort_key_not_found": "सॉर्ट कुंजी '{sort_by}' उत्पाद डेटा में नहीं पाई जा सकती है या null है। कृपया फिर से जांचें।"
+  }
+}

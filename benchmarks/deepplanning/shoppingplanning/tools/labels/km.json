@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "សរុបរទេះ {base_total} មិនគ្រប់គ្រាន់សម្រាប់ការរួមបញ្ចូលគូប៉ុងនេះ (ត្រូវការយ៉ាងហោចណាស់ {total_threshold_required})",
+    "coupon_name_required": "ត្រូវការឈ្មោះគូប៉ុង",
+    "quantity_positive": "បរិមាណត្រូវតែជាលេខវិជ្ជមាន",
+    "coupon_not_found": "រកមិនឃើញគូប៉ុង: '{coupon_name}'. គូប៉ុងដែលត្រឹមត្រូវគឺ: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "បរិមាណគូប៉ុងមិនគ្រប់គ្រាន់: អ្នកប្រើប្រាស់មាន {user_coupon_count} នៃ '{coupon_name}', រទេះបានប្រើរួចហើយ {existing_cart_count}, មិនអាចបន្ថែម {quantity} ទៀតទេ",
+    "vip_coupon_required": "គូប៉ុង VIP '{coupon_name}' ត្រូវការស្ថានភាព VIP ប៉ុន្តែអ្នកប្រើប្រាស់មិនមែនជា VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "ត្រូវការទំនិញ product_id",
+    "quantity_positive": "បរិមាណត្រូវតែជាលេខវិជ្ជមាន",
+    "product_not_found": "រកមិនឃើញទំនិញ: product_id '{product_id}'",
+    "insufficient_stock": "ស្តុកមិនគ្រប់គ្រាន់: ផលិតផល '{product_name}' (ID: {product_id}) មាន {stock_quantity} នៅក្នុងស្តុក, រទេះមានរួចហើយ {existing_quantity}, មិនអាចបន្ថែម {quantity} ទៀតទេ",
+    "save_cart_failed": "បរាជ័យក្នុងការរក្សាទុករទេះ: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "ប៉ារ៉ាម៉ែត្រ ត្រូវតែជាខ្សែអក្សរប្រកបដោយ JSON ដែលត្រឹមត្រូវ! កំហុស: {err}",
+    "missing_required_arg": "ខ្វះប៉ារ៉ាម៉ែត្រដែលត្រូវការ: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ផលិតផលដែលមាន ID '{product_id}' មិនបានរកឃើញ។",
+    "shipping_origin_not_found": "ប្រភពដឹកជញ្ជូនមិនបានរកឃើញសម្រាប់ផលិតផល '{product_id}'។",
+    "cannot_determine_province": "មិនអាចកំណត់ខេត្តដែលត្រឹមត្រូវពីអាសយដ្ឋានប្រភព: '{address}'។",
+    "cannot_determine_destination_province": "មិនអាចកំណត់ខេត្តដែលត្រឹមត្រូវពីអាសយដ្ឋានគោលដៅ: '{address}'។",
+    "valid_province_required": "សូមផ្តល់ឈ្មោះខេត្តចិនដែលត្រឹមត្រូវ។",
+    "cannot_map_to_region": "មិនអាចផ្គូផ្គងខេត្តទៅតំបន់ភូមិសាស្ត្រ។"
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "ត្រូវការឈ្មោះគូប៉ុង",
+    "quantity_positive": "បរិមាណត្រូវតែជាលេខវិជ្ជមាន",
+    "invalid_coupon_name": "ឈ្មោះគូប៉ុងមិនត្រឹមត្រូវ: '{coupon_name}'. គូប៉ុងត្រឹមត្រូវគឺ: {valid_coupons_str}",
+    "coupon_not_in_cart": "គូប៉ុងមិនមានក្នុងរទេះ: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "បរិមាណគូប៉ុងមិនគ្រប់គ្រាន់ក្នុងរទេះ: រទេះមាន {cart_count} នៃ '{coupon_name}', មិនអាចយកចេញ {quantity}",
+    "save_cart_failed": "បរាជ័យក្នុងការរក្សាទុករទេះ: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "ត្រូវការទំនិញ product_id",
+    "quantity_positive": "បរិមាណត្រូវតែជាលេខវិជ្ជមាន",
+    "product_not_found": "រកមិនឃើញទំនិញ: product_id '{product_id}'",
+    "product_not_in_cart": "ផលិតផលមិនមានក្នុងរទេះ: product_id '{product_id}'",
+    "save_cart_failed": "បរាជ័យក្នុងការរក្សាទុករទេះ: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "product_ids មួយចំនួនមិនបានរកឃើញក្នុងមូលដ្ឋានទិន្នន័យ: {missing_ids}",
+    "invalid_coupon_names": "ឈ្មោះគូប៉ុងមិនត្រឹមត្រូវ: {coupon_names}. គូប៉ុងត្រឹមត្រូវគឺ: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "product_ids មួយចំនួនមិនបានរកឃើញក្នុងមូលដ្ឋានទិន្នន័យ: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "product_ids មួយចំនួនមិនបានរកឃើញក្នុងមូលដ្ឋានទិន្នន័យ: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "product_ids មួយចំនួនមិនបានរកឃើញក្នុងមូលដ្ឋានទិន្នន័យ: {missing_ids}",
+    "missing_range_params": "ខ្វះប៉ារ៉ាម៉ែត្រដែលត្រូវការ: condition_key, operator, ឬ value។",
+    "condition_key_not_found": "condition_key មិនអាចរកឃើញនៅក្នុងទិន្នន័យផលិតផលទេ សូមពិនិត្យម្តងទៀត។"
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "product_ids មួយចំនួនមិនបានរកឃើញក្នុងមូលដ្ឋានទិន្នន័យ: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "អ្នកប្រើប្រាស់ដែលមាន user_id '{user_id}' មិនត្រូវបានរកឃើញ"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "សន្ទស្សន៍ BM25 មិនអាចប្រើប្រាស់បានទេ។ សូមពិនិត្យមើលការផ្ទុកមូលដ្ឋានទិន្នន័យ។"
+  },
+  "SortProductsTool": {
+    "sort_by_required": "ខ្វះប៉ារ៉ាម៉ែត្រដែលត្រូវការ: sort_by។",
+    "invalid_order": "តម្លៃមិនត្រឹមត្រូវសម្រាប់ 'order': '{order}'។ ត្រូវតែជា 'asc' ឬ 'desc'។",
+    "sort_error": "មានកំហុសមួយកើតឡើងក្នុងពេលតម្រៀបតាមគន្លឹះ '{sort_by}': {e}",
+    "sort_key_not_found": "គន្លឹះតម្រៀប '{sort_by}' មិនអាចរកឃើញនៅក្នុងទិន្នន័យផលិតផល ឬគឺទទេ។ សូមពិនិត្យម្តងទៀត។"
+  }
+}

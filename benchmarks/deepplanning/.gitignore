@@ -1,0 +1,33 @@
+# Environment / secrets
+.env
+.env.local
+
+# Editor / OS
+.claude/
+.DS_Store
+._*
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Run logs (transient)
+logs_*/
+
+# Benchmark run outputs — regenerable by re-running the benchmark
+shoppingplanning/database_run_*/
+shoppingplanning/database_infered/
+shoppingplanning/result_report/
+travelplanning/results/
+aggregated_results/
+
+# Databases are fetched into data/deepplanning/ by `bench fetch-data`; never
+# commit a copy extracted in-tree.
+travelplanning/database/
+shoppingplanning/database_level*/
+
+# Scratch
+tmp/

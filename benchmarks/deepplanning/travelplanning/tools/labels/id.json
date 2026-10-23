@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "Database tidak dimuat",
+    "not_found": "Informasi terperinci tidak ditemukan untuk atraksi {name}",
+    "attraction_id": "ID Atraksi",
+    "attraction_name": "Nama Atraksi",
+    "city": "Kota",
+    "address": "Alamat",
+    "coordinates": "Koordinat",
+    "latitude": "Lintang",
+    "longitude": "Bujur",
+    "description": "Deskripsi",
+    "rating": "Peringkat",
+    "visitor_rating": "(peringkat rata-rata pengunjung)",
+    "opening_hours": "Jam Buka",
+    "to": "hingga",
+    "closed_dates": "Tanggal Tutup",
+    "min_visit_hours": "Durasi Kunjungan Minimum",
+    "max_visit_hours": "Durasi Kunjungan Maksimum",
+    "hours_unit": "jam",
+    "ticket_price": "Harga Tiket",
+    "currency_unit": "RMB",
+    "attraction_type": "Tipe Atraksi",
+    "db_loaded": "✓ Basis data atraksi dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data atraksi tidak ditemukan di {path}"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "Database tidak dimuat",
+    "not_found": "Tidak ada rekomendasi atraksi yang ditemukan",
+    "recommendations": "Atraksi yang direkomendasikan:",
+    "attraction_suffix": "{name}, {desc}. Ini adalah atraksi tipe {atype}",
+    "db_loaded": "✓ Basis data atraksi dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data atraksi tidak ditemukan di {path}"
+  },
+  "FlightQueryTool": {
+    "segment": "Segmen {idx}",
+    "remaining_seats": "Sisa Kursi",
+    "sufficient": "Tersedia",
+    "no_info": "Tidak ada informasi yang ditemukan, silakan periksa parameter input",
+    "not_found": "Tidak ada informasi penerbangan yang ditemukan dari {o} ke {d} pada {date}",
+    "db_loaded": "✓ Basis data penerbangan dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data penerbangan tidak ditemukan di {path}"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "Database tidak dimuat",
+    "not_found": "Tidak ada informasi hotel yang ditemukan di {dest} dari {checkin} hingga {checkout}, silakan periksa parameter atau kurangi batasan",
+    "db_loaded": "✓ Basis data hotel dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data hotel tidak ditemukan di {path}"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "Database tidak dimuat",
+    "not_found": "Informasi koordinat tidak ditemukan untuk lokasi {place}, silakan periksa: 1. Apakah nama tempat berasal dari hasil alat lain; 2. Apakah nama tempat benar-benar konsisten dengan hasil alat, tidak diperbolehkan singkatan, penggantian nama, atau deskripsi tambahan",
+    "db_loaded": "✓ Basis data koordinat lokasi dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data koordinat lokasi tidak ditemukan di {path}"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "Database tidak dimuat",
+    "not_found": "Tidak ada restoran yang direkomendasikan ditemukan di dekat koordinat ({lat}, {lon}), silakan periksa sumber koordinat",
+    "db_loaded": "✓ Basis data rekomendasi restoran dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data rekomendasi restoran tidak ditemukan di {path}"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "Database tidak dimuat",
+    "not_found": "Informasi terperinci tidak ditemukan untuk restoran {name}",
+    "db_loaded": "✓ Basis data detail restoran dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data detail restoran tidak ditemukan di {path}"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "Database tidak dimuat",
+    "not_found": "Tidak ada informasi transportasi ditemukan dari {origin} ke {dest}",
+    "coord_not_in_range": "Koordinat {coord} tidak dalam jangkauan kueri, harap periksa:\n1. Apakah koordinat berasal dari hasil kueri alat yang valid, bukan input manual atau fabrikasi;\n2. Apakah presisi koordinat benar-benar konsisten dengan hasil kueri, 6 tempat desimal",
+    "db_loaded": "✓ Basis data rute jalan dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data rute jalan tidak ditemukan di {path}"
+  },
+  "TrainQueryTool": {
+    "segment": "Segmen {idx}",
+    "remaining_seats": "Sisa Kursi",
+    "sufficient": "Tersedia",
+    "no_info": "Tidak ada informasi ditemukan",
+    "not_found": "Tidak ada informasi kereta ditemukan dari {o} ke {d} pada {date}",
+    "station_sep": "Stasiun",
+    "db_loaded": "✓ Basis data kereta dimuat: {count} catatan (path: {path})",
+    "db_not_found": "⚠ Peringatan: Basis data kereta tidak ditemukan di {path}"
+  }
+}

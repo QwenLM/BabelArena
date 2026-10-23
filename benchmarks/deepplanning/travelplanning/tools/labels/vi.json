@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "Cơ sở dữ liệu chưa được tải",
+    "not_found": "Không tìm thấy thông tin chi tiết cho điểm tham quan {name}",
+    "attraction_id": "ID Điểm tham quan",
+    "attraction_name": "Tên Điểm tham quan",
+    "city": "Thành phố",
+    "address": "Địa chỉ",
+    "coordinates": "Tọa độ",
+    "latitude": "Vĩ độ",
+    "longitude": "Kinh độ",
+    "description": "Mô tả",
+    "rating": "Đánh giá",
+    "visitor_rating": "(đánh giá trung bình của khách tham quan)",
+    "opening_hours": "Giờ mở cửa",
+    "to": "đến",
+    "closed_dates": "Ngày đóng cửa",
+    "min_visit_hours": "Thời gian thăm tối thiểu",
+    "max_visit_hours": "Thời gian thăm tối đa",
+    "hours_unit": "giờ",
+    "ticket_price": "Giá vé",
+    "currency_unit": "RMB",
+    "attraction_type": "Loại điểm tham quan",
+    "db_loaded": "✓ Cơ sở dữ liệu điểm tham quan đã tải: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu điểm tham quan tại {path}"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "Cơ sở dữ liệu chưa được tải",
+    "not_found": "Không tìm thấy đề xuất điểm tham quan",
+    "recommendations": "Đề xuất điểm tham quan:",
+    "attraction_suffix": "{name}, {desc}. Đây là một điểm tham quan loại {atype}",
+    "db_loaded": "✓ Cơ sở dữ liệu điểm tham quan đã tải: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu điểm tham quan tại {path}"
+  },
+  "FlightQueryTool": {
+    "segment": "Phân đoạn {idx}",
+    "remaining_seats": "Ghế còn lại",
+    "sufficient": "Có sẵn",
+    "no_info": "Không tìm thấy thông tin, vui lòng kiểm tra các tham số đầu vào",
+    "not_found": "Không tìm thấy thông tin chuyến bay từ {o} đến {d} vào ngày {date}",
+    "db_loaded": "✓ Cơ sở dữ liệu chuyến bay đã tải: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu chuyến bay tại {path}"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "Cơ sở dữ liệu chưa được tải",
+    "not_found": "Không tìm thấy thông tin khách sạn ở {dest} từ {checkin} đến {checkout}, vui lòng kiểm tra các tham số hoặc giảm bớt ràng buộc",
+    "db_loaded": "✓ Cơ sở dữ liệu khách sạn đã tải: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu khách sạn tại {path}"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "Cơ sở dữ liệu chưa được tải",
+    "not_found": "Không tìm thấy thông tin tọa độ cho địa điểm {place}, vui lòng kiểm tra: 1. Tên địa điểm có đến từ kết quả của công cụ khác không; 2. Tên địa điểm có hoàn toàn khớp với kết quả của công cụ không, không được viết tắt, đổi tên hoặc thêm mô tả",
+    "db_loaded": "✓ Cơ sở dữ liệu tọa độ địa điểm đã tải: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu tọa độ địa điểm tại {path}"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "Cơ sở dữ liệu chưa được tải",
+    "not_found": "Không tìm thấy nhà hàng được đề xuất gần tọa độ ({lat}, {lon}), vui lòng kiểm tra nguồn tọa độ",
+    "db_loaded": "✓ Đã tải cơ sở dữ liệu đề xuất nhà hàng: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu đề xuất nhà hàng tại {path}"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "Cơ sở dữ liệu chưa được tải",
+    "not_found": "Không tìm thấy thông tin chi tiết cho nhà hàng {name}",
+    "db_loaded": "✓ Đã tải cơ sở dữ liệu thông tin chi tiết nhà hàng: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu thông tin chi tiết nhà hàng tại {path}"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "Cơ sở dữ liệu chưa được tải",
+    "not_found": "Không tìm thấy thông tin phương tiện di chuyển từ {origin} đến {dest}",
+    "coord_not_in_range": "Tọa độ {coord} không nằm trong phạm vi truy vấn, vui lòng kiểm tra:\n1. Tọa độ có phải đến từ kết quả truy vấn công cụ hợp lệ hay không, chứ không phải do nhập thủ công hoặc bịa đặt;\n2. Độ chính xác của tọa độ có khớp hoàn toàn với kết quả truy vấn hay không, phải có đúng 6 chữ số thập phân",
+    "db_loaded": "✓ Đã tải cơ sở dữ liệu lộ trình đường bộ: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu lộ trình đường bộ tại {path}"
+  },
+  "TrainQueryTool": {
+    "segment": "Phân đoạn {idx}",
+    "remaining_seats": "Ghế còn lại",
+    "sufficient": "Có sẵn",
+    "no_info": "Không tìm thấy thông tin",
+    "not_found": "Không tìm thấy thông tin tàu từ {o} đến {d} vào ngày {date}",
+    "station_sep": " Ga",
+    "db_loaded": "✓ Đã tải cơ sở dữ liệu tàu: {count} bản ghi (đường dẫn: {path})",
+    "db_not_found": "⚠ Cảnh báo: Không tìm thấy cơ sở dữ liệu tàu tại {path}"
+  }
+}

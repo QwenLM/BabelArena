@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "Database not loaded",
+    "not_found": "Detailed information not found for attraction {name}",
+    "attraction_id": "Attraction ID",
+    "attraction_name": "Attraction Name",
+    "city": "City",
+    "address": "Address",
+    "coordinates": "Coordinates",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "description": "Description",
+    "rating": "Rating",
+    "visitor_rating": "(average visitor rating)",
+    "opening_hours": "Opening Hours",
+    "to": "to",
+    "closed_dates": "Closed Dates",
+    "min_visit_hours": "Minimum Visit Duration",
+    "max_visit_hours": "Maximum Visit Duration",
+    "hours_unit": "hours",
+    "ticket_price": "Ticket Price",
+    "currency_unit": "RMB",
+    "attraction_type": "Attraction Type",
+    "db_loaded": "✓ Attraction database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Attraction database not found at {path}"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "Database not loaded",
+    "not_found": "No attraction recommendations found",
+    "recommendations": "Recommended attractions:\n",
+    "attraction_suffix": "{name}, {desc}. This is a {atype} type attraction",
+    "db_loaded": "✓ Attraction database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Attraction database not found at {path}"
+  },
+  "FlightQueryTool": {
+    "segment": "Segment {idx}",
+    "remaining_seats": "Remaining Seats",
+    "sufficient": "Available",
+    "no_info": "No information found, please check input parameters",
+    "not_found": "No flight information found from {o} to {d} on {date}",
+    "db_loaded": "✓ Flight database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Flight database not found at {path}"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "Database not loaded",
+    "not_found": "No hotel information found in {dest} from {checkin} to {checkout}, please check parameters or reduce constraints",
+    "db_loaded": "✓ Hotel database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Hotel database not found at {path}"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "Database not loaded",
+    "not_found": "Coordinate information not found for location {place}, please check: 1. Whether the place name comes from other tool results; 2. Whether the place name is exactly consistent with tool results, no abbreviation, renaming or additional description allowed",
+    "db_loaded": "✓ Location coordinate database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Location coordinate database not found at {path}"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "Database not loaded",
+    "not_found": "No recommended restaurants found near coordinates ({lat}, {lon}), please check coordinate source",
+    "db_loaded": "✓ Restaurant recommendation database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Restaurant recommendation database not found at {path}"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "Database not loaded",
+    "not_found": "Detailed information not found for restaurant {name}",
+    "db_loaded": "✓ Restaurant details database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Restaurant details database not found at {path}"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "Database not loaded",
+    "not_found": "No transportation information found from {origin} to {dest}",
+    "coord_not_in_range": "Coordinate {coord} is not in query range, please check:\n1. Whether coordinate comes from valid tool query result, not manual input or fabrication;\n2. Whether coordinate precision is exactly consistent with query result, 6 decimal places",
+    "db_loaded": "✓ Road route database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Road route database not found at {path}"
+  },
+  "TrainQueryTool": {
+    "segment": "Segment {idx}",
+    "remaining_seats": "Remaining Seats",
+    "sufficient": "Available",
+    "no_info": "No information found",
+    "not_found": "No train information found from {o} to {d} on {date}",
+    "station_sep": " Station",
+    "db_loaded": "✓ Train database loaded: {count} records (path: {path})",
+    "db_not_found": "⚠ Warning: Train database not found at {path}"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "장바구니 총액 {base_total}은(는) 이 쿠폰 조합에 충분하지 않습니다 (최소 {total_threshold_required} 필요)",
+    "coupon_name_required": "coupon_name이 필요합니다",
+    "quantity_positive": "수량은 양수여야 합니다",
+    "coupon_not_found": "쿠폰을 찾을 수 없습니다: '{coupon_name}'. 유효한 쿠폰은: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "쿠폰 수량 부족: 사용자는 '{coupon_name}'을(를) {user_coupon_count}개 소유하고 있으며, 장바구니에 이미 {existing_cart_count}개 사용 중입니다. {quantity}개를 더 추가할 수 없습니다",
+    "vip_coupon_required": "VIP 쿠폰 '{coupon_name}'은(는) VIP 상태가 필요하지만, 사용자는 VIP가 아닙니다"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id가 필요합니다",
+    "quantity_positive": "수량은 양수여야 합니다",
+    "product_not_found": "제품을 찾을 수 없습니다: product_id '{product_id}'",
+    "insufficient_stock": "재고 부족: 제품 '{product_name}' (ID: {product_id})의 재고가 {stock_quantity}개 있으며, 장바구니에 이미 {existing_quantity}개가 있어 {quantity}개를 더 추가할 수 없습니다",
+    "save_cart_failed": "장바구니 저장 실패: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "매개변수는 유효한 JSON 문자열이어야 합니다! 오류: {err}",
+    "missing_required_arg": "필수 인수가 누락되었습니다: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID가 '{product_id}'인 제품을 찾을 수 없습니다.",
+    "shipping_origin_not_found": "제품 '{product_id}'의 배송 출발지를 찾을 수 없습니다.",
+    "cannot_determine_province": "출발지 주소에서 유효한 주를 확인할 수 없습니다: '{address}'.",
+    "cannot_determine_destination_province": "목적지 주소에서 유효한 주를 확인할 수 없습니다: '{address}'.",
+    "valid_province_required": "유효한 중국 성 이름을 제공해 주세요.",
+    "cannot_map_to_region": "성들을 지리적 지역으로 매핑할 수 없습니다."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name이 필요합니다",
+    "quantity_positive": "수량은 양수여야 합니다",
+    "invalid_coupon_name": "잘못된 쿠폰 이름: '{coupon_name}'. 유효한 쿠폰은: {valid_coupons_str}",
+    "coupon_not_in_cart": "장바구니에 쿠폰이 없습니다: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "장바구니에 쿠폰 수량이 부족합니다: 장바구니에 '{coupon_name}'이(가) {cart_count}개 있으며, {quantity}개를 제거할 수 없습니다.",
+    "save_cart_failed": "장바구니 저장 실패: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id가 필요합니다",
+    "quantity_positive": "수량은 양수여야 합니다",
+    "product_not_found": "제품을 찾을 수 없습니다: product_id '{product_id}'",
+    "product_not_in_cart": "장바구니에 제품이 없습니다: product_id '{product_id}'",
+    "save_cart_failed": "장바구니 저장 실패: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "일부 product_id를 데이터베이스에서 찾을 수 없습니다: {missing_ids}",
+    "invalid_coupon_names": "잘못된 쿠폰 이름: {coupon_names}. 유효한 쿠폰은: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "일부 product_id를 데이터베이스에서 찾을 수 없습니다: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "일부 product_id를 데이터베이스에서 찾을 수 없습니다: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "일부 product_id를 데이터베이스에서 찾을 수 없습니다: {missing_ids}",
+    "missing_range_params": "필수 매개변수가 누락되었습니다: condition_key, operator, 또는 value.",
+    "condition_key_not_found": "condition_key를 제품 데이터에서 찾을 수 없습니다. 다시 확인해 주세요."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "일부 product_id를 데이터베이스에서 찾을 수 없습니다: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}'를 가진 사용자를 찾을 수 없습니다."
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 인덱스를 사용할 수 없습니다. 데이터베이스 로딩을 확인하세요."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "필수 매개변수가 누락되었습니다: sort_by.",
+    "invalid_order": "'order'의 값이 잘못되었습니다: '{order}'. 'asc' 또는 'desc'여야 합니다.",
+    "sort_error": "키 '{sort_by}'에 대한 정렬 중 오류가 발생했습니다: {e}",
+    "sort_key_not_found": "정렬 키 '{sort_by}'를 제품 데이터에서 찾을 수 없거나 null입니다. 다시 확인해 주세요."
+  }
+}

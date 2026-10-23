@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "จัดการกับคำถามภาษาธรรมชาติที่กว้างและไม่มีข้อจำกัด ทำการค้นหาความหมายบนข้อมูลผลิตภัณฑ์หลัก (ชื่อ, แบรนด์, หมวดหมู่, แท็ก) เพื่อดึงชุดผลิตภัณฑ์ที่เกี่ยวข้องในขั้นต้นอย่างรวดเร็ว นี่คือขั้นตอนแรกในการสำรวจของผู้ใช้",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "คำถามภาษาธรรมชาติของผู้ใช้ เช่น 'Uniqlo T-shirt', 'Nike running shoes'"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "ตัวเลือก จำกัดจำนวน product_ids ที่คืน ค่าเริ่มต้นคือ 20 เพื่อป้องกันผลลัพธ์ที่ใหญ่เกินไป"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "กรองรายการรหัสผลิตภัณฑ์ที่กำหนดโดยชื่อแบรนด์หนึ่งหรือมากกว่า หากมีการให้ชื่อแบรนด์หลายชื่อ จะคืนผลิตภัณฑ์ที่ตรงกับแบรนด์ใด ๆ (ตรรกะ OR)",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการ product_ids ที่จะกรอง หากไม่ได้ให้ จะกรองจากแคตตาล็อกผลิตภัณฑ์ทั้งหมด"
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการชื่อแบรนด์ที่จะจับคู่ เช่น [\"UNIQLO\"] หรือ [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "กรองรายการรหัสผลิตภัณฑ์ที่กำหนดโดยสีหนึ่งหรือมากกว่า หากมีการให้สีหลายสี จะคืนผลิตภัณฑ์ที่ตรงกับสีใด ๆ (ตรรกะ OR) การจับคู่สีจะตรวจสอบฟิลด์ 'color' ของผลิตภัณฑ์ หากไม่ได้ให้ product_ids จะกรองจากแคตตาล็อกผลิตภัณฑ์ทั้งหมด",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการ product_ids ที่จะกรอง หากไม่ได้ให้ จะกรองจากแคตตาล็อกผลิตภัณฑ์ทั้งหมด"
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการชื่อสีที่จะจับคู่ เช่น [\"White\"] หรือ [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "กรองรายการรหัสผลิตภัณฑ์ที่กำหนดโดยขนาดหนึ่งหรือมากกว่า หากมีการให้ขนาดหลายขนาด จะคืนผลิตภัณฑ์ที่ตรงกับขนาดใด ๆ (ตรรกะ OR) การจับคู่ขนาดจะตรวจสอบฟิลด์ 'size' ของผลิตภัณฑ์ (เช่น 'M', 'L', '42', '140cm') หากไม่ได้ให้ product_ids จะกรองจากแคตตาล็อกผลิตภัณฑ์ทั้งหมด",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการ product_ids ที่จะกรอง หากไม่ได้ให้ จะกรองจากแคตตาล็อกผลิตภัณฑ์ทั้งหมด"
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการขนาดที่ต้องการจับคู่ เช่น [\"M\"] หรือ [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "กรองรายการรหัสผลิตภัณฑ์ตามคูปองที่ใช้ได้ เครื่องมือนี้จับคู่ผลิตภัณฑ์ทั้งหมดที่มี `applicable_coupons` ที่มีชื่อคูปองที่ให้ไว้ เช่น การใช้ [\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"] จะจับคู่ผลิตภัณฑ์ที่มีคูปองทั้งสองนี้ในรายการ applicable_coupons",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการ product_ids ที่จะกรอง หากไม่ได้ให้ จะกรองจากแคตตาล็อกผลิตภัณฑ์ทั้งหมด"
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการชื่อคูปองที่ต้องการจับคู่ เช่น [\"Cross-store: ¥30 off every ¥300\"] หรือ [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "กรองรายการรหัสผลิตภัณฑ์ตามคุณลักษณะเชิงตัวเลข ตัวดำเนินการเปรียบเทียบ และค่าขีดจำกัด",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการ product_ids ที่จะกรอง หากไม่ได้ให้ จะกรองจากแคตตาล็อกผลิตภัณฑ์ทั้งหมด"
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "มิติคุณลักษณะเชิงตัวเลขที่ต้องการกรอง",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "ตัวดำเนินการเปรียบเทียบ",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "ค่าตัวเลขที่ต้องการเปรียบเทียบ"
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "จัดเรียงรายการรหัสผลิตภัณฑ์ที่กำหนดตามมิติและลำดับที่ระบุ",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการ product_ids ที่เลือกได้เพื่อจัดเรียง หากไม่ได้ระบุ จะจัดเรียงจากแคตตาล็อกสินค้าทั้งหมด"
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "มิติคุณลักษณะที่ใช้เป็นฐานในการจัดเรียง",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "ลำดับการจัดเรียง ค่าเริ่มต้นคือ 'desc' (จากมากไปน้อย)",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "ดึงข้อมูลที่สมบูรณ์และละเอียดสำหรับรายการรหัสผลิตภัณฑ์",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "รายการตัวระบุผลิตภัณฑ์ที่ไม่ซ้ำกันเพื่อดึงรายละเอียด"
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "คำนวณเวลาจัดส่งโดยประมาณเป็นวันสำหรับผลิตภัณฑ์ ใช้แหล่งที่มาของการจัดส่งของผลิตภัณฑ์และที่อยู่ปลายทางของผู้ใช้ ผลลัพธ์สุดท้ายเป็นจำนวนเต็มของวัน",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "ตัวระบุเฉพาะของผลิตภัณฑ์เพื่อค้นหาต้นทางการจัดส่ง"
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "ที่อยู่ปลายทางของผู้ใช้ ซึ่งต้องเป็นชื่อจังหวัดที่เขียนด้วย pinyin เช่น 'guangdong', 'beijing', 'shanghai' เป็นต้น รับเฉพาะ pinyin สำหรับพารามิเตอร์นี้"
+          },
+          "provider": {
+            "type": "string",
+            "description": "ไม่บังคับ ชื่อผู้ให้บริการจัดส่งเพื่อปรับเวลาจัดส่ง ผู้ให้บริการที่รองรับ ได้แก่ 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default' หากไม่ได้ระบุ จะใช้ผู้ให้บริการเริ่มต้นของผลิตภัณฑ์"
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "ดึงข้อมูลผู้ใช้จากฐานข้อมูล รวมถึงที่อยู่ของผู้ใช้ การวัดร่างกาย และรายละเอียดโปรไฟล์อื่น ๆ หากมีการให้ user_id จะคืนข้อมูลเฉพาะของผู้ใช้คนนั้น หากไม่ จะคืนข้อมูลของผู้ใช้ปัจจุบัน/ค่าเริ่มต้น",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "ไม่บังคับ ตัวระบุเฉพาะของผู้ใช้เพื่อดึงข้อมูล หากไม่ได้ระบุ จะคืนข้อมูลผู้ใช้เริ่มต้น"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "เพิ่มผลิตภัณฑ์ลงในตะกร้าสินค้า ตรวจสอบว่าผลิตภัณฑ์มีอยู่ในแคตตาล็อกผลิตภัณฑ์และตรวจสอบความพร้อมของสต็อก หากผลิตภัณฑ์มีอยู่ในตะกร้าแล้ว จะเพิ่มปริมาณ เครื่องมือจะอัปเดตสรุปตะกร้า (จำนวนรายการทั้งหมดและราคารวม) โดยอัตโนมัติหลังจากเพิ่ม คืนค่าตะกร้าที่อัปเดตพร้อมรายการทั้งหมดและข้อมูลสรุป",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "ตัวระบุเฉพาะของผลิตภัณฑ์ที่จะเพิ่มลงในรถเข็น ต้องมีอยู่ในแคตตาล็อกสินค้า"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ไม่บังคับ จำนวนที่จะเพิ่ม ต้องเป็นจำนวนเต็มบวก ค่าเริ่มต้นคือ 1 เครื่องมือจะตรวจสอบว่าการเพิ่มจำนวนนี้จะเกิน stock_quantity ของผลิตภัณฑ์หรือไม่ (รวมถึงรายการที่มีอยู่ในรถเข็นแล้ว)"
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "ลบผลิตภัณฑ์ออกจากตะกร้าสินค้าหรือลดปริมาณ ตรวจสอบว่าผลิตภัณฑ์มีอยู่ในแคตตาล็อกผลิตภัณฑ์และอยู่ในตะกร้าในปัจจุบัน หากปริมาณที่จะลบเท่ากับหรือเกินปริมาณในตะกร้า รายการจะถูกลบออกทั้งหมด เครื่องมือจะอัปเดตสรุปตะกร้าโดยอัตโนมัติและลบรายการที่มีปริมาณเป็นศูนย์ คืนค่าตะกร้าที่อัปเดตพร้อมรายการทั้งหมดและข้อมูลสรุป",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "ตัวระบุเฉพาะของผลิตภัณฑ์ที่จะลบออกจากรถเข็น ต้องมีอยู่ในแคตตาล็อกสินค้าและอยู่ในรถเข็นในปัจจุบัน"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ไม่บังคับ จำนวนที่จะลบ ต้องเป็นจำนวนเต็มบวก ค่าเริ่มต้นคือ 1 หากจำนวนเท่ากับหรือเกินจำนวนในรถเข็น รายการจะถูกลบออกทั้งหมด"
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "ดึงข้อมูลตะกร้าสินค้าปัจจุบันรวมถึงรายการทั้งหมดและสถิติสรุป คืนรายการตะกร้า (แต่ละรายการมี product_id, ชื่อ, ปริมาณ และราคา) และวัตถุสรุปที่มี total_items_count (ผลรวมของปริมาณทั้งหมด) และ total_price (ผลรวมของราคาสินค้าทั้งหมด * ปริมาณ) ไม่ต้องการพารามิเตอร์ - คืนสถานะปัจจุบันของตะกร้า",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "เพิ่มคูปองลงในตะกร้าสินค้า ตรวจสอบว่าคูปองมีอยู่ในรายการคูปองที่ถูกต้อง ตรวจสอบการเป็นเจ้าของคูปองของผู้ใช้และตรวจสอบให้แน่ใจว่ารวมตะกร้าตรงตามข้อกำหนดของคูปอง หากคูปองเดียวกันมีอยู่ในตะกร้าแล้ว จะอัปเดตปริมาณ เครื่องมือจะอัปเดตสรุปตะกร้า (จำนวนรายการทั้งหมดและราคารวมหลังจากส่วนลด) โดยอัตโนมัติหลังจากเพิ่ม คืนค่าตะกร้าที่อัปเดตพร้อมรายการทั้งหมด คูปองที่ใช้ และข้อมูลสรุป",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "ชื่อคูปองที่จะเพิ่มลงในรถเข็น ต้องเป็นหนึ่งในคูปองที่ถูกต้องจากรายการคูปอง ตัวอย่าง: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ไม่บังคับ จำนวนคูปองที่จะเพิ่ม ต้องเป็นจำนวนเต็มบวก ค่าเริ่มต้นคือ 1 เครื่องมือจะตรวจสอบว่าผู้ใช้มีคูปองเพียงพอและยอดรวมในรถเข็นเพียงพอสำหรับจำนวนที่ร้องขอ"
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "ลบคูปองออกจากตะกร้าสินค้าหรือลดปริมาณ ตรวจสอบว่าคูปองมีอยู่ในรายการคูปองที่ถูกต้องและอยู่ในตะกร้าในปัจจุบัน หากปริมาณที่จะลบเท่ากับหรือเกินปริมาณในตะกร้า คูปองจะถูกลบออกทั้งหมด เครื่องมือจะอัปเดตสรุปตะกร้า (จำนวนรายการทั้งหมดและราคารวมหลังจากส่วนลด) โดยอัตโนมัติและลบคูปองที่มีปริมาณเป็นศูนย์ คืนค่าตะกร้าที่อัปเดตพร้อมรายการทั้งหมด คูปองที่ใช้ และข้อมูลสรุป",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "ชื่อคูปองที่จะลบออกจากรถเข็น ต้องเป็นหนึ่งในคูปองที่ถูกต้องและอยู่ในรถเข็นในปัจจุบัน"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "ตัวเลือก จำนวนคูปองที่จะลบ ต้องเป็นจำนวนเต็มบวก ค่าเริ่มต้นคือ 1 หากจำนวนเท่ากับหรือมากกว่าจำนวนในรถเข็น คูปองจะถูกลบออกทั้งหมด"
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

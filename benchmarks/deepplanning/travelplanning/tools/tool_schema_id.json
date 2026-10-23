@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "Query informasi tiket kereta, mendukung pencarian data tiket kereta berdasarkan asal, tujuan, tanggal, dan kondisi lainnya. Mengembalikan informasi kereta yang memenuhi kriteria, termasuk: nomor kereta, waktu keberangkatan/kedatangan, informasi stasiun, durasi perjalanan, kelas kursi, status sisa kursi, harga, dll. Mendukung rute langsung dan transfer. Rute langsung hanya menampilkan segmen pertama, sedangkan rute transfer menampilkan informasi detail untuk setiap segmen. Dalam perencanaan perjalanan, semua informasi terkait kereta harus berasal dari hasil yang dikembalikan oleh alat ini dan tidak boleh dibuat-buat; nama stasiun dan kereta harus persis sama dengan hasil query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Kota asal, mendukung nama kota"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Kota tujuan, mendukung nama kota"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Tanggal keberangkatan, format: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Kelas kursi kereta: Kursi Kelas Satu, Kursi Kelas Dua, Kursi Bisnis"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "Query informasi penerbangan, mendukung pencarian data penerbangan berdasarkan asal, tujuan, tanggal, dan kondisi lainnya. Mengembalikan informasi penerbangan yang memenuhi kriteria, termasuk: nomor penerbangan, waktu keberangkatan/kedatangan, informasi bandara, durasi perjalanan, kelas kursi, status sisa kursi, harga, jenis pesawat, dll. Mendukung penerbangan langsung dan penghubung. Penerbangan langsung hanya menampilkan segmen pertama, sedangkan penerbangan penghubung menampilkan informasi detail untuk setiap segmen. Dalam perencanaan perjalanan, semua informasi terkait penerbangan harus berasal dari hasil yang dikembalikan oleh alat ini dan tidak boleh dibuat-buat; nama bandara, nomor penerbangan, dll. harus persis sama dengan hasil query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Kota asal, mendukung nama kota"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Kota tujuan, mendukung nama kota"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Tanggal keberangkatan, format: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Kelas kursi penerbangan: Kelas Ekonomi, Kelas Bisnis, Kelas Satu"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "Query informasi hotel, mencari hotel berdasarkan tujuan (wilayah administratif), tanggal check-in, tanggal check-out, peringkat bintang hotel, dan merek hotel. Dalam perencanaan perjalanan, semua informasi terkait hotel harus berasal dari hasil yang dikembalikan oleh alat ini dan tidak boleh dibuat-buat; nama hotel harus persis sama dengan hasil query.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Tujuan (negara, provinsi, kota, nama distrik/kabupaten)"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "Tanggal check-in, format: yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "Tanggal check-out, format: yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "Peringkat bintang hotel: 1~5; nilai tunggal"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "Merek hotel, hanya mendukung query nilai tunggal. Merek opsional: Hotel Ji, Hotel Atour, Marriott, Hilton, Home Inn, Jinjiang Inn, Hotel Hanting, Hotel Orange"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "Query informasi detail atraksi. Berdasarkan nama atraksi, mengembalikan informasi lengkap termasuk: ID atraksi, nama, kota, koordinat lintang dan bujur, deskripsi atraksi, peringkat pengguna, waktu buka, waktu tutup, tanggal tutup, durasi kunjungan yang direkomendasikan (jam minimum/maksimum), harga tiket, jenis atraksi, dll.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "Nama atraksi"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "Cari dan kembalikan informasi atraksi populer untuk sebuah kota berdasarkan kata kunci kota (nama atraksi, deskripsi, jenis, dll.). Selama pembuatan rencana perjalanan, semua informasi atraksi harus berasal dari hasil yang dikembalikan oleh alat ini, dan tidak boleh dibuat-buat atau menggunakan data atraksi dari sumber lain. Nama atraksi yang digunakan harus persis sama dengan hasil query, dan tidak boleh disingkat atau diganti nama.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "Nama kota atau kata kunci"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "Filter jenis atraksi (enum), opsi: 'Sejarah dan Budaya', 'Pemandangan Alam', 'Pameran Seni', 'Landmark Kota', 'Theme Park', 'Pengalaman Rekreasi'."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "Query koordinat lintang dan bujur yang sesuai dengan nama tempat. Misalnya, memasukkan 'Beijing South Railway Station' mengembalikan koordinatnya, dengan nilai dipertahankan hingga enam angka desimal. Dalam rencana perjalanan, semua nama tempat yang terlibat harus berasal dari hasil yang dikembalikan oleh alat lain dan harus persis sama.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "Nama tempat untuk pencarian, misalnya: 'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "Hitung dan kembalikan detail rute jalan antara dua lokasi, termasuk jarak (meter), durasi perkiraan (menit) dan biaya perkiraan (mata uang). Fungsi ini secara otomatis memilih moda transportasi berdasarkan total jarak: berjalan kaki untuk 2 kilometer atau kurang (biaya 0), dan moda mengemudi (taksi) untuk lebih dari 2 kilometer. Biaya perkiraan adalah untuk satu kendaraan, yang dapat menampung 4 orang secara default.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Koordinat asal (format: latitude,longitude), presisi dipertahankan hingga 6 tempat desimal"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Koordinat tujuan (format: latitude,longitude), presisi dipertahankan hingga 6 tempat desimal"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "Rekomendasikan informasi restoran terdekat berdasarkan koordinat lintang dan bujur yang ditentukan. Daftar yang dikembalikan berisi informasi detail seperti nama restoran, koordinat lintang dan bujur, harga per orang, peringkat, jam operasional, dll.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Koordinat latitude, presisi dipertahankan hingga 6 tempat desimal"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Koordinat longitude, presisi dipertahankan hingga 6 tempat desimal"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "Query informasi detail tentang restoran. Berdasarkan nama restoran, mengembalikan informasi lengkap termasuk: nama restoran, koordinat lintang dan bujur, harga per orang, waktu buka, waktu tutup, peringkat dan informasi detail lainnya.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "Nama restoran"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

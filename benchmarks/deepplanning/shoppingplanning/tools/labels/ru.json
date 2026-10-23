@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "Общая сумма корзины {base_total} недостаточна для этой комбинации купонов (требуется как минимум {total_threshold_required})",
+    "coupon_name_required": "coupon_name обязателен",
+    "quantity_positive": "количество должно быть положительным числом",
+    "coupon_not_found": "Купон не найден: '{coupon_name}'. Действительные купоны: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "Недостаточное количество купонов: у пользователя {user_coupon_count} купонов '{coupon_name}', в корзине уже используется {existing_cart_count}, нельзя добавить еще {quantity}",
+    "vip_coupon_required": "VIP купон '{coupon_name}' требует VIP-статуса, но пользователь не является VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id обязателен",
+    "quantity_positive": "количество должно быть положительным числом",
+    "product_not_found": "Продукт не найден: product_id '{product_id}'",
+    "insufficient_stock": "Недостаточно на складе: Продукт '{product_name}' (ID: {product_id}) имеет {stock_quantity} на складе, в корзине уже есть {existing_quantity}, нельзя добавить еще {quantity}",
+    "save_cart_failed": "Не удалось сохранить корзину: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "Параметры должны быть допустимой строкой JSON! Ошибка: {err}",
+    "missing_required_arg": "Отсутствует обязательный аргумент: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "Продукт с ID '{product_id}' не найден.",
+    "shipping_origin_not_found": "Место отправления не найдено для продукта '{product_id}'.",
+    "cannot_determine_province": "Не удалось определить действительную провинцию из адреса отправления: '{address}'.",
+    "cannot_determine_destination_province": "Не удалось определить действительную провинцию из адреса назначения: '{address}'.",
+    "valid_province_required": "Пожалуйста, укажите действительное название китайской провинции.",
+    "cannot_map_to_region": "Не удалось сопоставить провинции с географическими регионами."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name обязателен",
+    "quantity_positive": "количество должно быть положительным числом",
+    "invalid_coupon_name": "Недопустимое название купона: '{coupon_name}'. Допустимые купоны: {valid_coupons_str}",
+    "coupon_not_in_cart": "Купон отсутствует в корзине: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "Недостаточное количество купонов в корзине: в корзине {cart_count} купонов '{coupon_name}', невозможно удалить {quantity}",
+    "save_cart_failed": "Не удалось сохранить корзину: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id обязателен",
+    "quantity_positive": "количество должно быть положительным числом",
+    "product_not_found": "Продукт не найден: product_id '{product_id}'",
+    "product_not_in_cart": "Товар отсутствует в корзине: product_id '{product_id}'",
+    "save_cart_failed": "Не удалось сохранить корзину: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "Некоторые product_ids не найдены в базе данных: {missing_ids}",
+    "invalid_coupon_names": "Недопустимые названия купонов: {coupon_names}. Допустимые купоны: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "Некоторые product_ids не найдены в базе данных: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "Некоторые product_ids не найдены в базе данных: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "Некоторые product_ids не найдены в базе данных: {missing_ids}",
+    "missing_range_params": "Отсутствуют обязательные параметры: condition_key, operator или value.",
+    "condition_key_not_found": "condition_key не найден в данных о продукте, пожалуйста, проверьте еще раз."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "Некоторые product_ids не найдены в базе данных: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "Пользователь с user_id '{user_id}' не найден"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "Индекс BM25 недоступен. Проверьте загрузку базы данных."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "Отсутствует обязательный параметр: sort_by.",
+    "invalid_order": "Недопустимое значение для 'order': '{order}'. Должно быть 'asc' или 'desc'.",
+    "sort_error": "Произошла ошибка при сортировке по ключу '{sort_by}': {e}",
+    "sort_key_not_found": "Ключ сортировки '{sort_by}' не найден в данных о продукте или равен null. Пожалуйста, проверьте еще раз."
+  }
+}

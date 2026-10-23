@@ -1,0 +1,1197 @@
+name: sliding_window_eval_no_rubrics_eval_template
+chinese: |-
+  # 系统信息
+  {env_info}
+
+  # 用户完整指令
+  {user_instruction}
+
+  # 背景说明
+  - 这是一个user与assistant之间的对话场景，其中assistant可以调用工具获取信息和完成操作，工具返回结果将以tool开头
+  - 你需要评估用户指令是否被完成
+  - 由于对话轮次较多，我们采用滑动窗口评估法，即每次可见10轮对话，每个窗口间有2轮对话重叠
+  - 你正在评估第 {window_idx} 个窗口（本次任务总共 {total_windows} 个窗口）
+  - <window_content>包含了当前窗口的对话内容
+  - <memory>包含了对之前窗口信息的记忆总结
+  - <current_evaluation>包含了之前窗口的评估结果
+
+  # 任务
+  - 基于当前窗口的对话内容，判断用户完整指令中的需求是否都被满足
+  - 你可以将状态由false更新为true，当且仅当assistant在此窗口和历史窗口完成了用户完整指令
+  - 你也可以将true再次更新为false，当且仅当assistant在此窗口中推翻了之前的正确结论（但请注意：如果是用户需求自己发生了变更，例如下单后主动取消，则不应推翻原本对下单需求的评估）
+  - 你可以参考“用户完整指令”来获取当前对话窗口的进度，避免出现不必要的修改
+  - 将当前窗口内容<window_content>和记忆总结内容<memory>合并，并根据注意事项中的规则调整memory内容后作为新的<memory>输出
+
+  # 注意事项
+  - 重要：所有的评估以assistant的回复及工具调用请求是否完成用户指令为准，user在对话中表达的内容仅视为对assistant的提示和引导，不会直接影响评估标准，一切以用户指令为准！
+  - 重要：查询类tool返回的结果仅对assistant可见，并不代表assistant对用户推荐的内容，因此也不直接影响评估结果，一切都要以assistant获取信息后对用户的回复为准！同时需要注意，Assistant 也不能编造 Tool 的返回结果！
+  - 重要：对于购买类指令（涉及到订单细节，必须生成订单的），必须确认assistant是否真的完成了下单操作。有可能assistant误以为完成了下单操作，实际上工具调用失败；或user表示可以“可以自己下单”等情况，都应视为未满足要求
+  - 对于涉及到订单细节如商品数量、送达时间的用户指令，必须严格满足原始用户指令要求（不能有商品数量偏差，不得晚于期望送达时间），用户妥协行为不影响评判结果（例如user表示“某商品少点也行”、“对订单内容没有异议”或“晚点送达也行”等），这类情况仍应视为未满足要求
+  - 对于涉及到文本内容匹配的地址或订单备注类的用户指令，采用功能等效原则：只要实际内容能实现相同功能（如大致定位配送地点或传达顾客的主要需求），即使表述不完全一致或缺少部分细节，也视为满足要求
+  - 对用户完整指令做适当分解，并评估每个子需求是否被满足：
+    - 如果当前窗口没有涉及某个子需求，则记录当前没有涉及；
+    - 如果当前窗口涉及某个子需求但无法完全决定，则将关键信息记录在memory中留待后续判断
+    - 在memory中记录与子需求有关的关键信息及其对应的轮次[x]，以便后续窗口继续判断
+
+  # 格式要求
+  - 你的回复应为一个JSON对象，包含以下字段：
+  - `justification`：对评估结果的简要解释
+  - `meetExpectation`：评估结果（true或false）
+
+  # 示例输入结构：
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # 示例回复结构：
+  ```json
+  {{
+      "memory": <对之前窗口信息的总结>,
+      "justification": "<对评估结果的简要解释>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+english: |-
+  # System Information
+  {env_info}
+
+  # User Complete Instruction
+  {user_instruction}
+
+  # Background
+  - This is a conversation scenario between a user and an assistant, where the assistant can call tools to retrieve information and complete operations. Tool return results will start with "tool"
+  - You need to evaluate whether the user instruction has been completed
+  - Due to the large number of conversation turns, sliding window evaluation is used, where each window shows 10 conversation turns with 2 overlapping turns between windows
+  - You are evaluating window {window_idx} (out of {total_windows} windows total)
+  - <window_content> contains the conversation content for the current window
+  - <memory> contains a summary of information from previous windows
+  - <current_evaluation> contains the evaluation results from previous windows
+
+  # Task
+  - Based on the conversation content in the current window, determine whether all requirements in the user's complete instruction have been met
+  - You can update the status from false to true, if and only if the assistant has completed the user's complete instruction in this window and historical windows
+  - You can also update true back to false, if and only if the assistant overturned a previous correct conclusion in this window (but note: if the user's needs themselves changed, such as actively canceling after placing an order, the original evaluation of the ordering requirement should not be overturned)
+  - You can refer to the "User Complete Instruction" to understand the progress of the current conversation window and avoid unnecessary modifications
+  - Merge the current window content <window_content> and memory summary content <memory>, and output as the new <memory> after adjusting memory content according to the rules in the notes
+
+  # Important Notes
+  - Important: All evaluations are based on whether the assistant's responses and tool call requests complete the user instruction. User expressions in the conversation are only considered as guidance for the assistant and do not directly affect evaluation standards. Everything is based on the user instruction!
+  - Important: Query tool return results are only visible to the assistant and do not represent content recommended by the assistant to users, so they do not directly affect evaluation results either. Everything must be based on the assistant's responses to users after obtaining information! Also note that Assistant cannot fabricate Tool return results!
+  - Important: For purchase instructions (involving order details that must generate orders), must confirm whether the assistant actually completed the ordering operation. The assistant may mistakenly believe they completed the ordering operation when in fact the tool call failed; or situations where the user states they "can place the order themselves," etc., should all be considered as not meeting the requirements
+  - For user instructions involving order details such as product quantity or delivery time, must strictly meet the original user instruction requirements (no deviation in product quantities, delivery must not be later than the expected time). User compromise behavior does not affect evaluation results (for example, when a user states "fewer items is okay", "I have no objections to the order content" or "later delivery is fine" etc.). These situations should still be considered as not meeting the requirements
+  - For user instructions involving text content matching of addresses or order notes, apply the functional equivalence principle: as long as the actual content can achieve the same function (such as roughly locating the delivery location or conveying the customer's main needs), it is considered to meet the requirements even if the expression is not completely consistent or lacks some details
+  - Break down the user's complete instruction appropriately and evaluate whether each sub-requirement is met:
+    - If the current window does not involve a certain sub-requirement, record that it is not involved;
+    - If the current window involves a certain sub-requirement but cannot be fully determined, record key information in memory for future judgment
+    - Record key information related to sub-requirements and their corresponding round [x] in memory for future window evaluation
+
+  # Format Requirements
+  - Your response should be a JSON object containing the following fields:
+  - `justification`: brief explanation of the evaluation result
+  - `meetExpectation`: evaluation result (true or false)
+
+  # Example Input Structure:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Example Response Structure:
+  ```json
+  {{
+      "memory": <summary of previous window information>,
+      "justification": "<brief explanation of the evaluation result>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+japanese: |-
+  # システム情報
+  {env_info}
+
+  # ユーザーの完全な指示
+  {user_instruction}
+
+  # 背景説明
+  - これはユーザーとアシスタント間の対話シーンであり、アシスタントはツールを呼び出して情報を取得し、操作を完了できます。ツールの返却結果は tool で始まります
+  - ユーザーの指示が完了されたかどうかを評価する必要があります
+  - 対話ラウンドが多いため、スライディングウィンドウ評価法を採用します。つまり、毎回 10 ラウンドの対話が見え、各ウィンドウ間に 2 ラウンドの対話の重複があります
+  - あなたは第 {window_idx} 番目のウィンドウを評価しています（今回のタスクは合計 {total_windows} 個のウィンドウです）
+  - <window_content> には現在のウィンドウの対話内容が含まれています
+  - <memory> には以前のウィンドウ情報の記憶要約が含まれています
+  - <current_evaluation> には以前のウィンドウの評価結果が含まれています
+
+  # タスク
+  - 現在のウィンドウの対話内容に基づき、ユーザーの完全な指示内のニーズがすべて満たされているかどうかを判断します
+  - アシスタントがこのウィンドウおよび履歴ウィンドウでユーザーの完全な指示を完了した場合に限り、ステータスを false から true に更新できます
+  - アシスタントがこのウィンドウで以前の正しい結論を覆した場合に限り、true を再度 false に更新することもできます（ただし注意：ユーザーのニーズ自体が変更された場合、例えば注文後に自主的にキャンセルするなどについては、元の注文ニーズに対する評価を覆すべきではありません）
+  - 不要な変更を避けるため、「ユーザーの完全な指示」を参照して現在の対話ウィンドウの進捗を取得できます
+  - 現在のウィンドウ内容<window_content>と記憶要約内容<memory>を統合し、注意事項のルールに従って memory 内容を調整した後、新しい<memory>として出力します
+
+  # 注意事項
+  - 重要：すべての評価は、アシスタントの返信およびツール呼び出し請求がユーザーの指示を完了したかどうかを基準とします。ユーザーが対話中で表現した内容は、アシスタントへのヒントおよびガイダンスとみなされるのみであり、評価基準に直接影響しません。すべてユーザーの指示を基準とします！
+  - 重要：検索系 tool の返却結果はアシスタントにのみ可視であり、アシスタントがユーザーに推薦した内容を代表するものではないため、評価結果にも直接影響しません。すべてアシスタントが情報を取得した後ユーザーに行う返信を基準とします！同時に、アシスタントはツールの返却結果を捏造することもできないことに注意が必要です！
+  - 重要：購入系指示（注文詳細に関わり、注文を生成しなければならないもの）については、アシスタントが実際に注文操作を完了したかどうかを確認しなければなりません。アシスタントが注文操作を完了したと誤解し、実際にはツール呼び出しが失敗した場合、またはユーザーが「自分で注文できます」などと表示した場合などは、すべて要件未充足とみなすべきです
+  - 商品数量、配達時間などの注文詳細に関わるユーザー指示については、元のユーザー指示の要件を厳格に満たさなければなりません（商品数量の偏差があってはならず、希望配達時間より遅れてはなりません）。ユーザーの妥協行為は評価結果に影響しません（例えばユーザーが「ある商品が少なくてもいい」、「注文内容に異議なし」、「遅れて配達されてもいい」などと表示する場合など）。このような場合でも、要件未充足とみなすべきです
+  - テキスト内容マッチング涉及的住所または注文備考類のユーザー指示については、機能等価原則を採用します：実際の内容が同じ機能を実現できる限り（例えば配送場所のおおよその位置特定や顧客の主要ニーズの伝達など）、表現が完全に一致しない場合や一部の詳細が欠けている場合でも、要件充足とみなします
+  - ユーザーの完全な指示を適切に分解し、各サブニーズが満たされているかどうかを評価します：
+    - 現在のウィンドウがあるサブニーズに関与していない場合、現在関与していないと記録します；
+    - 現在のウィンドウがあるサブニーズに関与しているが完全に決定できない場合、重要な情報を memory に記録し、後続の判断に備えます
+    - memory 内にサブニーズに関連する重要な情報およびそれに対応するラウンド [x] を記録し、後続のウィンドウで継続して判断できるようにします
+
+  # フォーマット要件
+  - あなたの返信は JSON オブジェクトであり、以下のフィールドを含む必要があります：
+  - `justification`：評価結果の簡単な説明
+  - `meetExpectation`：評価結果（true または false）
+
+  # 入力構造の例：
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # 返信構造の例：
+  ```json
+  {{
+      "memory": <以前のウィンドウ情報の要約>,
+      "justification": "<評価結果の簡単な説明>",
+      "meetExpectation": <true または false>
+  }}
+  ```
+french: |-
+  # Informations système
+  {env_info}
+
+  # Instructions complètes de l'utilisateur
+  {user_instruction}
+
+  # Contexte
+  - Il s'agit d'un scénario de conversation entre un utilisateur et un assistant, où l'assistant peut appeler des outils pour obtenir des informations et effectuer des opérations ; les résultats retournés par les outils commenceront par tool
+  - Vous devez évaluer si les instructions de l'utilisateur ont été exécutées
+  - En raison du grand nombre de tours de conversation, nous utilisons une méthode d'évaluation par fenêtre glissante, c'est-à-dire que 10 tours de conversation sont visibles à chaque fois, avec un chevauchement de 2 tours de conversation entre chaque fenêtre
+  - Vous évaluez la fenêtre numéro {window_idx} (il y a au total {total_windows} fenêtres pour cette tâche)
+  - <window_content> contient le contenu de la conversation de la fenêtre actuelle
+  - <memory> contient un résumé mémorisé des informations des fenêtres précédentes
+  - <current_evaluation> contient les résultats d'évaluation des fenêtres précédentes
+
+  # Tâche
+  - Sur la base du contenu de la conversation de la fenêtre actuelle, déterminez si toutes les exigences des instructions complètes de l'utilisateur sont satisfaites
+  - Vous pouvez mettre à jour le statut de false à true, si et seulement si l'assistant a exécuté les instructions complètes de l'utilisateur dans cette fenêtre et les fenêtres historiques
+  - Vous pouvez également mettre à jour true à nouveau en false, si et seulement si l'assistant a infirmé la conclusion correcte précédente dans cette fenêtre (mais veuillez noter : si les exigences de l'utilisateur ont changé d'elles-mêmes, par exemple annulation active après commande, l'évaluation originale de la demande de commande ne doit pas être infirmée)
+  - Vous pouvez vous référer aux « Instructions complètes de l'utilisateur » pour obtenir la progression de la fenêtre de conversation actuelle et éviter des modifications inutiles
+  - Fusionnez le contenu de la fenêtre actuelle <window_content> et le contenu du résumé de mémoire <memory>, et ajustez le contenu de memory selon les règles des notes avant de le sortir en tant que nouveau <memory>
+
+  # Notes importantes
+  - Important : Toutes les évaluations sont basées sur si les réponses de l'assistant et les demandes d'appel d'outil ont exécuté les instructions de l'utilisateur ; le contenu exprimé par l'utilisateur dans la conversation est considéré uniquement comme des indices et des guides pour l'assistant, n'affectant pas directement les critères d'évaluation ; tout est basé sur les instructions de l'utilisateur !
+  - Important : Les résultats retournés par les outils de type requête sont visibles uniquement par l'assistant et ne représentent pas le contenu recommandé par l'assistant à l'utilisateur, donc n'affectent pas directement les résultats d'évaluation ; tout doit être basé sur la réponse de l'assistant à l'utilisateur après avoir obtenu les informations ! Il faut également noter que l'assistant ne doit pas non plus fabriquer les résultats retournés par l'outil !
+  - Important : Pour les instructions de type achat (impliquant des détails de commande, nécessitant la génération d'une commande), il faut confirmer si l'assistant a vraiment effectué l'opération de commande. Il est possible que l'assistant pense à tort avoir effectué l'opération de commande, alors que l'appel d'outil a échoué ; ou que l'utilisateur indique qu'il peut « commander lui-même », etc., toutes ces situations doivent être considérées comme non satisfaites
+  - Pour les instructions de l'utilisateur impliquant des détails de commande tels que la quantité de produits, l'heure de livraison, etc., les exigences originales des instructions de l'utilisateur doivent être strictement satisfaites (pas d'écart sur la quantité de produits, pas de livraison plus tardive que l'heure de livraison souhaitée) ; le comportement de compromis de l'utilisateur n'affecte pas le résultat de l'évaluation (par exemple, l'utilisateur indique « moins de tel produit convient aussi », « pas d'objection au contenu de la commande » ou « une livraison plus tardive convient aussi », etc.), ces situations doivent toujours être considérées comme non satisfaites
+  - Pour les instructions de l'utilisateur impliquant une correspondance de contenu textuel pour les adresses ou les remarques de commande, le principe d'équivalence fonctionnelle est adopté : tant que le contenu réel peut réaliser la même fonction (comme localiser approximativement le lieu de livraison ou transmettre les besoins principaux du client), même si l'expression n'est pas complètement identique ou manque certains détails, cela est considéré comme satisfaisant les exigences
+  - Décomposez de manière appropriée les instructions complètes de l'utilisateur et évaluez si chaque sous-exigence est satisfaite :
+    - Si la fenêtre actuelle n'implique pas une certaine sous-exigence, indiquez qu'elle n'est pas concernée actuellement ;
+    - Si la fenêtre actuelle implique une certaine sous-exigence mais ne permet pas de décider complètement, enregistrez les informations clés dans memory en attendant un jugement ultérieur
+    - Enregistrez dans memory les informations clés liées à la sous-exigence et le tour correspondant [x], afin que les fenêtres suivantes puissent continuer à juger
+
+  # Exigences de format
+  - Votre réponse doit être un objet JSON, contenant les champs suivants :
+  - `justification` : Brève explication du résultat de l'évaluation
+  - `meetExpectation` : Résultat de l'évaluation (true ou false)
+
+  # Structure d'entrée exemple :
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Structure de réponse exemple :
+  ```json
+  {{
+      "memory": <Résumé des informations des fenêtres précédentes>,
+      "justification": "<Brève explication du résultat de l'évaluation>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+russian: |-
+  # Системная информация
+  {env_info}
+
+  # Полная инструкция пользователя
+  {user_instruction}
+
+  # Описание контекста
+  - Это сценарий диалога между user и assistant, где assistant может вызывать инструменты для получения информации и выполнения операций; результаты возврата инструментов будут начинаться с tool
+  - Вам необходимо оценить, выполнена ли инструкция пользователя
+  - Поскольку количество раундов диалога велико, мы используем метод оценки скользящим окном: каждый раз доступно 10 раундов диалога, между каждым окном есть перекрытие в 2 раунда диалога
+  - Вы оцениваете окно номер {window_idx} (всего в этой задаче {total_windows} окон)
+  - <window_content> содержит содержание диалога текущего окна
+  - <memory> содержит резюме памяти информации предыдущих окон
+  - <current_evaluation> содержит результаты оценки предыдущих окон
+
+  # Задача
+  - На основе содержания диалога текущего окна определите, удовлетворены ли все требования в полной инструкции пользователя
+  - Вы можете обновить статус с false на true, только если assistant выполнил полную инструкцию пользователя в этом окне и исторических окнах
+  - Вы также можете обновить true обратно на false, только если assistant опроверг предыдущий правильный вывод в этом окне (но обратите внимание: если требования пользователя изменились сами по себе, например, активная отмена после размещения заказа, то не следует опровергать первоначальную оценку требования размещения заказа)
+  - Вы можете ссылаться на «Полную инструкцию пользователя», чтобы получить прогресс текущего окна диалога и избежать ненужных изменений
+  - Объедините содержание текущего окна <window_content> и содержание резюме памяти <memory>, и после корректировки содержания memory согласно правилам в примечаниях выведите его как новый <memory>
+
+  # Примечания
+  - Важно: Все оценки основываются на том, завершают ли ответы assistant и запросы вызова инструментов инструкцию пользователя; содержание, выраженное user в диалоге, считается только подсказкой и руководством для assistant и не влияет напрямую на стандарты оценки, все основывается на инструкции пользователя!
+  - Важно: Результаты, возвращенные tool типа запроса, видны только assistant и не представляют собой контент, рекомендованный assistant пользователю, поэтому они также не влияют напрямую на результат оценки; все должно основываться на ответе assistant пользователю после получения информации! Также следует отметить, что Assistant не должен фабриковать результаты возврата Tool!
+  - Важно: Для инструкций типа покупки (касающихся деталей заказа, необходимо генерировать заказ) необходимо подтвердить, действительно ли assistant завершил операцию размещения заказа. Возможно, assistant ошибочно полагает, что завершил операцию размещения заказа, но на самом деле вызов инструмента не удался; или user указывает, что может «разместить заказ самостоятельно» и т.д., все это должно считаться неудовлетворением требования
+  - Для инструкций пользователя, касающихся деталей заказа, таких как количество товаров, время доставки, необходимо строго удовлетворять требования оригинальной инструкции пользователя (не должно быть отклонений в количестве товаров, не должно быть позже ожидаемого времени доставки); поведение компромисса пользователя не влияет на результат оценки (например, user указывает «немного меньше товара тоже подойдет», «нет возражений против содержания заказа» или «можно доставить позже» и т.д.), такие ситуации все равно должны считаться неудовлетворением требования
+  - Для инструкций пользователя типа адреса или примечаний к заказу, касающихся сопоставления текстового содержания, применяется принцип функциональной эквивалентности: пока фактическое содержание может реализовать ту же функцию (например, приблизительное определение места доставки или передача основных требований клиента), даже если формулировка не полностью совпадает или отсутствуют некоторые детали, это также считается удовлетворением требования
+  - Выполните соответствующую декомпозицию полной инструкции пользователя и оцените, удовлетворено ли каждое подтребование:
+    - Если текущее окно не затрагивает какое-либо подтребование, запишите, что оно сейчас не затронуто;
+    - Если текущее окно затрагивает какое-либо подтребование, но невозможно полностью решить, запишите ключевую информацию в memory для последующего суждения
+    - Запишите в memory ключевую информацию, связанную с подтребованием, и соответствующий раунд [x], чтобы последующие окна могли продолжить суждение
+
+  # Требования к формату
+  - Ваш ответ должен быть объектом JSON, содержащим следующие поля:
+  - `justification`: Краткое объяснение результата оценки
+  - `meetExpectation`: Результат оценки (true или false)
+
+  # Структура примера ввода:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Структура примера ответа:
+  ```json
+  {{
+      "memory": <Резюме информации предыдущих окон>,
+      "justification": "<Краткое объяснение результата оценки>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+arabic: |-
+  # معلومات النظام
+  {env_info}
+
+  # تعليمات المستخدم الكاملة
+  {user_instruction}
+
+  # خلفية توضيحية
+  - هذا سيناريو محادثة بين user و assistant، حيث يمكن لـ assistant استدعاء أدوات للحصول على المعلومات وإكمال العمليات، وستبدأ نتائج إرجاع الأداة بـ tool
+  - تحتاج إلى تقييم ما إذا تم تنفيذ تعليمات المستخدم
+  - نظرًا لوجود العديد من جولات المحادثة، نعتمد طريقة تقييم النافذة المنزلقة، أي أنه يمكن رؤية 10 جولات محادثة في كل مرة، مع تداخل جولتي محادثة بين كل نافذة
+  - أنت تقوم بتقييم النافذة رقم {window_idx} (إجمالي {total_windows} نافذة في هذه المهمة)
+  - <window_content> يحتوي على محتوى المحادثة للنافذة الحالية
+  - <memory> يحتوي على ملخص ذاكرة لمعلومات النوافذ السابقة
+  - <current_evaluation> يحتوي على نتائج تقييم النوافذ السابقة
+
+  # المهمة
+  - بناءً على محتوى المحادثة في النافذة الحالية، حدد ما إذا كانت جميع المتطلبات في تعليمات المستخدم الكاملة قد تم تلبيتها
+  - يمكنك تحديث الحالة من false إلى true، فقط عندما يكمل assistant تعليمات المستخدم الكاملة في هذه النافذة والنوافذ التاريخية
+  - يمكنك أيضًا تحديث true إلى false مرة أخرى، فقط عندما يبطل assistant الاستنتاج الصحيح السابق في هذه النافذة (ولكن يرجى ملاحظة: إذا تغيرت متطلبات المستخدم بنفسها، مثل الإلغاء الطوعي بعد تقديم الطلب، فلا ينبغي عكس التقييم الأصلي لمتطلب تقديم الطلب)
+  - يمكنك الرجوع إلى "تعليمات المستخدم الكاملة" للحصول على تقدم نافذة المحادثة الحالية، وتجنب التعديلات غير الضرورية
+  - ادمج محتوى النافذة الحالية <window_content> ومحتوى ملخص الذاكرة <memory>، وقم بتعديل محتوى memory وفقًا للقواعد في ملاحظات الاستخدام ثم أخرجه كـ <memory> جديد
+
+  # ملاحظات هامة
+  - مهم: جميع التقييمات تعتمد على ما إذا كانت ردود assistant وطلبات استدعاء الأداة قد أكملت تعليمات المستخدم، يعتبر المحتوى الذي يعربه user في المحادثة فقط كتلميحات وتوجيهات لـ assistant، ولا يؤثر مباشرة على معايير التقييم، كل شيء يعتمد على تعليمات المستخدم!
+  - مهم: نتائج إرجاع أداة الاستعلام مرئية فقط لـ assistant، ولا تمثل المحتوى الذي يوصي به assistant للمستخدم، وبالتالي لا تؤثر مباشرة على نتائج التقييم، كل شيء يجب أن يعتمد على رد assistant للمستخدم بعد الحصول على المعلومات! وفي نفس الوقت يجب ملاحظة أن Assistant لا يمكنه أيضًا تلفيق نتائج إرجاع Tool!
+  - مهم: بالنسبة لتعليمات الشراء (تتضمن تفاصيل الطلب، يجب إنشاء طلب)، يجب تأكيد ما إذا كان assistant قد أكمل عملية تقديم الطلب فعليًا. من الممكن أن يعتقد assistant خطأً أنه أكمل عملية تقديم الطلب، ولكن في الواقع فشل استدعاء الأداة؛ أو إذا أشار user إلى أنه يمكنه "تقديم الطلب بنفسه" أو حالات مماثلة، يجب اعتبار كل ذلك كعدم تلبية المتطلبات
+  - بالنسبة لتعليمات المستخدم التي تتضمن تفاصيل الطلب مثل كمية البضائع ووقت التسليم، يجب تلبية متطلبات تعليمات المستخدم الأصلية بصرامة (لا يمكن أن يكون هناك انحراف في كمية البضائع، لا يمكن أن يكون لاحقًا لوقت التسليم المتوقع)، سلوك تنازل المستخدم لا يؤثر على نتيجة التقييم (على سبيل المثال إذا قال user "قليل من سلعة معينة مقبول"، "لا اعتراض على محتوى الطلب" أو "التسليم لاحقًا مقبول" وما إلى ذلك)، لا تزال هذه الحالات تعتبر غير مستوفية للمتطلبات
+  - بالنسبة لتعليمات المستخدم التي تتضمن عناوين أو ملاحظات طلب مطابقة لمحتوى النص، اعتمد مبدأ التكافؤ الوظيفي: طالما أن المحتوى الفعلي يمكنه تحقيق نفس الوظيفة (مثل تحديد موقع التسليم تقريبًا أو نقل المتطلبات الرئيسية للعميل)، حتى لو لم يكن التعبير متطابقًا تمامًا أو افتقر إلى بعض التفاصيل، يعتبر أيضًا مستوفيًا للمتطلبات
+  - قم بتقسيم تعليمات المستخدم الكاملة بشكل مناسب، وتقييم ما إذا كان كل متطلب فرعي قد تم تلبيته:
+    - إذا لم تتناول النافذة الحالية متطلبًا فرعيًا معينًا، فسجل أنه لم يتم تناوله حاليًا؛
+    - إذا تناولت النافذة الحالية متطلبًا فرعيًا معينًا ولكن لا يمكن البت فيه تمامًا، فسجل المعلومات الرئيسية في memory للانتظار للحكم اللاحق
+    - سجل في memory المعلومات الرئيسية المتعلقة بالمتطلب الفرعي والجولة المقابلة لها [x]، لتمكين النوافذ اللاحقة من مواصلة الحكم
+
+  # متطلبات التنسيق
+  - يجب أن يكون ردك كائن JSON، يحتوي على الحقول التالية:
+  - `justification`: شرح موجز لنتيجة التقييم
+  - `meetExpectation`: نتيجة التقييم (true أو false)
+
+  # هيكل مثال الإدخال:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # هيكل مثال الرد:
+  ```json
+  {{
+      "memory": <ملخص لمعلومات النوافذ السابقة>,
+      "justification": "<شرح موجز لنتيجة التقييم>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+hindi: |-
+  # सिस्टम जानकारी
+  {env_info}
+
+  # उपयोगकर्ता का पूर्ण निर्देश
+  {user_instruction}
+
+  # पृष्ठभूमि विवरण
+  - यह user और assistant के बीच एक संवाद दृश्य है, जहाँ assistant जानकारी प्राप्त करने और कार्य पूरा करने के लिए टूल का उपयोग कर सकता है, टूल द्वारा लौटाए गए परिणाम tool से शुरू होंगे
+  - आपको यह मूल्यांकन करना होगा कि उपयोगकर्ता का निर्देश पूरा हुआ है या नहीं
+  - चूँकि संवाद के राउंड अधिक हैं, हम स्लाइडिंग विंडो मूल्यांकन विधि का उपयोग करते हैं, अर्थात हर बार 10 संवाद राउंड दिखाई देते हैं, प्रत्येक विंडो के बीच 2 संवाद राउंड का ओवरलैप होता है
+  - आप {window_idx} वीं विंडो का मूल्यांकन कर रहे हैं (इस कार्य के लिए कुल {total_windows} विंडो हैं)
+  - <window_content> में वर्तमान विंडो की संवाद सामग्री शामिल है
+  - <memory> में पिछली विंडो जानकारी का स्मृति सारांश शामिल है
+  - <current_evaluation> में पिछली विंडो के मूल्यांकन परिणाम शामिल हैं
+
+  # कार्य
+  - वर्तमान विंडो की संवाद सामग्री के आधार पर, यह निर्णय लें कि उपयोगकर्ता के पूर्ण निर्देश में सभी आवश्यकताएं पूरी हुई हैं या नहीं
+  - आप स्थिति को false से true में अपडेट कर सकते हैं, यदि और केवल यदि assistant ने इस विंडो और पिछली विंडो में उपयोगकर्ता का पूर्ण निर्देश पूरा कर लिया है
+  - आप true को फिर से false में अपडेट कर सकते हैं, यदि और केवल यदि assistant ने इस विंडो में पिछले सही निष्कर्ष को बदल दिया है (लेकिन कृपया ध्यान दें: यदि उपयोगकर्ता की आवश्यकता स्वयं बदल गई है, जैसे ऑर्डर देने के बाद स्वयं रद्द करना, तो ऑर्डर देने की आवश्यकता के मूल मूल्यांकन को नहीं बदलना चाहिए)
+  - आप वर्तमान संवाद विंडो की प्रगति प्राप्त करने के लिए "उपयोगकर्ता का पूर्ण निर्देश" का संदर्भ ले सकते हैं, ताकि अनावश्यक संशोधनों से बचा जा सके
+  - वर्तमान विंडो सामग्री <window_content> और स्मृति सारांश सामग्री <memory> को मर्ज करें, और नोट्स में नियमों के अनुसार memory सामग्री को समायोजित करने के बाद इसे नए <memory> के रूप में आउटपुट करें
+
+  # ध्यान देने योग्य बातें
+  - महत्वपूर्ण: सभी मूल्यांकन इस आधार पर होंगे कि assistant के उत्तर और टूल कॉल अनुरोधों ने उपयोगकर्ता के निर्देश को पूरा किया है या नहीं, संवाद में user द्वारा व्यक्त सामग्री को केवल assistant के लिए संकेत और मार्गदर्शन माना जाता है, यह मूल्यांकन मानकों को सीधे प्रभावित नहीं करेगा, सब कुछ उपयोगकर्ता के निर्देश पर निर्भर है!
+  - महत्वपूर्ण: क्वेरी प्रकार के tool द्वारा लौटाए गए परिणाम केवल assistant के लिए दृश्यमान हैं, यह assistant द्वारा उपयोगकर्ता के लिए अनुशंसित सामग्री का प्रतिनिधित्व नहीं करते हैं, इसलिए यह मूल्यांकन परिणाम को सीधे प्रभावित नहीं करते हैं, सब कुछ assistant द्वारा जानकारी प्राप्त करने के बाद उपयोगकर्ता को दिए गए उत्तर पर निर्भर होना चाहिए! साथ ही ध्यान दें, Assistant Tool के परिणामों को गढ़ भी नहीं सकता है!
+  - महत्वपूर्ण: खरीदारी प्रकार के निर्देशों के लिए (जिनमें ऑर्डर विवरण शामिल हैं, ऑर्डर जनरेट करना आवश्यक है), यह पुष्टि करना आवश्यक है कि assistant ने वास्तव में ऑर्डर प्लेस करने की कार्रवाई पूरी की है या नहीं। हो सकता है कि assistant को गलती से लगे कि ऑर्डर प्लेस करने की कार्रवाई पूरी हो गई है, वास्तव में टूल कॉल विफल रही हो; या user यह इंगित करे कि "खुद ऑर्डर कर सकता हूं" ऐसी स्थितियों को भी आवश्यकता पूरी न होने के रूप में माना जाना चाहिए
+  - उपयोगकर्ता निर्देशों के लिए जिनमें ऑर्डर विवरण जैसे वस्तु की मात्रा, डिलीवरी का समय शामिल हैं, मूल उपयोगकर्ता निर्देश आवश्यकताओं को कड़ाई से पूरा करना आवश्यक है (वस्तु की मात्रा में विचलन नहीं हो सकता, अपेक्षित डिलीवरी समय से देर नहीं होनी चाहिए), उपयोगकर्ता की समझौता व्यवहार मूल्यांकन परिणाम को प्रभावित नहीं करता है (जैसे user कहे "कुछ वस्तु कम भी चलेंगी", "ऑर्डर सामग्री से कोई आपत्ति नहीं" या "थोड़ी देर से डिलीवरी भी चलेंगी" आदि), ऐसी स्थितियों को अभी भी आवश्यकता पूरी न होने के रूप में माना जाना चाहिए
+  - उपयोगकर्ता निर्देशों के लिए जिनमें पाठ सामग्री मिलान वाले पते या ऑर्डर नोट्स शामिल हैं, कार्यात्मक समानता सिद्धांत अपनाएं: जब तक वास्तविक सामग्री समान कार्य कर सकती है (जैसे डिलीवरी स्थान का मोटा अनुमान लगाना या ग्राहक की मुख्य आवश्यकताओं को संप्रेषित करना), भले ही अभिव्यक्ति पूरी तरह से सुसंगत न हो या कुछ विवरण गायब हों, इसे आवश्यकता पूरी होने के रूप में माना जाता है
+  - उपयोगकर्ता के पूर्ण निर्देश को उचित रूप से विभाजित करें, और मूल्यांकन करें कि प्रत्येक उप-आवश्यकता पूरी हुई है या नहीं:
+    - यदि वर्तमान विंडो में किसी उप-आवश्यकता का उल्लेख नहीं है, तो रिकॉर्ड करें कि वर्तमान में इसका उल्लेख नहीं है;
+    - यदि वर्तमान विंडो में किसी उप-आवश्यकता का उल्लेख है लेकिन पूरी तरह से निर्णय नहीं लिया जा सकता, तो महत्वपूर्ण जानकारी को बाद के निर्णय के लिए memory में रिकॉर्ड करें
+    - memory में उप-आवश्यकता से संबंधित महत्वपूर्ण जानकारी और इसके अनुरूप राउंड [x] रिकॉर्ड करें, ताकि बाद की विंडो में निर्णय जारी रखा जा सके
+
+  # प्रारूप आवश्यकताएं
+  - आपका उत्तर एक JSON ऑब्जेक्ट होना चाहिए, जिसमें निम्नलिखित फ़ील्ड शामिल हैं:
+  - `justification`：मूल्यांकन परिणाम का संक्षिप्त स्पष्टीकरण
+  - `meetExpectation`: मूल्यांकन परिणाम (true या false)
+
+  # उदाहरण इनपुट संरचना:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # उदाहरण उत्तर संरचना:
+  ```json
+  {{
+      "memory": <पिछली विंडो जानकारी का सारांश>,
+      "justification": "<मूल्यांकन परिणाम का संक्षिप्त स्पष्टीकरण>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+thai: |-
+  # ข้อมูลระบบ
+  {env_info}
+
+  # คำสั่งเต็มจากผู้ใช้งาน
+  {user_instruction}
+
+  # คำชี้แจงพื้นหลัง
+  - นี่คือสถานการณ์การสนทนาระหว่าง user และ assistant โดยที่ assistant สามารถเรียกใช้เครื่องมือเพื่อรับข้อมูลและดำเนินการได้ ผลลัพธ์ที่ส่งกลับจากเครื่องมือจะขึ้นต้นด้วย tool
+  - คุณต้องประเมินว่าคำสั่งของผู้ใช้งานได้รับการดำเนินการเสร็จสิ้นหรือไม่
+  - เนื่องจากจำนวนรอบการสนทนามีมาก เราจึงใช้วิธีการประเมินแบบหน้าต่างเลื่อน (sliding window) กล่าวคือแต่ละครั้งจะมองเห็นการสนทนา 10 รอบ และแต่ละหน้าต่างจะมีการซ้อนทับกัน 2 รอบ
+  - คุณกำลังประเมินหน้าต่างที่ {window_idx} (งานครั้งนี้มีทั้งหมด {total_windows} หน้าต่าง)
+  - <window_content> ประกอบด้วยเนื้อหาการสนทนาของหน้าต่างปัจจุบัน
+  - <memory> ประกอบด้วยสรุปความจำของข้อมูลจากหน้าต่างก่อนหน้า
+  - <current_evaluation> ประกอบด้วยผลการประเมินของหน้าต่างก่อนหน้า
+
+  # ภารกิจ
+  - จากเนื้อหาการสนทนาในหน้าต่างปัจจุบัน ให้ตัดสินว่าความต้องการในคำสั่งเต็มของผู้ใช้งานได้รับการตอบสนองครบถ้วนหรือไม่
+  - คุณสามารถเปลี่ยนสถานะจาก false เป็น true ได้ ก็ต่อเมื่อ assistant ดำเนินการคำสั่งเต็มของผู้ใช้งานเสร็จสิ้นในหน้าต่างนี้และหน้าต่างในอดีต
+  - คุณสามารถเปลี่ยนสถานะจาก true เป็น false อีกครั้งได้ ก็ต่อเมื่อ assistant ล้มล้างข้อสรุปที่ถูกต้องก่อนหน้าในหน้าต่างนี้ (แต่โปรดทราบ: หากความต้องการของผู้ใช้งานเปลี่ยนแปลงเอง เช่น ยกเลิกคำสั่งซื้อหลังจากสั่งแล้ว ไม่ควรล้มล้างการประเมินเดิมเกี่ยวกับความต้องการในการสั่งซื้อ)
+  - คุณสามารถอ้างอิง "คำสั่งเต็มจากผู้ใช้งาน" เพื่อรับทราบความคืบหน้าของหน้าต่างการสนทนาปัจจุบัน และหลีกเลี่ยงการแก้ไขที่ไม่จำเป็น
+  - รวมเนื้อหาหน้าต่างปัจจุบัน <window_content> และเนื้อหาสรุปความจำ <memory> แล้วปรับแต่งเนื้อหา memory ตามกฎในข้อควรระวัง จากนั้นส่งออกเป็น <memory> ใหม่
+
+  # ข้อควรระวัง
+  - สำคัญ: การประเมินทั้งหมดยึดถือว่าคำตอบของ assistant และการเรียกใช้เครื่องมือสามารถดำเนินการคำสั่งของผู้ใช้งานได้สำเร็จหรือไม่ เนื้อหาที่ user แสดงออกในการสนทนาถือเป็นเพียงคำแนะนำและแนวทางสำหรับ assistant ไม่ส่งผลโดยตรงต่อเกณฑ์การประเมิน ทุกอย่างยึดตามคำสั่งของผู้ใช้งานเป็นหลัก!
+  - สำคัญ: ผลลัพธ์ที่ส่งกลับจาก tool ประเภทการค้นหาจะมองเห็นได้เฉพาะ assistant เท่านั้น ไม่ได้หมายถึงเนื้อหาที่ assistant แนะนำให้ผู้ใช้ ดังนั้นจึงไม่ส่งผลโดยตรงต่อผลการประเมิน ทุกอย่างต้องยึดตามคำตอบของ assistant ที่มีต่อผู้ใช้หลังจากได้รับข้อมูลแล้ว! ในขณะเดียวกันต้องระวังว่า Assistant ห้ามแต่งผลลัพธ์ที่ส่งกลับจาก Tool เอง!
+  - สำคัญ: สำหรับคำสั่งประเภทการซื้อ (เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ ต้องสร้างคำสั่งซื้อ) ต้องยืนยันว่า assistant ดำเนินการสั่งซื้อเสร็จสิ้นจริงหรือไม่ เป็นไปได้ที่ assistant อาจเข้าใจผิดว่าดำเนินการสั่งซื้อเสร็จสิ้นแล้ว แต่ความจริงแล้วการเรียกใช้เครื่องมือล้มเหลว; หรือ user ระบุว่าสามารถ "สั่งซื้อเองได้" ฯลฯ กรณีเหล่านี้ควรถือว่าไม่ตรงตามความต้องการ
+  - สำหรับคำสั่งของผู้ใช้งานที่เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ เช่น จำนวนสินค้า เวลาจัดส่ง ต้องปฏิบัติตามข้อกำหนดในคำสั่งเดิมของผู้ใช้งานอย่างเคร่งครัด (ไม่มีความคลาดเคลื่อนของจำนวนสินค้า ไม่ช้ากว่าเวลาจัดส่งที่ต้องการ) การประนีประนอมของผู้ใช้งานไม่ส่งผลต่อผลการตัดสิน (เช่น user ระบุว่า "สินค้าบางอย่างน้อยหน่อยก็ได้", "ไม่มีข้อโต้แย้งต่อเนื้อหาคำสั่งซื้อ" หรือ "ส่งช้าหน่อยก็ได้" ฯลฯ) กรณีเหล่านี้ยังคงควรถือว่าไม่ตรงตามความต้องการ
+  - สำหรับคำสั่งของผู้ใช้งานที่เกี่ยวข้องกับการจับคู่เนื้อหาข้อความเช่นที่อยู่หรือหมายเหตุคำสั่งซื้อ ให้ใช้หลักการเทียบเท่าฟังก์ชัน: ตราบใดที่เนื้อหาจริงสามารถทำหน้าที่เดียวกันได้ (เช่น ระบุตำแหน่งจัดส่งโดยประมาณหรือสื่อสารความต้องการหลักของลูกค้า) แม้ถ้อยคำจะไม่ตรงกันทั้งหมดหรือขาดรายละเอียดบางส่วน ก็ถือว่าตรงตามความต้องการ
+  - แยกย่อยคำสั่งเต็มของผู้ใช้งานอย่างเหมาะสม และประเมินว่าความต้องการย่อยแต่ละข้อได้รับการตอบสนองหรือไม่:
+    - หากหน้าต่างปัจจุบันไม่เกี่ยวข้องกับความต้องการย่อยข้อใดข้อหนึ่ง ให้บันทึกว่าปัจจุบันไม่เกี่ยวข้อง;
+    - หากหน้าต่างปัจจุบันเกี่ยวข้องกับความต้องการย่อยข้อใดข้อหนึ่งแต่ไม่สามารถตัดสินได้โดยสมบูรณ์ ให้บันทึกข้อมูลสำคัญลงใน memory เพื่อรอการตัดสินในภายหลัง
+    - บันทึกข้อมูลสำคัญที่เกี่ยวข้องกับความต้องการย่อยและรอบที่เกี่ยวข้อง [x] ใน memory เพื่อให้หน้าต่างถัดไปสามารถตัดสินต่อไปได้
+
+  # ข้อกำหนดรูปแบบ
+  - คำตอบของคุณควรเป็นออบเจกต์ JSON ประกอบด้วยฟิลด์ต่อไปนี้:
+  - `justification`: คำอธิบายโดยย่อเกี่ยวกับผลการประเมิน
+  - `meetExpectation`: ผลการประเมิน (true หรือ false)
+
+  # โครงสร้างตัวอย่างอินพุต:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # โครงสร้างตัวอย่างคำตอบ:
+  ```json
+  {{
+      "memory": <สรุปข้อมูลจากหน้าต่างก่อนหน้า>,
+      "justification": "<คำอธิบายโดยย่อเกี่ยวกับผลการประเมิน>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+spanish: |-
+  # Información del Sistema
+  {env_info}
+
+  # Instrucción Completa del Usuario
+  {user_instruction}
+
+  # Descripción del Contexto
+  - Este es un escenario de conversación entre un usuario y un asistente, donde el asistente puede llamar a herramientas para obtener información y completar operaciones; los resultados devueltos por las herramientas comenzarán con tool
+  - Debes evaluar si la instrucción del usuario ha sido completada
+  - Debido a que hay muchas rondas de conversación, utilizamos un método de evaluación de ventana deslizante, es decir, 10 rondas de conversación son visibles cada vez, con 2 rondas de conversación superpuestas entre cada ventana
+  - Estás evaluando la ventana número {window_idx} (hay un total de {total_windows} ventanas en esta tarea)
+  - <window_content> contiene el contenido de la conversación de la ventana actual
+  - <memory> contiene un resumen memorizado de la información de ventanas anteriores
+  - <current_evaluation> contiene los resultados de la evaluación de ventanas anteriores
+
+  # Tarea
+  - Basado en el contenido de la conversación de la ventana actual, determina si todos los requisitos en la instrucción completa del usuario han sido satisfechos
+  - Puedes actualizar el estado de false a true, si y solo si el asistente completó la instrucción completa del usuario en esta ventana y en las ventanas históricas
+  - También puedes actualizar true a false nuevamente, si y solo si el asistente revocó la conclusión correcta anterior en esta ventana (pero ten en cuenta: si el requisito del usuario cambió por sí mismo, por ejemplo, cancelar activamente después de realizar un pedido, entonces no se debe revocar la evaluación original del requisito del pedido)
+  - Puedes referirte a la "Instrucción Completa del Usuario" para obtener el progreso de la ventana de conversación actual y evitar modificaciones innecesarias
+  - Combina el contenido de la ventana actual <window_content> y el contenido del resumen de memoria <memory>, y ajusta el contenido de memory según las reglas en las notas importantes para emitirlo como un nuevo <memory>
+
+  # Notas Importantes
+  - Importante: Todas las evaluaciones se basan en si las respuestas del asistente y las solicitudes de llamada a herramientas completan la instrucción del usuario; el contenido expresado por el usuario en la conversación se considera solo como sugerencias y guía para el asistente, no afecta directamente los criterios de evaluación, ¡todo se basa en la instrucción del usuario!
+  - Importante: Los resultados devueltos por las herramientas de tipo consulta son visibles solo para el asistente, no representan el contenido recomendado por el asistente al usuario, por lo tanto, tampoco afectan directamente los resultados de la evaluación, ¡todo debe basarse en la respuesta del asistente al usuario después de obtener la información! ¡Al mismo tiempo, ten en cuenta que el asistente tampoco debe fabricar los resultados devueltos por la herramienta!
+  - Importante: Para las instrucciones de tipo compra (que involucran detalles del pedido, deben generar un pedido), se debe confirmar si el asistente realmente completó la operación de realizar el pedido. Es posible que el asistente crea erróneamente que completó la operación de realizar el pedido, pero en realidad la llamada a la herramienta falló; o si el usuario indica que puede "realizar el pedido por sí mismo", etc., todo esto debe considerarse como no satisfecho
+  - Para las instrucciones del usuario que involucran detalles del pedido como la cantidad de productos, el tiempo de entrega, etc., se deben satisfacer estrictamente los requisitos de la instrucción original del usuario (no puede haber desviación en la cantidad de productos, no debe ser más tarde que el tiempo de entrega esperado), el comportamiento de compromiso del usuario no afecta el resultado de la evaluación (por ejemplo, si el usuario indica "está bien menos de cierto producto", "no hay objeción al contenido del pedido" o "está bien entregar más tarde", etc.), tales situaciones aún deben considerarse como no satisfechas
+  - Para las instrucciones del usuario que involucran direcciones o notas de pedidos que coinciden con el contenido del texto, se adopta el principio de equivalencia funcional: siempre que el contenido real pueda lograr la misma función (como ubicar aproximadamente el lugar de entrega o transmitir la necesidad principal del cliente), incluso si la expresión no es completamente consistente o faltan algunos detalles, también se considera que se satisfacen los requisitos
+  - Descompón apropiadamente la instrucción completa del usuario y evalúa si cada sub-requisito ha sido satisfecho:
+    - Si la ventana actual no involucra un cierto sub-requisito, registra que actualmente no está involucrado;
+    - Si la ventana actual involucra un cierto sub-requisito pero no se puede decidir completamente, registra la información clave en memory para dejarla para juicio posterior
+    - Registra en memory la información clave relacionada con el sub-requisito y su ronda correspondiente [x], para que las ventanas posteriores continúen juzgando
+
+  # Requisitos de Formato
+  - Tu respuesta debe ser un objeto JSON, que contiene los siguientes campos:
+  - `justification`: Una breve explicación del resultado de la evaluación
+  - `meetExpectation`: Resultado de la evaluación (true o false)
+
+  # Estructura de Entrada de Ejemplo:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Estructura de Respuesta de Ejemplo:
+  ```json
+  {{
+      "memory": <Resumen de la información de ventanas anteriores>,
+      "justification": "<Una breve explicación del resultado de la evaluación>",
+      "meetExpectation": <true o false>
+  }}
+  ```
+korean: |-
+  # 시스템 정보
+  {env_info}
+
+  # 사용자 전체 지침
+  {user_instruction}
+
+  # 배경 설명
+  - 이는 user 와 assistant 간의 대화 장면으로, assistant 는 도구를 호출하여 정보를 얻고 작업을 완료할 수 있으며, 도구 반환 결과는 tool 로 시작합니다
+  - 사용자 지침이 완료되었는지 평가해야 합니다
+  - 대화 회차가 많으므로 슬라이딩 윈도우 평가법을 사용합니다. 즉, 각기 10 회씩 대화를 볼 수 있으며 각 윈도우 간에 2 회 대화가 중복됩니다
+  - 현재 {window_idx} 번째 윈도우를 평가 중입니다 (이번 작업은 총 {total_windows} 개의 윈도우)
+  - <window_content>에는 현재 윈도우의 대화 내용이 포함됩니다
+  - <memory>에는 이전 윈도우 정보에 대한 기억 요약이 포함됩니다
+  - <current_evaluation>에는 이전 윈도우의 평가 결과가 포함됩니다
+
+  # 작업
+  - 현재 윈도우의 대화 내용을 기반으로 사용자 전체 지침의 요구 사항이 모두 충족되었는지 판단합니다
+  - assistant 가 이 윈도우와 이전 윈도우에서 사용자 전체 지침을 완료한 경우에만 상태를 false 에서 true 로 업데이트할 수 있습니다
+  - assistant 가 이 윈도우에서 이전의 올바른 결론을 뒤집은 경우에만 true 를 다시 false 로 업데이트할 수 있습니다 (단, 주의 사항: 사용자 요구 사항 자체가 변경된 경우, 예를 들어 주문 후 스스로 취소하는 경우라면 원래 주문 요구 사항에 대한 평가를 뒤집어서는 안 됩니다)
+  - 불필요한 수정을 피하기 위해“사용자 전체 지침”을 참조하여 현재 대화 윈도우의 진행 상황을 파악할 수 있습니다
+  - 현재 윈도우 내용<window_content>과 기억 요약 내용<memory>을 병합하고, 주의 사항의 규칙에 따라 memory 내용을 조정한 후 새로운<memory>로 출력합니다
+
+  # 주의 사항
+  - 중요: 모든 평가는 assistant 의 응답 및 도구 호출 요청이 사용자 지침을 완료했는지 여부를 기준으로 하며, user 가 대화 중 표현한 내용은 assistant 에 대한 힌트 및 가이드로만 간주되며 평가 기준에 직접적인 영향을 미치지 않습니다. 모든 것은 사용자 지침을 기준으로 합니다!
+  - 중요: 조회류 tool 이 반환한 결과는 assistant 에게만 보이며, assistant 가 사용자에게 추천한 내용을 나타내는 것이 아니므로 평가 결과에도 직접적인 영향을 미치지 않습니다. 모든 것은 assistant 가 정보를 획득한 후 사용자에게 한 응답을 기준으로 합니다! 동시에 Assistant 는 Tool 의 반환 결과를 조작해서도 안 됩니다!
+  - 중요: 구매류 지침 (주문 세부 사항 관련, 주문 생성 필수) 의 경우, assistant 가 실제로 주문 작업을 완료했는지 확인해야 합니다. assistant 가 주문 작업을 완료했다고 오인했으나 실제로 도구 호출이 실패했거나, user 가“스스로 주문할 수 있다”고 표시한 경우 등은 모두 요구 사항 미충족으로 간주됩니다
+  - 상품 수량, 배송 시간 등 주문 세부 사항과 관련된 사용자 지침의 경우, 원래 사용자 지침 요구 사항을 엄격히 충족해야 합니다 (상품 수량 편차 불가, 희망 배송 시간보다 늦어지면 안 됨). 사용자의 타협 행동은 평가 결과에 영향을 미치지 않습니다 (예: user 가“어떤 상품은 적어도 괜찮다",“주문 내용에 이의 없음"또는“늦게 배송되어도 괜찮다”등 표시). 이러한 경우에도 요구 사항 미충족으로 간주됩니다
+  - 텍스트 내용 매칭과 관련된 주소 또는 주문 비고류 사용자 지침의 경우 기능 등가 원칙을 적용합니다: 실제 내용이 동일한 기능을 구현할 수 있다면 (예: 배송 장소 대략적 위치 지정 또는 고객의 주요 요구 사항 전달), 표현이 완전히 일치하지 않거나 일부 세부 사항이 부족하더라도 요구 사항 충족으로 간주합니다
+  - 사용자 전체 지침을 적절히 분해하고 각 하위 요구 사항이 충족되었는지 평가합니다:
+    - 현재 윈도우에서 특정 하위 요구 사항이 포함되지 않았다면, 현재 포함되지 않았다고 기록합니다;
+    - 현재 윈도우에서 특정 하위 요구 사항이 포함되었으나 완전히 결정할 수 없다면, 핵심 정보를 memory 에 기록하여 후속 판단을 기다립니다
+    - memory 에 하위 요구 사항과 관련된 핵심 정보 및 해당 회차 [x] 를 기록하여 후속 윈도우에서 계속 판단할 수 있도록 합니다
+
+  # 형식 요구 사항
+  - 응답은 다음 필드를 포함하는 JSON 객체여야 합니다:
+  - `justification`: 평가 결과에 대한 간단한 설명
+  - `meetExpectation`: 평가 결과 (true 또는 false)
+
+  # 예시 입력 구조:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # 예시 응답 구조:
+  ```json
+  {{
+      "memory": <이전 윈도우 정보에 대한 요약>,
+      "justification": "<평가 결과에 대한 간단한 설명>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+indonesian: |-
+  # Informasi Sistem
+  {env_info}
+
+  # Instruksi Lengkap Pengguna
+  {user_instruction}
+
+  # Penjelasan Latar Belakang
+  - Ini adalah skenario percakapan antara user dan assistant, di mana assistant dapat memanggil tool untuk mendapatkan informasi dan menyelesaikan operasi, hasil yang dikembalikan oleh tool akan dimulai dengan tool
+  - Anda perlu menilai apakah instruksi pengguna telah selesai
+  - Karena jumlah putaran percakapan cukup banyak, kami menggunakan metode evaluasi jendela geser, yaitu setiap kali 10 putaran percakapan terlihat, ada 2 putaran percakapan yang tumpang tindih antar setiap jendela
+  - Anda sedang mengevaluasi jendela ke-{window_idx} (total {total_windows} jendela untuk tugas ini)
+  - <window_content> berisi konten percakapan jendela saat ini
+  - <memory> berisi ringkasan memori informasi dari jendela sebelumnya
+  - <current_evaluation> berisi hasil evaluasi dari jendela sebelumnya
+
+  # Tugas
+  - Berdasarkan konten percakapan jendela saat ini, tentukan apakah semua kebutuhan dalam instruksi lengkap pengguna telah terpenuhi
+  - Anda dapat memperbarui status dari false menjadi true, jika dan hanya jika assistant telah menyelesaikan instruksi lengkap pengguna di jendela ini dan jendela sejarah
+  - Anda juga dapat memperbarui true menjadi false lagi, jika dan hanya jika assistant membatalkan kesimpulan benar sebelumnya di jendela ini (namun harap perhatikan: jika kebutuhan pengguna berubah sendiri, misalnya membatalkan secara aktif setelah memesan, maka evaluasi asli terhadap kebutuhan pemesanan tidak boleh dibatalkan)
+  - Anda dapat merujuk pada "Instruksi Lengkap Pengguna" untuk mendapatkan kemajuan jendela percakapan saat ini, menghindari modifikasi yang tidak perlu
+  - Gabungkan konten jendela saat ini <window_content> dan konten ringkasan memori <memory>, dan sesuaikan konten memory berdasarkan aturan dalam perhatian khusus kemudian output sebagai <memory> baru
+
+  # Perhatian Khusus
+  - Penting: Semua evaluasi berdasarkan apakah respons assistant dan permintaan pemanggilan tool telah menyelesaikan instruksi pengguna, konten yang dinyatakan oleh user dalam percakapan hanya dianggap sebagai petunjuk dan panduan untuk assistant, tidak akan langsung mempengaruhi standar evaluasi, semuanya berdasarkan instruksi pengguna!
+  - Penting: Hasil yang dikembalikan oleh tool jenis kueri hanya terlihat oleh assistant, tidak mewakili konten yang direkomendasikan assistant kepada pengguna, oleh karena itu juga tidak langsung mempengaruhi hasil evaluasi, semuanya harus berdasarkan respons assistant kepada pengguna setelah mendapatkan informasi! Pada saat yang sama perlu diperhatikan, Assistant juga tidak boleh mengarang hasil pengembalian Tool!
+  - Penting: Untuk instruksi jenis pembelian (melibatkan detail pesanan, harus menghasilkan pesanan), harus dikonfirmasi apakah assistant benar-benar menyelesaikan operasi pemesanan. Mungkin assistant salah mengira telah menyelesaikan operasi pemesanan, sebenarnya pemanggilan tool gagal; atau user menyatakan bisa "pesan sendiri" dll, semua harus dianggap sebagai belum memenuhi persyaratan
+  - Untuk instruksi pengguna yang melibatkan detail pesanan seperti jumlah barang, waktu pengiriman, harus secara ketat memenuhi persyaratan instruksi pengguna asli (tidak boleh ada penyimpangan jumlah barang, tidak boleh lebih lambat dari waktu pengiriman yang diharapkan), perilaku kompromi pengguna tidak mempengaruhi hasil penilaian (misalnya user menyatakan "barang tertentu sedikit juga boleh", "tidak ada keberatan terhadap konten pesanan" atau "pengiriman terlambat juga boleh" dll), situasi seperti ini tetap harus dianggap sebagai belum memenuhi persyaratan
+  - Untuk instruksi pengguna jenis alamat atau catatan pesanan yang melibatkan pencocokan konten teks, gunakan prinsip equivalensi fungsional: selama konten aktual dapat mewujudkan fungsi yang sama (seperti memlokasi tempat pengiriman secara kasar atau menyampaikan kebutuhan utama pelanggan), meskipun ekspresi tidak sepenuhnya konsisten atau kekurangan beberapa detail, juga dianggap memenuhi persyaratan
+  - Lakukan dekomposisi yang sesuai pada instruksi lengkap pengguna, dan evaluasi apakah setiap sub-kebutuhan telah terpenuhi:
+    - Jika jendela saat ini tidak melibatkan sub-kebutuhan tertentu, maka catat saat ini tidak terlibat;
+    - Jika jendela saat ini melibatkan sub-kebutuhan tertentu tetapi tidak dapat sepenuhnya ditentukan, maka catat informasi kunci di memory untuk menunggu penilaian selanjutnya
+    - Catat informasi kunci yang terkait dengan sub-kebutuhan dan putaran yang sesuai [x] di memory, agar jendela selanjutnya dapat melanjutkan penilaian
+
+  # Persyaratan Format
+  - Respons Anda harus berupa objek JSON, berisi bidang berikut:
+  - `justification`: penjelasan singkat tentang hasil evaluasi
+  - `meetExpectation`: hasil evaluasi (true atau false)
+
+  # Struktur Input Contoh:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Struktur Respons Contoh:
+  ```json
+  {{
+      "memory": <ringkasan informasi dari jendela sebelumnya>,
+      "justification": "<penjelasan singkat tentang hasil evaluasi>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+hebrew: |-
+  # מידע מערכת
+  {env_info}
+
+  # הוראה מלאה של המשתמש
+  {user_instruction}
+
+  # רקע
+  - זהו תרחיש שיחה בין משתמש ל-mסייע, כאשר ה-mסייע יכול להשתמש בכלים כדי להשיג מידע ולהשלים פעולות, ותוצאות החזרה מהכלים יתחילו ב-tool
+  - עליך להעריך האם הוראת המשתמש בוצעה
+  - מכיוון שישנם סיבובי שיחה רבים, אנו משתמשים בשיטת הערכת חלון גולש, כלומר בכל פעם רואים 10 סיבובי שיחה, עם חפיפה של 2 סיבובי שיחה בין כל חלון
+  - אתה מעריך כעת את חלון מספר {window_idx} (בסך הכל {total_windows} חלונות במשימה זו)
+  - <window_content> מכיל את תוכן השיחה של החלון הנוכחי
+  - <memory> מכיל סיכום זיכרון של מידע מחלונות קודמים
+  - <current_evaluation> מכיל את תוצאות ההערכה של חלונות קודמים
+
+  # משימה
+  - בהתבסס על תוכן השיחה בחלון הנוכחי, קבע האם כל הדרישות בהוראה המלאה של המשתמש סופקו
+  - ניתן לעדכן את הסטטוס מ-false ל-true, אך ורק כאשר ה-mסייע השלים את ההוראה המלאה של המשתמש בחלון זה ובחלונות היסטוריים
+  - ניתן גם לעדכן את true חזרה ל-false, אך ורק כאשר ה-mסייע הפריך מסקנה נכונה קודמת בחלון זה (אך שים לב: אם דרישת המשתמש השתנתה מעצמה, למשל ביטול יזום לאחר ביצוע הזמנה, אין להפריך את ההערכה המקורית לגבי דרישת ההזמנה)
+  - ניתן להתייחס ל"הוראה מלאה של המשתמש" כדי לקבל את ההתקדמות בחלון השיחה הנוכחי, ולהימנע משינויים מיותרים
+  - שלב את תוכן החלון הנוכחי <window_content> ואת תוכן סיכום הזיכרון <memory>, והפקד כ-<memory> חדש לאחר התאמת תוכן ה-memory בהתאם לכללים שבסעיף ההערות
+
+  # הערות חשובות
+  - חשוב: כל ההערכות נקבעות לפי האם התגובות של ה-mסייע ובקשות הפעלת הכלים השלימו את הוראת המשתמש, תוכן שהמשתמש הביע בשיחה נחשב רק כרמז והנחיה ל-mסייע, ולא משפיע ישירות על סטנדרט ההערכה, הכל לפי הוראת המשתמש!
+  - חשוב: תוצאות שהוחזרו על ידי כלי חיפוש נראות רק ל-mסייע, ואינן מייצגות תוכן שהומלץ על ידי ה-mסייע למשתמש, ולכן גם לא משפיעות ישירות על תוצאת ההערכה, הכל חייב להיות לפי התגובה של ה-mסייע למשתמש לאחר קבלת המידע! יש גם לשים לב, ה-mסייע גם לא יכול לזייף תוצאות החזרה של הכלי!
+  - חשוב: לגבי הוראות רכישה (הכוללות פרטי הזמנה, חייבות ליצור הזמנה), יש לאשר האם ה-mסייע אכן השלים את פעולת ביצוע ההזמנה. ייתכן שה-mסייע חשב בטעות שהשלים את פעולת ההזמנה, למעשה הפעלת הכלי נכשלה; או שהמשתמש ציין ש"אפשר לבצע הזמנה בעצמי" וכו', כל אלו ייחשבו כאי עמידה בדרישות
+  - לגבי הוראות משתמש הכוללות פרטי הזמנה כמו כמות מוצרים, זמן אספקה, יש לעמוד בקפדנות בדרישות הוראת המשתמש המקורית (לא יכולה להיות סטייה בכמות המוצרים, לא מאוחר מזמן האספקה הצפוי), פעולת פשרה של המשתמש לא משפיעה על תוצאת השיפוט (למשל משתמש מציין "קצת פחות ממוצר מסוים זה בסדר", "אין התנגדות לתוכן ההזמנה" או "אספקה מאוחרת יותר זה בסדר" וכו'), מקרים כאלה עדיין ייחשבו כאי עמידה בדרישות
+  - לגבי הוראות משתמש הכוללות התאמת תוכן טקסטואלי של כתובת או הערות הזמנה, משתמשים בעקרון שוויון פונקציונלי: כל עוד התוכן בפועל יכול לממש את אותה פונקציה (כגון מיקום כללי של נקודת משלוח או העברת הדרישה העיקרית של הלקוח), גם אם הניסוח לא זהה לחלוטין או חסרים פרטים מסוימים, זה נחשב כעמידה בדרישות
+  - בצע פירוק מתאים של הוראת המשתמש המלאה, והעריך האם כל תת-דרישה סופקה:
+    - אם חלון נוכחי לא עוסק בתת-דרישה מסוימת, רשום שכרגע לא עוסקים בה;
+    - אם חלון נוכחי עוסק בתת-דרישה מסוימת אך לא ניתן להחליט לחלוטין, רשום את המידע המרכזי ב-memory להחלטה עתידית
+    - רשום ב-memory מידע מרכזי הקשור לתת-דרישה ואת סיבוב השיחה המתאים [x], כדי לאפשר לחלונות עתידיים להמשיך להעריך
+
+  # דרישות פורמט
+  - התגובה שלך צריכה להיות אובייקט JSON, הכולל את השדות הבאים:
+  - `justification`: הסבר קצר על תוצאת ההערכה
+  - `meetExpectation`: תוצאת ההערכה (true או false)
+
+  # מבנה קלט לדוגמה:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # מבנה תגובה לדוגמה:
+  ```json
+  {{
+      "memory": <סיכום מידע מחלונות קודמים>,
+      "justification": "<הסבר קצר על תוצאת ההערכה>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+turkish: |-
+  # Sistem Bilgisi
+  {env_info}
+
+  # Kullanıcı Tam Talimatı
+  {user_instruction}
+
+  # Arka Plan Açıklaması
+  - Bu, kullanıcı ile asistan arasında bir konuşma senaryosudur; asistan bilgi almak ve işlem yapmak için araçları çağırabilir, araç dönüş sonuçları tool ile başlayacaktır
+  - Kullanıcı talimatının tamamlanıp tamamlanmadığını değerlendirmeniz gerekiyor
+  - Konuşma turu sayısı fazla olduğu için kayan pencere değerlendirme yöntemi kullanıyoruz; yani her seferinde 10 konuşma turu görünür, her pencere arasında 2 konuşma turu örtüşmesi vardır
+  - {window_idx}. pencereyi değerlendiriyorsunuz (bu görevde toplam {total_windows} pencere var)
+  - <window_content> mevcut pencerenin konuşma içeriğini içerir
+  - <memory> önceki pencere bilgilerinin hafıza özetini içerir
+  - <current_evaluation> önceki pencerelerin değerlendirme sonuçlarını içerir
+
+  # Görev
+  - Mevcut pencerenin konuşma içeriğine dayanarak, kullanıcı tam talimatındaki gereksinimlerin tamamının karşılanıp karşılanmadığını belirleyin
+  - Durumu false'dan true'ya güncelleyebilirsiniz, ancak ve ancak asistan bu pencerede ve geçmiş pencerelerde kullanıcı tam talimatını tamamlamışsa
+  - True'u tekrar false'a güncelleyebilirsiniz, ancak ve ancak asistan bu pencerede önceki doğru sonucu geçersiz kıldıysa (ancak lütfen dikkat edin: Eğer kullanıcı gereksinimi kendi kendine değiştiyse, örneğin sipariş verdikten sonra aktif olarak iptal ettiyse, original sipariş gereksinimi değerlendirmesi geçersiz kılınmamalıdır)
+  - Gereksiz değişikliklerden kaçınmak için mevcut konuşma penceresinin ilerlemesini almak üzere "Kullanıcı Tam Talimatı"na başvurabilirsiniz
+  - Mevcut pencere içeriğini <window_content> ve hafıza özet içeriğini <memory> birleştirin ve dikkat edilmesi gerekenler bölümündeki kurallara göre memory içeriğini ayarladıktan sonra yeni <memory> olarak çıktı verin
+
+  # Dikkat Edilmesi Gerekenler
+  - Önemli: Tüm değerlendirmeler, asistanın yanıtı ve araç çağrı isteğinin kullanıcı talimatını tamamlayıp tamamlamadığına dayanır; kullanıcının konuşmada ifade ettiği içerik yalnızca asistan için ipucu ve rehber olarak kabul edilir, değerlendirme standartlarını doğrudan etkilemez, her şey kullanıcı talimatına göre belirlenir!
+  - Önemli: Sorgu tipi tool dönüş sonuçları yalnızca asistan için görünürdür ve asistanın kullanıcıya önerdiği içeriği temsil etmez, bu nedenle değerlendirme sonucunu doğrudan etkilemez, her şey asistanın bilgiyi aldıktan sonra kullanıcıya verdiği yanıtı esas almalıdır! Aynı zamanda dikkat edilmesi gereken, Asistan Tool dönüş sonuçlarını uyduramaz!
+  - Önemli: Satın alma tipi talimatlar için (sipariş detaylarını içeren, sipariş oluşturulması gereken), asistanın gerçekten sipariş verme işlemini tamamlayıp tamamlamadığı doğrulanmalıdır. Asistanın sipariş verme işlemini tamamladığını yanlışlıkla düşünmesi, ancak araç çağrısının başarısız olması mümkündür; veya kullanıcının "kendim sipariş verebilirim" gibi durumları belirtmesi, gereksinimlerin karşılanmadığı olarak kabul edilmelidir
+  - Sipariş detaylarını içeren kullanıcı talimatları için, ürün miktarı, teslimat zamanı gibi, original kullanıcı talimatı gereksinimleri kesinlikle karşılanmalıdır (ürün miktarı sapması olamaz, beklenen teslimat zamanından geç olamaz), kullanıcı uzlaşma davranışı değerlendirme sonucunu etkilemez (örneğin kullanıcının "bir ürün daha az olsa da olur", "sipariş içeriğinde itiraz yok" veya "geç teslimat da olur" gibi belirtmesi), bu tür durumlar hala gereksinimlerin karşılanmadığı olarak kabul edilmelidir
+  - Metin içeriği eşleşmesini içeren adres veya sipariş notu tipi kullanıcı talimatları için, işlevsel eşdeğerlik ilkesi kullanılır: Fiili içerik aynı işlevi gerçekleştirebildiği sürece (örneğin teslimat yerini kabaca konumlandırma veya müşterinin ana gereksinimlerini iletme), ifade tamamen tutarlı olmasa veya bazı detaylar eksik olsa bile, gereksinimlerin karşılandığı kabul edilir
+  - Kullanıcı tam talimatını uygun şekilde alt parçalara ayırın ve her alt gereksinimin karşılanıp karşılanmadığını değerlendirin:
+    - Eğer mevcut pencere belirli bir alt gereksinimi içermiyorsa, şu anda içermediğini kaydedin;
+    - Eğer mevcut pencere belirli bir alt gereksinimi içeriyor ancak tamamen karar verilemiyorsa, anahtar bilgileri daha sonraki değerlendirme için memory içinde kaydedin
+    - Daha sonraki pencerelerin değerlendirmeye devam edebilmesi için memory içinde alt gereksinimlerle ilgili anahtar bilgileri ve ilgili tur numaralarını [x] kaydedin
+
+  # Format Gereksinimleri
+  - Yanıtınız aşağıdaki alanları içeren bir JSON nesnesi olmalıdır:
+  - `justification`: Değerlendirme sonucunun kısa açıklaması
+  - `meetExpectation`: Değerlendirme sonucu (true veya false)
+
+  # Örnek Giriş Yapısı:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Örnek Yanıt Yapısı:
+  ```json
+  {{
+      "memory": <önceki pencere bilgilerinin özeti>,
+      "justification": "<değerlendirme sonucunun kısa açıklaması>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+vietnamese: |-
+  # Thông tin hệ thống
+  {env_info}
+
+  # Hướng dẫn đầy đủ của người dùng
+  {user_instruction}
+
+  # Mô tả bối cảnh
+  - Đây là kịch bản hội thoại giữa user và assistant, trong đó assistant có thể gọi công cụ để lấy thông tin và thực hiện thao tác, kết quả trả về của công cụ sẽ bắt đầu bằng tool
+  - Bạn cần đánh giá xem hướng dẫn của người dùng đã được hoàn thành hay chưa
+  - Vì số lượt hội thoại khá nhiều, chúng tôi áp dụng phương pháp đánh giá cửa sổ trượt, tức là mỗi lần hiển thị 10 lượt hội thoại, giữa mỗi cửa sổ có 2 lượt hội thoại trùng lặp
+  - Bạn đang đánh giá cửa sổ thứ {window_idx} (tổng cộng {total_windows} cửa sổ cho nhiệm vụ này)
+  - <window_content> chứa nội dung hội thoại của cửa sổ hiện tại
+  - <memory> chứa bản tóm tắt bộ nhớ về thông tin của các cửa sổ trước
+  - <current_evaluation> chứa kết quả đánh giá của các cửa sổ trước
+
+  # Nhiệm vụ
+  - Dựa trên nội dung hội thoại của cửa sổ hiện tại, xác định xem các yêu cầu trong hướng dẫn đầy đủ của người dùng đã được đáp ứng hay chưa
+  - Bạn có thể cập nhật trạng thái từ false sang true, khi và chỉ khi assistant đã hoàn thành hướng dẫn đầy đủ của người dùng trong cửa sổ này và các cửa sổ lịch sử
+  - Bạn cũng có thể cập nhật true thành false một lần nữa, khi và chỉ khi assistant bác bỏ kết luận đúng đắn trước đó trong cửa sổ này (nhưng lưu ý: nếu yêu cầu của người dùng tự thay đổi, ví dụ chủ động hủy đơn sau khi đặt, thì không nên bác bỏ đánh giá ban đầu về yêu cầu đặt hàng)
+  - Bạn có thể tham khảo "Hướng dẫn đầy đủ của người dùng" để nắm tiến độ của cửa sổ hội thoại hiện tại, tránh thực hiện các sửa đổi không cần thiết
+  - Hợp nhất nội dung cửa sổ hiện tại <window_content> và nội dung tóm tắt bộ nhớ <memory>, điều chỉnh nội dung memory theo các quy tắc trong phần lưu ý sau đó xuất ra dưới dạng <memory> mới
+
+  # Lưu ý
+  - Quan trọng: Tất cả các đánh giá dựa trên việc phản hồi của assistant và yêu cầu gọi công cụ có hoàn thành hướng dẫn của người dùng hay không, nội dung mà user thể hiện trong hội thoại chỉ được coi là gợi ý và hướng dẫn cho assistant, không trực tiếp ảnh hưởng đến tiêu chuẩn đánh giá, mọi thứ đều dựa trên hướng dẫn của người dùng!
+  - Quan trọng: Kết quả trả về của tool loại truy vấn chỉ hiển thị với assistant, không đại diện cho nội dung mà assistant khuyến nghị cho người dùng, do đó cũng không trực tiếp ảnh hưởng đến kết quả đánh giá, mọi thứ đều phải dựa trên phản hồi của assistant đối với người dùng sau khi lấy thông tin! Đồng thời cần lưu ý, Assistant cũng không được bịa đặt kết quả trả về của Tool!
+  - Quan trọng: Đối với các hướng dẫn loại mua hàng (liên quan đến chi tiết đơn hàng, bắt buộc phải tạo đơn hàng), phải xác nhận xem assistant có thực sự hoàn thành thao tác đặt hàng hay không. Có thể assistant hiểu nhầm là đã hoàn thành thao tác đặt hàng, nhưng thực tế gọi công cụ thất bại; hoặc user biểu thị có thể "tự đặt hàng" cùng các trường hợp khác, đều nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các hướng dẫn của người dùng liên quan đến chi tiết đơn hàng như số lượng hàng hóa, thời gian giao hàng, phải đáp ứng nghiêm ngặt các yêu cầu trong hướng dẫn gốc của người dùng (không được có sai lệch về số lượng hàng hóa, không được muộn hơn thời gian giao hàng mong đợi), hành vi thỏa hiệp của người dùng không ảnh hưởng đến kết quả đánh giá (ví dụ user biểu thị "ít hàng hóa nào đó cũng được", "không có ý kiến gì về nội dung đơn hàng" hoặc "giao muộn cũng được" etc.), những trường hợp này vẫn nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các hướng dẫn của người dùng loại địa chỉ hoặc ghi chú đơn hàng liên quan đến khớp nội dung văn bản, áp dụng nguyên tắc tương đương chức năng: miễn là nội dung thực tế có thể thực hiện chức năng tương tự (ví dụ xác định vị trí giao hàng tương đối hoặc truyền đạt nhu cầu chính của khách hàng), ngay cả khi cách diễn đạt không hoàn toàn giống nhau hoặc thiếu một số chi tiết, cũng được coi là đáp ứng yêu cầu
+  - Phân tích thích hợp hướng dẫn đầy đủ của người dùng và đánh giá xem từng yêu cầu phụ có được đáp ứng hay không:
+    - Nếu cửa sổ hiện tại không liên quan đến một yêu cầu phụ nào đó, thì ghi lại là hiện tại không liên quan;
+    - Nếu cửa sổ hiện tại liên quan đến một yêu cầu phụ nào đó nhưng không thể quyết định hoàn toàn, thì ghi lại thông tin quan trọng trong memory để chờ đánh giá tiếp theo
+    - Ghi lại trong memory thông tin quan trọng liên quan đến yêu cầu phụ và lượt tương ứng [x] của nó, để các cửa sổ tiếp theo tiếp tục đánh giá
+
+  # Yêu cầu định dạng
+  - Phản hồi của bạn phải là một đối tượng JSON, bao gồm các trường sau:
+  - `justification`: Giải thích ngắn gọn về kết quả đánh giá
+  - `meetExpectation`: Kết quả đánh giá (true hoặc false)
+
+  # Cấu trúc đầu vào mẫu:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Cấu trúc phản hồi mẫu:
+  ```json
+  {{
+      "memory": <Tóm tắt thông tin của các cửa sổ trước>,
+      "justification": "<Giải thích ngắn gọn về kết quả đánh giá>",
+      "meetExpectation": <true hoặc false>
+  }}
+  ```
+malay: |-
+  # Maklumat Sistem
+  {env_info}
+
+  # Arahan Lengkap Pengguna
+  {user_instruction}
+
+  # Penerangan Latar Belakang
+  - Ini adalah senario perbualan antara user dan assistant, di mana assistant boleh memanggil alat untuk mendapatkan maklumat dan menyelesaikan operasi, hasil yang dikembalikan oleh alat akan bermula dengan tool
+  - Anda perlu menilai sama ada arahan pengguna telah diselesaikan
+  - Oleh kerana terdapat banyak pusingan perbualan, kami menggunakan kaedah penilaian tingkap slaid, iaitu 10 pusingan perbualan boleh dilihat setiap kali, terdapat 2 pusingan perbualan pertindihan antara setiap tingkap
+  - Anda sedang menilai tingkap ke-{window_idx} (jumlah {total_windows} tingkap untuk tugas ini)
+  - <window_content> mengandungi kandungan perbualan untuk tingkap semasa
+  - <memory> mengandungi ringkasan memori bagi maklumat tingkap sebelumnya
+  - <current_evaluation> mengandungi hasil penilaian untuk tingkap sebelumnya
+
+  # Tugas
+  - Berdasarkan kandungan perbualan tingkap semasa, tentukan sama ada semua keperluan dalam arahan lengkap pengguna telah dipenuhi
+  - Anda boleh mengemas kini status daripada false kepada true, jika dan hanya jika assistant telah menyelesaikan arahan lengkap pengguna dalam tingkap ini dan tingkap sejarah
+  - Anda juga boleh mengemas kini true kepada false sekali lagi, jika dan hanya jika assistant menyanggah kesimpulan yang betul sebelumnya dalam tingkap ini (tetapi sila ambil perhatian: jika keperluan pengguna berubah sendiri, contohnya membatalkan secara aktif selepas membuat pesanan, penilaian asal untuk keperluan pesanan tidak boleh disanggah)
+  - Anda boleh merujuk "Arahan Lengkap Pengguna" untuk mendapatkan kemajuan tingkap perbualan semasa, untuk mengelakkan pengubahsuaian yang tidak perlu
+  - Gabungkan kandungan tingkap semasa <window_content> dan kandungan ringkasan memori <memory>, dan laraskan kandungan memory mengikut peraturan dalam nota penting sebelum output sebagai <memory> baru
+
+  # Nota Penting
+  - Penting: Semua penilaian berdasarkan sama ada respons assistant dan permintaan panggilan alat telah menyelesaikan arahan pengguna, kandungan yang dinyatakan oleh user dalam perbualan hanya dianggap sebagai petunjuk dan panduan untuk assistant, tidak akan mempengaruhi secara langsung standard penilaian, semuanya berdasarkan arahan pengguna!
+  - Penting: Hasil yang dikembalikan oleh tool jenis pertanyaan hanya boleh dilihat oleh assistant, tidak mewakili kandungan yang disyorkan oleh assistant kepada pengguna, oleh itu juga tidak mempengaruhi secara langsung hasil penilaian, semuanya harus berdasarkan respons assistant kepada pengguna selepas mendapatkan maklumat! Pada masa yang sama perlu diberi perhatian, Assistant juga tidak boleh merekan hasil yang dikembalikan oleh Tool!
+  - Penting: Untuk arahan jenis pembelian (melibatkan butiran pesanan, mesti menjana pesanan), mesti mengesahkan sama ada assistant benar-benar telah menyelesaikan operasi pesanan. Ada kemungkinan assistant silap menganggap telah menyelesaikan operasi pesanan, sebenarnya panggilan alat gagal; atau user menyatakan boleh "pesan sendiri" dan sebagainya, semua keadaan ini harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk arahan pengguna yang melibatkan butiran pesanan seperti kuantiti barang, masa penghantaran, mesti memenuhi secara ketat keperluan arahan pengguna asal (tidak boleh ada penyimpangan kuantiti barang, tidak boleh lewat daripada masa penghantaran yang dijangkakan), tindakan kompromi pengguna tidak mempengaruhi hasil penilaian (contohnya user menyatakan "kurangkan sedikit barang tertentu juga boleh", "tiada bantahan terhadap kandungan pesanan" atau "hantar lewat juga boleh" dan sebagainya), keadaan jenis ini masih harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk arahan pengguna jenis alamat atau nota pesanan yang melibatkan padanan kandungan teks, gunakan prinsip kesetaraan fungsi: selagi kandungan sebenar boleh melaksanakan fungsi yang sama (seperti menentukan lokasi penghantaran secara kasar atau menyampaikan keperluan utama pelanggan), walaupun ungkapan tidak sepenuhnya konsisten atau kekurangan beberapa butiran, juga dianggap memenuhi keperluan
+  - Pecahkan arahan lengkap pengguna dengan sewajarnya, dan nilai sama ada setiap keperluanย่อย telah dipenuhi:
+    - Jika tingkap semasa tidak melibatkan keperluanย่อย tertentu, maka rekod bahawa ia tidak terlibat pada masa ini;
+    - Jika tingkap semasa melibatkan keperluanย่อย tertentu tetapi tidak dapat ditentukan sepenuhnya, maka rekod maklumat penting dalam memory untuk penilaian seterusnya
+    - Rekod maklumat penting yang berkaitan dengan keperluanย่อย dan pusingan sepadannya [x] dalam memory, supaya tingkap seterusnya boleh terus menilai
+
+  # Keperluan Format
+  - Respons anda hendaklah menjadi objek JSON, mengandungi medan berikut:
+  - `justification`: Penjelasan ringkas mengenai hasil penilaian
+  - `meetExpectation`: Hasil penilaian (true atau false)
+
+  # Struktur Input Contoh:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Struktur Respons Contoh:
+  ```json
+  {{
+      "memory": <Ringkasan maklumat tingkap sebelumnya>,
+      "justification": "<Penjelasan ringkas mengenai hasil penilaian>",
+      "meetExpectation": <true atau false>
+  }}
+  ```
+belarusian: |-
+  # Сістэмная інфармацыя
+  {env_info}
+
+  # Поўная інструкцыя карыстальніка
+  {user_instruction}
+
+  # Апісанне кантэксту
+  - Гэта сцэнарый дыялогу паміж карыстальнікам і асістэнтам, дзе асістэнт можа выкарыстоўваць інструменты для атрымання інфармацыі і выканання дзеянняў; вынікі вяртання інструментаў будуць пачынацца з tool
+  - Вам неабходна ацаніць, ці была выканана інструкцыя карыстальніка
+  - Паколькі колькасць раўндаў дыялогу вялікая, мы выкарыстоўваем метад ацэнкі слізгальнага акна, гэта значыць, кожны раз бачна 10 раўндаў дыялогу, з перакрыццём у 2 раўнды дыялогу паміж кожным акном
+  - Вы ацэньваеце акно нумар {window_idx} (усяго ў гэтай задачы {total_windows} акон)
+  - <window_content> змяшчае змест дыялогу бягучага акна
+  - <memory> змяшчае рэзюме памяці па інфармацыі папярэдніх акон
+  - <current_evaluation> змяшчае вынікі ацэнкі папярэдніх акон
+
+  # Задача
+  - На аснове зместу дыялогу бягучага акна вызначыце, ці задаволены ўсе патрабаванні ў поўнай інструкцыі карыстальніка
+  - Вы можаце абнавіць статус з false на true, толькі калі асістэнт выканаў поўную інструкцыю карыстальніка ў гэтым акне і гістарычных акнах
+  - Вы таксама можаце абнавіць true назад на false, толькі калі асістэнт у гэтым акне аспрэчыў папярэдні правільны выснову (але звярніце ўвагу: калі патрабаванні карыстальніка змяніліся самі па сабе, напрыклад, актыўная адмена пасля размяшчэння замовы, то не варта аспрэчваць першапачатковую ацэнку патрабаванняў да замовы)
+  - Вы можаце спасылацца на "Поўную інструкцыю карыстальніка", каб атрымаць прагрэс бягучага акна дыялогу і пазбегнуць непатрэбных змен
+  - Аб'яднайце змест бягучага акна <window_content> і змест рэзюме памяці <memory>, і пасля карэктавання зместу memory згодна з правіламі ў заўвагах выведзіце яго як новы <memory>
+
+  # Заўвагі
+  - Важна: Усе ацэнкі заснаваны на тым, ці адказы асістэнта і запыты выкліку інструментаў выконваюць інструкцыю карыстальніка; змест, выказаны карыстальнікам у дыялогу, разглядаецца толькі як падказка і кіраўніцтва для асістэнта і не ўплывае непасрэдна на крытэрыі ацэнкі; усё вызначаецца інструкцыяй карыстальніка!
+  - Важна: Вынікі, вернутыя інструментамі тыпу запыту, бачныя толькі асістэнту і не ўяўляюць сабой кантэнт, рэкамендаваны асістэнтам карыстальніку, таму яны таксама не ўплываюць непасрэдна на вынікі ацэнкі; усё павінна быць заснавана на адказе асістэнта карыстальніку пасля атрымання інфармацыі! Адночасна звярніце ўвагу, што асістэнт таксама не павінен выдумляць вынікі вяртання інструмента!
+  - Важна: Для інструкцый тыпу пакупкі (якія ўключаюць дэталі замовы і патрабуюць стварэння замовы) неабходна пацвердзіць, ці сапраўды асістэнт выканаў аперацыю размяшчэння замовы. Магчыма, асістэнт памылкова лічыць, што аперацыя размяшчэння замовы завершана, але на самой справе выклік інструмента не ўдаўся; або карыстальнік кажа, што можа "зрабіць заказ самастойна" і г.д., усё гэта павінна разглядацца як невыкананне патрабаванняў
+  - Для інструкцый карыстальніка, якія ўключаюць дэталі замовы, такія як колькасць тавараў і час дастаўкі, неабходна строга выконваць першапачатковыя патрабаванні інструкцыі карыстальніка (не павінна быць адхіленняў у колькасці тавараў, нельга спазняцца адносна чакаемага часу дастаўкі); паводзіны карыстальніка па саступках не ўплываюць на вынікі ацэнкі (напрыклад, калі карыстальнік кажа "менш якога-небудзь тавару таксама падойдзе", "няма пярэчанняў да зместу замовы" або "пазнейшая дастаўка таксама падойдзе" і г.д.), такія выпадкі ўсё роўна павінны разглядацца як невыкананне патрабаванняў
+  - Для інструкцый карыстальніка, якія ўключаюць супадзенне тэкставага зместу, напрыклад, адрасы або заўвагі да замовы, прымяняецца прынцып функцыянальнай эквівалентнасці: калі фактычны змест можа рэалізаваць адну і тую ж функцыю (напрыклад, прыблізнае вызначэнне месца дастаўкі або перадача асноўных патрабаванняў кліента), нават калі фармулёўка не цалкам супадае або адсутнічаюць некаторыя дэталі, гэта таксама лічыцца выкананнем патрабаванняў
+  - Адпаведна разбіце поўную інструкцыю карыстальніка і ацаніце, ці задаволены кожны падзапыт:
+    - Калі бягучае акно не закранае пэўны падзапыт, запішыце, што ён зараз не закрануты;
+    - Калі бягучае акно закранае пэўны падзапыт, але немагчыма цалкам вырашыць, запішыце ключавую інфармацыю ў memory для наступнай ацэнкі
+    - Запішыце ў memory ключавую інфармацыю, звязаную з падзапытам, і адпаведны раўнд [x], каб наступныя акны маглі працягнуць ацэнку
+
+  # Патрабаванні да фармату
+  - Ваш адказ павінен быць аб'ектам JSON, які змяшчае наступныя палі:
+  - `justification`: Кароткае тлумачэнне выніку ацэнкі
+  - `meetExpectation`: Вынік ацэнкі (true або false)
+
+  # Прыклад структуры ўводу:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Прыклад структуры адказу:
+  ```json
+  {{
+      "memory": <Рэзюме інфармацыі па папярэдніх акнах>,
+      "justification": "<Кароткае тлумачэнне выніку ацэнкі>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+punjabi: |-
+  # ਸਿਸਟਮ ਜਾਣਕਾਰੀ
+  {env_info}
+
+  # ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼
+  {user_instruction}
+
+  # ਪਿਛੋਕੜ ਵੇਰਵਾ
+  - ਇਹ ਉਪਭੋਗਤਾ ਅਤੇ ਸਹਾਇਕ ਵਿਚਕਾਰ ਇੱਕ ਗੱਲਬਾਤ ਦਾ ਦ੍ਰਿਸ਼ ਹੈ, ਜਿੱਥੇ ਸਹਾਇਕ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਕਾਰਵਾਈਆਂ ਪੂਰੀਆਂ ਕਰਨ ਲਈ ਟੂਲਾਂ ਨੂੰ ਕਾਲ ਕਰ ਸਕਦਾ ਹੈ, ਟੂਲ ਦੇ ਨਤੀਜੇ tool ਨਾਲ ਸ਼ੁਰੂ ਹੋਣਗੇ
+  - ਤੁਹਾਨੂੰ ਇਹ ਮੁਲਾਂਕਣ ਕਰਨ ਦੀ ਲੋੜ ਹੈ ਕਿ ਕੀ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ ਪੂਰੇ ਕੀਤੇ ਗਏ ਹਨ
+  - ਕਿਉਂਕਿ ਗੱਲਬਾਤ ਦੇ ਗੇੜ ਜ਼ਿਆਦਾ ਹਨ, ਅਸੀਂ ਸਲਾਈਡਿੰਗ ਵਿੰਡੋ ਮੁਲਾਂਕਣ ਵਿਧੀ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹਾਂ, ਭਾਵ ਹਰ ਵਾਰ 10 ਗੱਲਬਾਤ ਗੇੜ ਦਿਖਾਈ ਦਿੰਦੇ ਹਨ, ਹਰੇਕ ਵਿੰਡੋ ਵਿਚਕਾਰ 2 ਗੱਲਬਾਤ ਗੇੜ ਓਵਰਲੈਪ ਹੁੰਦੇ ਹਨ
+  - ਤੁਸੀਂ {window_idx} ਵੀਂ ਵਿੰਡੋ ਦਾ ਮੁਲਾਂਕਣ ਕਰ ਰਹੇ ਹੋ (ਇਸ ਕਾਰਜ ਲਈ ਕੁੱਲ {total_windows} ਵਿੰਡੋਆਂ ਹਨ)
+  - <window_content> ਵਿੱਚ ਮੌਜੂਦਾ ਵਿੰਡੋ ਦੀ ਗੱਲਬਾਤ ਸਮੱਗਰੀ ਸ਼ਾਮਲ ਹੈ
+  - <memory> ਵਿੱਚ ਪਿਛਲੀਆਂ ਵਿੰਡੋਆਂ ਦੀ ਜਾਣਕਾਰੀ ਦਾ ਯਾਦ ਸਾਰ ਸ਼ਾਮਲ ਹੈ
+  - <current_evaluation> ਵਿੱਚ ਪਿਛਲੀਆਂ ਵਿੰਡੋਆਂ ਦੇ ਮੁਲਾਂਕਣ ਨਤੀਜੇ ਸ਼ਾਮਲ ਹਨ
+
+  # ਕਾਰਜ
+  - ਮੌਜੂਦਾ ਵਿੰਡੋ ਦੀ ਗੱਲਬਾਤ ਸਮੱਗਰੀ ਦੇ ਆਧਾਰ 'ਤੇ, ਨਿਰਣਾ ਕਰੋ ਕਿ ਕੀ ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼ਾਂ ਵਿੱਚ ਲੋੜਾਂ ਪੂਰੀਆਂ ਕੀਤੀਆਂ ਗਈਆਂ ਹਨ
+  - ਤੁਸੀਂ ਸਥਿਤੀ ਨੂੰ false ਤੋਂ true ਵਿੱਚ ਅਪਡੇਟ ਕਰ ਸਕਦੇ ਹੋ, ਜੇਕਰ ਅਤੇ ਕੇਵਲ ਜੇਕਰ ਸਹਾਇਕ ਨੇ ਇਸ ਵਿੰਡੋ ਅਤੇ ਇਤਿਹਾਸਕ ਵਿੰਡੋਆਂ ਵਿੱਚ ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼ ਪੂਰੇ ਕੀਤੇ ਹਨ
+  - ਤੁਸੀਂ true ਨੂੰ ਦੁਬਾਰਾ false ਵਿੱਚ ਅਪਡੇਟ ਵੀ ਕਰ ਸਕਦੇ ਹੋ, ਜੇਕਰ ਅਤੇ ਕੇਵਲ ਜੇਕਰ ਸਹਾਇਕ ਨੇ ਇਸ ਵਿੰਡੋ ਵਿੱਚ ਪਿਛਲੇ ਸਹੀ ਸਿੱਟੇ ਨੂੰ ਰੱਦ ਕਰ ਦਿੱਤਾ ਹੈ (ਪਰ ਧਿਆਨ ਦਿਓ: ਜੇਕਰ ਉਪਭੋਗਤਾ ਦੀ ਲੋੜ ਆਪਣੇ ਆਪ ਬਦਲ ਗਈ ਹੈ, ਉਦਾਹਰਣ ਵਜੋਂ ਆਰਡਰ ਕਰਨ ਤੋਂ ਬਾਅਦ ਸਵੈ-ਇੱਛਾ ਨਾਲ ਰੱਦ ਕਰਨਾ, ਤਾਂ ਆਰਡਰ ਲੋੜਾਂ ਦੇ ਮੂਲ ਮੁਲਾਂਕਣ ਨੂੰ ਰੱਦ ਨਹੀਂ ਕਰਨਾ ਚਾਹੀਦਾ)
+  - ਤੁਸੀਂ ਮੌਜੂਦਾ ਗੱਲਬਾਤ ਵਿੰਡੋ ਦੀ ਪ੍ਰਗਤੀ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ "ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼" ਦਾ ਹਵਾਲਾ ਲੈ ਸਕਦੇ ਹੋ, ਤਾਂ ਜੋ ਗੈਰ-ਜ਼ਰੂਰੀ ਸੋਧਾਂ ਤੋਂ ਬਚਿਆ ਜਾ ਸਕੇ
+  - ਮੌਜੂਦਾ ਵਿੰਡੋ ਸਮੱਗਰੀ <window_content> ਅਤੇ ਯਾਦ ਸਾਰ ਸਮੱਗਰੀ <memory> ਨੂੰ ਮਿਲਾਓ, ਅਤੇ ਨੋਟਾਂ ਵਿੱਚ ਨਿਯਮਾਂ ਅਨੁਸਾਰ memory ਸਮੱਗਰੀ ਨੂੰ ਅਨੁਕੂਲਿਤ ਕਰਨ ਤੋਂ ਬਾਅਦ ਨਵੇਂ <memory> ਵਜੋਂ ਆਉਟਪੁਟ ਕਰੋ
+
+  # ਧਿਆਨ ਦੇਣ ਯੋਗ ਗੱਲਾਂ
+  - ਮਹੱਤਵਪੂਰਨ: ਸਾਰੇ ਮੁਲਾਂਕਣ ਇਸ ਗੱਲ 'ਤੇ ਨਿਰਭਰ ਕਰਦੇ ਹਨ ਕਿ ਕੀ ਸਹਾਇਕ ਦੇ ਜਵਾਬ ਅਤੇ ਟੂਲ ਕਾਲ ਬੇਨਤੀਆਂ ਨੇ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ ਪੂਰੇ ਕੀਤੇ ਹਨ, ਗੱਲਬਾਤ ਵਿੱਚ ਉਪਭੋਗਤਾ ਦੁਆਰਾ ਪ੍ਰਗਟ ਕੀਤੀ ਸਮੱਗਰੀ ਨੂੰ ਕੇਵਲ ਸਹਾਇਕ ਲਈ ਸੰਕੇਤ ਅਤੇ ਮਾਰਗਦਰਸ਼ਨ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਇਹ ਮੁਲਾਂਕਣ ਮਾਪਦੰਡਾਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦਾ, ਸਭ ਕੁਝ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ!
+  - ਮਹੱਤਵਪੂਰਨ: ਖੋਜ ਵਰਗੇ tool ਦੇ ਨਤੀਜੇ ਕੇਵਲ ਸਹਾਇਕ ਲਈ ਦਿਖਾਈ ਦਿੰਦੇ ਹਨ, ਇਹ ਉਪਭੋਗਤਾ ਲਈ ਸਹਾਇਕ ਦੀਆਂ ਸਿਫਾਰਸ਼ਾਂ ਦੀ ਨੁਮਾਇੰਦਗੀ ਨਹੀਂ ਕਰਦੇ, ਇਸ ਲਈ ਇਹ ਮੁਲਾਂਕਣ ਨਤੀਜਿਆਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦੇ, ਸਭ ਕੁਝ ਸਹਾਇਕ ਦੁਆਰਾ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਤੋਂ ਬਾਅਦ ਉਪਭੋਗਤਾ ਨੂੰ ਦਿੱਤੇ ਜਵਾਬ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ! ਇਸ ਦੇ ਨਾਲ ਹੀ ਧਿਆਨ ਦੇਣਾ ਚਾਹੀਦਾ ਹੈ ਕਿ ਸਹਾਇਕ Tool ਦੇ ਨਤੀਜੇ ਗੜ੍ਹਤ ਨਹੀਂ ਕਰ ਸਕਦਾ!
+  - ਮਹੱਤਵਪੂਰਨ: ਖਰੀਦਦਾਰੀ ਵਰਗੇ ਨਿਰਦੇਸ਼ਾਂ ਲਈ (ਜੋ ਆਰਡਰ ਵੇਰਵਿਆਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹਨ, ਆਰਡਰ ਜਨਰੇਟ ਕਰਨਾ ਜ਼ਰੂਰੀ ਹੈ), ਇਹ ਪੁਸ਼ਟੀ ਕਰਨੀ ਜ਼ਰੂਰੀ ਹੈ ਕਿ ਕੀ ਸਹਾਇਕ ਨੇ ਵਾਸਤਵ ਵਿੱਚ ਆਰਡਰ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਪੂਰੀ ਕੀਤੀ ਹੈ। ਇਹ ਸੰਭਵ ਹੈ ਕਿ ਸਹਾਇਕ ਨੇ ਗਲਤੀ ਨਾਲ ਸੋਚਿਆ ਕਿ ਆਰਡਰ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਪੂਰੀ ਹੋ ਗਈ ਹੈ, ਅਸਲ ਵਿੱਚ ਟੂਲ ਕਾਲ ਅਸਫਲ ਰਹੀ; ਜਾਂ ਉਪਭੋਗਤਾ ਨੇ ਇਹ ਦਰਸਾਇਆ ਕਿ ਉਹ "ਖੁਦ ਆਰਡਰ ਕਰ ਸਕਦਾ ਹੈ" ਆਦਿ, ਇਹਨ ਸਾਰੀਆਂ ਸਥਿਤੀਆਂ ਨੂੰ ਲੋੜਾਂ ਪੂਰੀਆਂ ਨਾ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ ਲਈ ਜੋ ਆਰਡਰ ਵੇਰਵਿਆਂ ਜਿਵੇਂ ਕਿ ਉਤਪਾਦ ਦੀ ਮਾਤਰਾ, ਡਿਲੀਵਰੀ ਸਮੇਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹਨ, ਮੂਲ ਉਪਭੋਗਤਾ ਨਿਰਦੇਸ਼ ਲੋੜਾਂ ਨੂੰ ਸਖਤੀ ਨਾਲ ਪੂਰਾ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ (ਉਤਪਾਦ ਮਾਤਰਾ ਵਿੱਚ ਕੋਈ ਅੰਤਰ ਨਹੀਂ ਹੋ ਸਕਦਾ, ਉਮੀਦ ਕੀਤੇ ਡਿਲੀਵਰੀ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਨਹੀਂ ਹੋ ਸਕਦਾ), ਉਪਭੋਗਤਾ ਦੀ ਸਮਝੌਤਾ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਮੁਲਾਂਕਣ ਨਤੀਜੇ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦੀ (ਉਦਾਹਰਣ ਵਜੋਂ ਉਪਭੋਗਤਾ ਨੇ ਕਿਹਾ "ਕੋਈ ਉਤਪਾਦ ਥੋੜ੍ਹਾ ਘੱਟ ਵੀ ਚਲੇਗਾ", "ਆਰਡਰ ਸਮੱਗਰੀ 'ਤੇ ਕੋਈ ਇਤਰਾਜ਼ ਨਹੀਂ" ਜਾਂ "ਥੋੜ੍ਹੀ ਦੇਰ ਬਾਅਦ ਡਿਲੀਵਰੀ ਚਲੇਗੀ" ਆਦਿ), ਅਜਿਹੀਆਂ ਸਥਿਤੀਆਂ ਨੂੰ ਅਜੇ ਵੀ ਲੋੜਾਂ ਪੂਰੀਆਂ ਨਾ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ ਲਈ ਜੋ ਟੈਕਸਟ ਸਮੱਗਰੀ ਮੈਚਿੰਗ ਪਤੇ ਜਾਂ ਆਰਡਰ ਨੋਟਸ ਵਰਗੇ ਹਨ, ਕਾਰਜਾਤਮਕ ਸਮਾਨਤਾ ਸਿਧਾਂਤ ਅਪਣਾਓ: ਜੇਕਰ ਅਸਲ ਸਮੱਗਰੀ ਇੱਕੋ ਜਿਹਾ ਕਾਰਜ ਪ੍ਰਾਪਤ ਕਰ ਸਕਦੀ ਹੈ (ਜਿਵੇਂ ਕਿ ਡਿਲੀਵਰੀ ਸਥਾਨ ਦਾ ਮੋਟਾ-ਮੋਟੀ ਪਤਾ ਲਗਾਉਣਾ ਜਾਂ ਗਾਹਕ ਦੀਆਂ ਮੁੱਖ ਲੋੜਾਂ ਨੂੰ ਸੰਚਾਰਿਤ ਕਰਨਾ), ਭਾਵੇਂ ਬਿਆਨ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ ਜਾਂ ਕੁਝ ਵੇਰਵੇ ਗੁੰਮ ਹਨ, ਇਸਨੂੰ ਲੋੜਾਂ ਪੂਰੀਆਂ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ
+  - ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼ਾਂ ਨੂੰ ਢੁਕਵੇਂ ਰੂਪ ਵਿੱਚ ਵੰਡੋ, ਅਤੇ ਮੁਲਾਂਕਣ ਕਰੋ ਕਿ ਕੀ ਹਰੇਕ ਉਪ-ਲੋੜ ਪੂਰੀ ਕੀਤੀ ਗਈ ਹੈ:
+    - ਜੇਕਰ ਮੌਜੂਦਾ ਵਿੰਡੋ ਵਿੱਚ ਕਿਸੇ ਉਪ-ਲੋੜ ਸ਼ਾਮਲ ਨਹੀਂ ਹੈ, ਤਾਂ ਰਿਕਾਰਡ ਕਰੋ ਕਿ ਇਸ ਵਾਰ ਸ਼ਾਮਲ ਨਹੀਂ ਹੈ;
+    - ਜੇਕਰ ਮੌਜੂਦਾ ਵਿੰਡੋ ਵਿੱਚ ਕਿਸੇ ਉਪ-ਲੋੜ ਸ਼ਾਮਲ ਹੈ ਪਰ ਪੂਰੀ ਤਰ੍ਹਾਂ ਨਿਰਣਾ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ, ਤਾਂ ਮੁੱਖ ਜਾਣਕਾਰੀ ਨੂੰ ਬਾਅਦ ਦੇ ਫੈਸਲੇ ਲਈ memory ਵਿੱਚ ਰਿਕਾਰਡ ਕਰੋ
+    - memory ਵਿੱਚ ਉਪ-ਲੋੜਾਂ ਨਾਲ ਸਬੰਧਤ ਮੁੱਖ ਜਾਣਕਾਰੀ ਅਤੇ ਉਸਦੇ ਅਨੁਸਾਰੀ ਗੇੜ [x] ਨੂੰ ਰਿਕਾਰਡ ਕਰੋ, ਤਾਂ ਜੋ ਬਾਅਦ ਦੀਆਂ ਵਿੰਡੋਆਂ ਮੁਲਾਂਕਣ ਜਾਰੀ ਰੱਖ ਸਕਣ
+
+  # ਫਾਰਮੈਟ ਲੋੜਾਂ
+  - ਤੁਹਾਡਾ ਜਵਾਬ ਇੱਕ JSON ਆਬਜੈਕਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ ਹੇਠ ਲਿਖੇ ਫੀਲਡ ਸ਼ਾਮਲ ਹਨ:
+  - `justification`: ਮੁਲਾਂਕਣ ਨਤੀਜੇ ਦੀ ਸੰਖੇਪ ਵਿਆਖਿਆ
+  - `meetExpectation`: ਮੁਲਾਂਕਣ ਨਤੀਜਾ (true ਜਾਂ false)
+
+  # ਉਦਾਹਰਣ ਇਨਪੁਟ ਬਣਤਰ:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # ਉਦਾਹਰਣ ਜਵਾਬ ਬਣਤਰ:
+  ```json
+  {{
+      "memory": <ਪਿਛਲੀਆਂ ਵਿੰਡੋਆਂ ਦੀ ਜਾਣਕਾਰੀ ਦਾ ਸਾਰ>,
+      "justification": "<ਮੁਲਾਂਕਣ ਨਤੀਜੇ ਦੀ ਸੰਖੇਪ ਵਿਆਖਿਆ>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+kazakh: |-
+  # Жүйе ақпараты
+  {env_info}
+
+  # Пайдаланушының толық нұсқаулығы
+  {user_instruction}
+
+  # Фондық ақпарат
+  - Бұл пайдаланушы мен ассистент арасындағы диалог сценарийі, мұнда ассистент ақпарат алу және операцияларды орындау үшін құралдарды шақыра алады, құралдың қайтару нәтижесі tool сөзімен басталады
+  - Сіз пайдаланушы нұсқаулығының орындалғанын бағалауыңыз керек
+  - Диалог раундтары көп болғандықтан, біз жылжымалы терезе бағалау әдісін қолданамыз, яғни әр жолы 10 диалог раунды көрінеді, әр терезе арасында 2 диалог раунды сәйкес келеді
+  - Сіз {window_idx} -шы терезені бағалап жатырсыз (бұл тапсырмада барлығы {total_windows} терезе)
+  - <window_content> ағымдағы терезедегі диалог мазмұнын қамтиды
+  - <memory> алдыңғы терезе ақпаратының жады қорытындысын қамтиды
+  - <current_evaluation> алдыңғы терезелердің бағалау нәтижелерін қамтиды
+
+  # Тапсырма
+  - Ағымдағы терезедегі диалог мазмұнына сүйене отырып, пайдаланушының толық нұсқаулығындағы сұраныстардың барлығы орындалғанын анықтаңыз
+  - Сіз күйді false-тан true-ға өзгерте аласыз, тек қана ассистент осы терезеде және тарихи терезелерде пайдаланушының толық нұсқаулығын орындаған жағдайда
+  - Сіз true-ды қайтадан false-қа өзгерте аласыз, тек қана ассистент осы терезеде алдыңғы дұрыс қорытындыны жоққа шығарған жағдайда (бірақ назар аударыңыз: егер пайдаланушы сұранысы өзгерсе, мысалы, тапсырыс бергеннен кейін өз бетінше бас тартса, онда тапсырыс сұранысының алғашқы бағалауын жоққа шығармау керек)
+  - Қажетсіз өзгерістерді болдырмау үшін, ағымдағы диалог терезесінің прогресін алу үшін "Пайдаланушының толық нұсқаулығына" сілтеме жасай аласыз
+  - Ағымдағы терезе мазмұнын <window_content> және жады қорытындысы мазмұнын <memory> біріктіріп, ескертулердегі ережелерге сәйкес memory мазмұнын түзеткеннен кейін жаңа <memory> ретінде шығарыңыз
+
+  # Ескертулер
+  - Маңызды: Барлық бағалаулар ассистенттің жауаптары мен құралды шақыру сұраныстарының пайдаланушы нұсқаулығын орындағанына негізделеді, пайдаланушының диалогта айтқан мазмұны тек ассистентке кеңес және бағыт беру ретінде қарастырылады, бағалау стандарттарына тікелей әсер етпейді, бәрі пайдаланушы нұсқаулығына негізделеді!
+  - Маңызды: Сұрау түріндегі tool қайтарған нәтижелер тек ассистентке көрінеді және бұл ассистенттің пайдаланушыға ұсынған мазмұнын білдірмейді, сондықтан ол да бағалау нәтижесіне тікелей әсер етпейді, бәрі ассистенттің ақпарат алғаннан кейін пайдаланушыға берген жауабына негізделуі керек! Сонымен қатар, Ассистент tool-дың қайтару нәтижелерін ойлап табуға болмайтынын ескеру қажет!
+  - Маңызды: Сатып алу түріндегі нұсқаулар үшін (тапсырыс детальдарын қамтитын, тапсырыс жасау міндетті түрде қажет), ассистенттің тапсырыс беруді шынымен орындағанын растау қажет. Ассистент тапсырыс беруді орындадым деп қате түсінуі мүмкін, шын мәнінде құрал шақыру сәтсіз аяқталды; немесе пайдаланушы "өзім тапсырыс бере аламын" деп айтуы мүмкін, бұл жағдайлардың барлығы талап орындалмаған деп саналуы керек
+  - Тауар саны, жеткізу уақыты сияқты тапсырыс детальдарын қамтитын пайдаланушы нұсқаулары үшін, түпнұсқа пайдаланушы нұсқаулығының талаптары қатаң орындалуы керек (тауар санында ауытқу болмауы керек, күтілген жеткізу уақытынан кешіктірмеу керек), пайдаланушының келісімге келу әрекеті бағалау нәтижесіне әсер етпейді (мысалы, пайдаланушы "бір тауар аз болса да болады", "тапсырыс мазмұнына қарсы емеспін" немесе "кешірек жеткізілсе де болады" деп айтса), мұндай жағдайлар әлі де талап орындалмаған деп саналуы керек
+  - Мәтін мазмұны сәйкестігін қамтитын мекенжай немесе тапсырыс ескертпелері түріндегі пайдаланушы нұсқаулары үшін, функционалды балама принципі қолданылады: егер нақты мазмұн бірдей функцияны орындай алса (мысалы, жеткізу орнын шамамен анықтау немесе тұтынушының негізгі сұранысын жеткізу), тіпті тұжырымдама толық сәйкес келмесе немесе кейбір детальдар жоқ болса да, талап орындалған деп саналады
+  - Пайдаланушының толық нұсқаулығын сәйкесінше бөліктерге бөліп, әр ішкі сұраныстың орындалғанын бағалаңыз:
+    - Егер ағымдағы терезеде белгілі бір ішкі сұраныс қамтылмаса, онда қазір қамтылмағанын жазыңыз;
+    - Егер ағымдағы терезеде белгілі бір ішкі сұраныс қамтылса, бірақ толық шешім қабылдау мүмкін болмаса, онда негізгі ақпаратты кейінгі шешім үшін memory-ге жазыңыз
+    - Кейінгі терезелерде жалғастырып бағалау үшін, memory-ге ішкі сұранысқа қатысты негізгі ақпаратты және оған сәйкес раундты [x] жазыңыз
+
+  # Пішим талаптары
+  - Сіздің жауабыңыз төмендегі өрістерді қамтитын JSON объектісі болуы керек:
+  - `justification`: бағалау нәтижесінің қысқаша түсіндірмесі
+  - `meetExpectation`: бағалау нәтижесі (true немесе false)
+
+  # Үлгі кіріс құрылымы:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # Үлгі жауап құрылымы:
+  ```json
+  {{
+      "memory": <алдыңғы терезе ақпаратының қорытындысы>,
+      "justification": "<бағалау нәтижесінің қысқаша түсіндірмесі>",
+      "meetExpectation": <true немесе false>
+  }}
+  ```
+khmer: |-
+  # ព័ត៌មានប្រព័ន្ធ
+  {env_info}
+
+  # ការណែនាំពេញលេញពីអ្នកប្រើប្រាស់
+  {user_instruction}
+
+  # ការពន្យល់ផ្ទៃខាងក្រោយ
+  - នេះគឺជាស្ថានភាពសន្ទនារវាង user និង assistant ដែលក្នុងនោះ assistant អាចហៅឧបករណ៍ដើម្បីទទួលបានព័ត៌មាន និងអនុវត្តប្រតិបត្តិការ លទ្ធផលដែលត្រឡប់មកវិញពីឧបករណ៍នឹងចាប់ផ្តើមដោយ tool
+  - អ្នកត្រូវវាយតម្លៃថាតើការណែនាំរបស់អ្នកប្រើប្រាស់ត្រូវបានបំពេញឬអត់
+  - ដោយសារតែមានវគ្គសន្ទនាច្រើន យើងប្រើប្រាស់វិធីសាស្ត្រវាយតម្លៃបង្អួចរអិល គឺនៅពេលណាមួយអាចមើលឃើញ ១០ វគ្គសន្ទនា រវាងបង្អួចនីមួយៗមាន ២ វគ្គសន្ទនាត្រួតគ្នា
+  - អ្នកកំពុងវាយតម្លៃបង្អួចទី {window_idx} (ភារកិច្ចនេះមានសរុប {total_windows} បង្អួច)
+  - <window_content> មានមាតិកាសន្ទនានៃបង្អួចបច្ចុប្បន្ន
+  - <memory> មានសេចក្តីសង្ខេបការចងចាំនៃព័ត៌មានបង្អួចមុនៗ
+  - <current_evaluation> មានលទ្ធផលការវាយតម្លៃនៃបង្អួចមុនៗ
+
+  # ភារកិច្ច
+  - ផ្អែកលើមាតិកាសន្ទនានៃបង្អួចបច្ចុប្បន្ន ចូរវិនិច្ឆ័យថាតើតម្រូវការនៅក្នុងការណែនាំពេញលេញរបស់អ្នកប្រើប្រាស់ត្រូវបានបំពេញទាំងអស់ឬអត់
+  - អ្នកអាចផ្លាស់ប្តូរស្ថានភាពពី false ទៅ true លុះត្រាតែ assistant បានបំពេញការណែនាំពេញលេញរបស់អ្នកប្រើប្រាស់នៅក្នុងបង្អួចនេះ និងបង្អួចប្រវត្តិ
+  - អ្នកក៏អាចផ្លាស់ប្តូរ true ទៅ false ម្តងទៀត លុះត្រាតែ assistant បានបដិសេធការសន្និដ្ឋានត្រឹមត្រូវមុនៗនៅក្នុងបង្អួចនេះ (ប៉ុន្តែសូមកត់សម្គាល់៖ ប្រសិនបើតម្រូវការរបស់អ្នកប្រើប្រាស់ផ្ទាល់មានការផ្លាស់ប្តូរ ឧទាហរណ៍ដាក់បញ្ជាទិញរួចហើយបោះបង់ចោលដោយស្ម័គ្រចិត្ត នោះមិនគួរលុបចោលការវាយតម្លៃដើមចំពោះតម្រូវការដាក់បញ្ជាទិញនោះទេ)
+  - អ្នកអាចយោងតាម“ការណែនាំពេញលេញពីអ្នកប្រើប្រាស់”ដើម្បីទទួលបានវឌ្ឍនភាពនៃបង្អួចសន្ទនាបច្ចុប្បន្ន ជៀសវាងការកែប្រែដែលមិនចាំបាច់
+  - បញ្ចូលមាតិកាបង្អួចបច្ចុប្បន្ន <window_content> និងមាតិកាសង្ខេបការចងចាំ <memory> ហើយបន្ទាប់ពីកែតម្រូវមាតិកា memory តាមវិធានក្នុងចំណុចគួរកត់សម្គាល់ ចូរចេញជា <memory> ថ្មី
+
+  # ចំណុចគួរកត់សម្គាល់
+  - សំខាន់៖ ការវាយតម្លៃទាំងអស់ផ្អែកលើការឆ្លើយតបរបស់ assistant និងការស្នើសុំហៅឧបករណ៍ថាតើបានបំពេញការណែនាំរបស់អ្នកប្រើប្រាស់ឬអត់ មាតិកាដែល user បង្ហាញនៅក្នុងសន្ទនាគ្រាន់តែចាត់ទុកជាការរំលឹក និងណែនាំចំពោះ assistant នឹងមិនប៉ះពាល់ដោយផ្ទាល់ដល់ស្តង់ដារការវាយតម្លៃនោះទេ អ្វីៗត្រូវផ្អែកលើការណែនាំរបស់អ្នកប្រើប្រាស់!
+  - សំខាន់៖ លទ្ធផលដែលត្រឡប់មកវិញពី tool ប្រភេទស្វែងរក គឺមើលឃើញតែចំពោះ assistant ប៉ុណ្ណោះ មិនមែនតំណាងឱ្យមាតិកាដែល assistant ណែនាំដល់អ្នកប្រើប្រាស់នោះទេ ដូច្នេះវាក៏មិនប៉ះពាល់ដោយផ្ទាល់ដល់លទ្ធផលការវាយតម្លៃដែរ អ្វីៗត្រូវផ្អែកលើការឆ្លើយតបរបស់ assistant ទៅកាន់អ្នកប្រើប្រាស់បន្ទាប់ពីទទួលបានព័ត៌មាន! ក្នុងពេលតែមួយត្រូវកត់សម្គាល់ថា Assistant ក៏មិនអាចបង្កើតលទ្ធផលត្រឡប់មកវិញរបស់ Tool បានដែរ!
+  - សំខាន់៖ ចំពោះការណែនាំប្រភេទទិញ (ពាក់ព័ន្ធនឹងលម្អិតបញ្ជាទិញ ត្រូវតែបង្កើតបញ្ជាទិញ) ត្រូវតែបញ្ជាក់ថាតើ assistant បានបំពេញប្រតិបត្តិការដាក់បញ្ជាទិញជាក់ស្តែងឬអត់។ វាអាចកើតឡើងដែល assistant យល់ច្រឡំថាបានបំពេញប្រតិបត្តិការដាក់បញ្ជាទិញហើយ តែការពិតការហៅឧបករណ៍បានបរាជ័យ; ឬ user បង្ហាញថាអាច“ដាក់បញ្ជាទិញដោយខ្លួនឯងបាន”ជាដើម គួរតែចាត់ទុកថាមិនបានបំពេញតម្រូវការ
+  - ចំពោះការណែនាំរបស់អ្នកប្រើប្រាស់ដែលពាក់ព័ន្ធនឹងលម្អិតបញ្ជាទិញដូចជា ចំនួនទំនិញ ពេលវេលាដឹកជញ្ជូន ត្រូវតែបំពេញតាមតម្រូវការការណែនាំរបស់អ្នកប្រើប្រាស់ដើមឱ្យបានតឹងរ៉ឹង (មិនអាចមានគម្លាតចំនួនទំនិញ មិនអាចយឺតជាងពេលវេលាដឹកជញ្ជូនដែលរំពឹងទុក) អាកប្បកិរិយាសម្របសម្រួលរបស់អ្នកប្រើប្រាស់មិនប៉ះពាល់ដល់លទ្ធផលការវិនិច្ឆ័យទេ (ឧទាហរណ៍ user បង្ហាញថា“ទំនិញណាមួយសល់តិចក៏បាន”、“មិនមានចំណុចខ្វះខាតចំពោះមាតិកាបញ្ជាទិញ”ឬ“ដឹកជញ្ជូនយឺតបន្តិចក៏បាន”ជាដើម) ស្ថានភាពបែបនេះនៅតែគួរតែចាត់ទុកថាមិនបានបំពេញតម្រូវការ
+  - ចំពោះការណែនាំរបស់អ្នកប្រើប្រាស់ប្រភេទអាសយដ្ឋាន ឬកំណត់ត្រាបញ្ជាទិញដែលពាក់ព័ន្ធនឹងការផ្គូផ្គងមាតិកាអត្ថបទ អនុវត្តតាមគោលការណ៍សមមូលមុខងារ៖ ត្រឹមតែមាតិកាជាក់ស្តែងអាចសម្រេចបាននូវមុខងារដូចគ្នា (ដូចជាការកំណត់ទីតាំងដឹកជញ្ជូនប្រហាក់ប្រហែល ឬបញ្ជូនតម្រូវការចម្បងរបស់អតិថិជន) ទោះបីជាពាក្យសម្តីមិនដូចគ្នាពេញលេញ ឬខ្វះលម្អិតខ្លះក៏ដោយ ក៏ចាត់ទុកថាបានបំពេញតម្រូវការដែរ
+  - បំបែកការណែនាំពេញលេញរបស់អ្នកប្រើប្រាស់ឱ្យបានសមស្រប ហើយវាយតម្លៃថាតើតម្រូវការរងនីមួយៗត្រូវបានបំពេញឬអត់៖
+    - ប្រសិនបើបង្អួចបច្ចុប្បន្នមិនពាក់ព័ន្ធនឹងតម្រូវការរងណាមួយ នោះត្រូវកត់ត្រាថាបច្ចុប្បន្នមិនបានពាក់ព័ន្ធ;
+    - ប្រសិនបើបង្អួចបច្ចុប្បន្នពាក់ព័ន្ធនឹងតម្រូវការរងណាមួយប៉ុន្តែមិនអាចសម្រេចចិត្តបានពេញលេញ នោះត្រូវកត់ត្រាព័ត៌មានសំខាន់ក្នុង memory ទុកសម្រាប់ការវិនិច្ឆ័យនៅពេលក្រោយ
+    - កត់ត្រាព័ត៌មានសំខាន់ដែលទាក់ទងនឹងតម្រូវការរង និងវគ្គដែលត្រូវគ្នា [x] ក្នុង memory ដើម្បីងាយស្រួលដល់ការវិនិច្ឆ័យបន្តនៅបង្អួចបន្ទាប់
+
+  # តម្រូវការទម្រង់
+  - ការឆ្លើយតបរបស់អ្នកគួរតែជាវត្ថុ JSON មួយ មានវាលដូចខាងក្រោម៖
+  - `justification`៖ ការពន្យល់សង្ខេបអំពីលទ្ធផលការវាយតម្លៃ
+  - `meetExpectation`៖ លទ្ធផលការវាយតម្លៃ (true ឬ false)
+
+  # រចនាសម្ព័ន្ធបញ្ចូលឧទាហរណ៍៖
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # រចនាសម្ព័ន្ធឆ្លើយតបឧទាហរណ៍៖
+  ```json
+  {{
+      "memory": <ចំពោះការសង្ខេបព័ត៌មានបង្អួចមុនៗ>,
+      "justification": "<ការពន្យល់សង្ខេបអំពីលទ្ធផលការវាយតម្លៃ>",
+      "meetExpectation": <true ឬ false>
+  }}
+  ```
+burmese: |-
+  # စနစ်ဆိုင်ရာ အချက်အလက်
+  {env_info}
+
+  # အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်
+  {user_instruction}
+
+  # နောက်ခံရှင်းလင်းချက်
+  - ၎င်းသည် အသုံးပြုသူနှင့် assistant အကြား ဆွေးနွေးမှုပုံစံဖြစ်ပြီး assistant သည် အချက်အလက်ရယူရန်နှင့် လုပ်ဆောင်ချက်များ ပြီးမြောက်စေရန် ကိရိယာများကို ခေါ်ယူအသုံးပြုနိုင်ကာ ကိရိယာမှ ပြန်လည်ရရှိသော ရလဒ်များသည် tool ဖြင့် စတင်ပါမည်
+  - သင်သည် အသုံးပြုသူညွှန်ကြားချက် ပြီးမြောက်မှုရှိမရှိကို အကဲဖြတ်ရပါမည်
+  - ဆွေးနွေးမှုအလှည့်အများပြားသောကြောင့် ကျွန်ုပ်တို့သည် sliding window အကဲဖြတ်နည်းလမ်းကို အသုံးပြုပြီး တစ်ကြိမ်လျှင် ဆွေးနွေးမှုအလှည့် ၁၀ ကို မြင်တွေ့ရကာ ဖြတ်ပိုင်းတစ်ခုနှင့်တစ်ခုကြားတွင် ဆွေးနွေးမှုအလှည့် ၂ ခု ထပ်နေပါသည်
+  - သင်သည် ဖြတ်ပိုင်း အမှတ် {window_idx} ကို အကဲဖြတ်နေခြင်းဖြစ်သည် (ယခုတာဝန်တွင် စုစုပေါင်း ဖြတ်ပိုင်း {total_windows} ခုရှိသည်)
+  - <window_content> တွင် လက်ရှိဖြတ်ပိုင်း၏ ဆွေးနွေးမှုအကြောင်းအရာများ ပါဝင်သည်
+  - <memory> တွင် ယခင်ဖြတ်ပိုင်းများမှ အချက်အလက်များကို မှတ်ဉာဏ်ချုပ်ခြင်း ပါဝင်သည်
+  - <current_evaluation> တွင် ယခင်ဖြတ်ပိုင်းများ၏ အကဲဖြတ်ရလဒ်များ ပါဝင်သည်
+
+  # တာဝန်
+  - လက်ရှိဖြတ်ပိုင်း၏ ဆွေးနွေးမှုအကြောင်းအရာများအပေါ် အခြေခံ၍ အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်ပါ လိုအပ်ချက်များ အားလုံး ပြည့်မီမှုရှိမရှိကို ဆုံးဖြတ်ပါ
+  - assistant သည် ဤဖြတ်ပိုင်းနှင့် သမိုင်းကြောင်းဖြတ်ပိုင်းများတွင် အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်ကို ပြီးမြောက်စေခဲ့ပါကသာ သင်သည် အခြေအနေကို false မှ true သို့ အပ်ဒိတ်လုပ်နိုင်သည်
+  - assistant သည် ဤဖြတ်ပိုင်းတွင် ယခင်က မှန်ကန်သော ကောက်ချက်ကို ပယ်ဖျက်ခဲ့ပါကသာ သင်သည် true ကို ထပ်မံ၍ false သို့ အပ်ဒိတ်လုပ်နိုင်သည် (သို့သော် သတိပြုရန် - အကယ်၍ အသုံးပြုသူ၏ လိုအပ်ချက်ကိုယ်တိုင် ပြောင်းလဲသွားပါက ဥပမာ အော်ဒါတင်ပြီးနောက် ကိုယ်တိုင် ပယ်ဖျက်ခြင်းမျိုးဖြစ်ပါက မူလအော်ဒါတင်ခြင်း လိုအပ်ချက်အပေါ် အကဲဖြတ်ချက်ကို ပယ်ဖျက်သင့်မည် မဟုတ်ပါ)
+  - မလိုအပ်သော ပြင်ဆင်မှုများ မဖြစ်ပေါ်စေရန် လက်ရှိဆွေးနွေးမှု ဖြတ်ပိုင်း၏ တိုးတက်မှုကို ရယူရန် "အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်" ကို ကိုးကားနိုင်သည်
+  - လက်ရှိဖြတ်ပိုင်းအကြောင်းအရာ <window_content> နှင့် မှတ်ဉာဏ်ချုပ်အကြောင်းအရာ <memory> ကို ပေါင်းစပ်ပြီး သတိပြုရန်အချက်များရှိ စည်းမျဉ်းများအတိုင်း memory အကြောင်းအရာကို ညှိယူကာ အသစ်<memory> အဖြစ် ထုတ်ပေးပါ
+
+  # သတိပြုရန်အချက်များ
+  - အရေးကြီးသည် - အကဲဖြတ်ချက်အားလုံးသည် assistant ၏ ပြန်လည်ဖြေကြားချက်နှင့် ကိရိယာခေါ်ယူမှု လိုအပ်ချက်များက အသုံးပြုသူညွှန်ကြားချက်ကို ပြီးမြောက်စေမှုအပေါ် မူတည်သည်၊ အသုံးပြုသူ၏ ဆွေးနွေးမှုတွင် ဖော်ပြထားသော အကြောင်းအရာများကို assistant အတွက် အကြံပြုချက်နှင့် လမ်းညွှန်မှုများအဖြစ်သာ သတ်မှတ်ပြီး အကဲဖြတ်မှုစံနှုန်းများကို တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် အသုံးပြုသူညွှန်ကြားချက်အပေါ် မူတည်သည်!
+  - အရေးကြီးသည် - ရှာဖွေရေးအမျိုးအစား tool မှ ပြန်လည်ရရှိသော ရလဒ်များသည် assistant အတွက်သာ မြင်တွေ့ရပြီး assistant က အသုံးပြုသူအတွက် အကြံပြုသော အကြောင်းအရာကို ကိုယ်စားမပြုသောကြောင့် အကဲဖြတ်ရလဒ်ကိုလည်း တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် assistant က အချက်အလက်ရယူပြီးနောက် အသုံးပြုသူအား ပြန်လည်ဖြေကြားချက်အပေါ် မူတည်ရပါမည်! ထို့အပြင် Assistant သည် Tool ၏ ပြန်လည်ရရှိသော ရလဒ်များကိုလည်း ဖန်တီးယူ၍ မရနိုင်ကြောင်း သတိပြုရပါမည်!
+  - အရေးကြီးသည် - ဝယ်ယူခြင်းဆိုင်ရာ ညွှန်ကြားချက်များအတွက် (အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်ပြီး အော်ဒါဖန်တီးရန် လိုအပ်သော) assistant သည် အော်ဒါတင်ခြင်း လုပ်ဆောင်ချက်ကို တကယ်ပင် ပြီးမြောက်စေခဲ့ခြင်း ရှိမရှိကို အတည်ပြုရပါမည်။ assistant သည် အော်ဒါတင်ခြင်း လုပ်ဆောင်ချက်ကို ပြီးမြောက်ခဲ့သည်ဟု အမှားသဘောထားနိုင်ပြီး တကယ်တမ်းတွင် ကိရိယာခေါ်ယူမှု ကျရှုံးနိုင်သည် သို့မဟုတ် အသုံးပြုသူက "ကိုယ်တိုင် အော်ဒါတင်နိုင်သည်" ဟု ပြောဆိုခြင်းမျိုး စသည်တို့ကို လိုအပ်ချက်မပြည့်မီဟု သတ်မှတ်ရပါမည်
+  - ကုန်ပစ္စည်းအရေအတွက်၊ ပို့ဆောင်ချိန်ကဲ့သို့သော အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်သော အသုံးပြုသူညွှန်ကြားချက်များအတွက် မူလအသုံးပြုသူညွှန်ကြားချက် လိုအပ်ချက်များကို တိကျစွာ ပြည့်မီရပါမည် (ကုန်ပစ္စည်းအရေအတွက် ကွဲလွဲမှု မရှိရ၊ မျှော်လင့်ထားသော ပို့ဆောင်ချိန်ထက် နောက်ကျမရ)၊ အသုံးပြုသူ၏ လျှော့ပေးမှုလုပ်ရပ်များသည် အကဲဖြတ်ရလဒ်ကို မသက်ရောက်စေပါ (ဥပမာ အသုံးပြုသူက "ပစ္စည်းတစ်ခုခု နည်းနည်းလျှော့လည်းရသည်"၊ "အော်ဒါအကြောင်းအရာကို သဘောမတူညီမှုမရှိ" သို့မဟုတ် "နောက်ကျပို့ဆောင်လည်းရသည်" စသည်တို့ကို ပြောဆိုခြင်း)၊ ထိုကဲ့သို့သော အခြေအနေများကို လိုအပ်ချက်မပြည့်မီဟုသာ ဆက်လက်သတ်မှတ်ရပါမည်
+  - စာသားအကြောင်းအရာ ကိုက်ညီမှုပါဝင်သော လိပ်စာ သို့မဟုတ် အော်ဒါမှတ်ချက်အမျိုးအစား အသုံးပြုသူညွှန်ကြားချက်များအတွက် လုပ်ဆောင်ချက်ညီမျှမှု မူဝါဒကို အသုံးပြုပါ - လက်တွေ့အကြောင်းအရာသည် တူညီသောလုပ်ဆောင်ချက်ကို ဆောင်ရွက်နိုင်ပါက (ဥပမာ ပို့ဆောင်မည့်နေရာကို ခန့်မှန်းတွက်ချက်နိုင်ခြင်း သို့မဟုတ် ဝယ်ယူသူ၏ အဓိကလိုအပ်ချက်များကို လက်ဆင့်ကမ်းနိုင်ခြင်း)၊ ဖော်ပြချက် လုံးဝကိုက်ညီမှုမရှိခြင်း သို့မဟုတ် အသေးစိတ်အချက်အလက်များ လိုအပ်နေခြင်းရှိသော်လည်း လိုအပ်ချက်ပြည့်မီသည်ဟု သတ်မှတ်ပါ
+  - အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်ကို သင့်လျော်စွာ ခွဲခြမ်းပြီး လိုအပ်ချက်ငယ်တစ်ခုစီ ပြည့်မီမှုရှိမရှိကို အကဲဖြတ်ပါ -
+    - အကယ်၍ လက်ရှိဖြတ်ပိုင်းတွင် လိုအပ်ချက်ငယ်တစ်ခုခုကို မပါဝင်စေပါက လက်ရှိတွင် မပါဝင်ကြောင်း မှတ်တမ်းတင်ပါ;
+    - အကယ်၍ လက်ရှိဖြတ်ပိုင်းတွင် လိုအပ်ချက်ငယ်တစ်ခုခု ပါဝင်သော်လည်း လုံးဝဆုံးဖြတ်၍မရပါက နောက်ဆက်တွဲဆုံးဖြတ်ရန် အဓိကအချက်အလက်များကို memory တွင် မှတ်တမ်းတင်ထားပါ
+    - နောက်ဆက်တွဲဖြတ်ပိုင်းများတွင် ဆက်လက်ဆုံးဖြတ်နိုင်ရန် memory တွင် လိုအပ်ချက်ငယ်များနှင့် သက်ဆိုင်သော အဓိကအချက်အလက်များနှင့် ၎င်းတို့၏ သက်ဆိုင်ရာအလှည့် [x] ကို မှတ်တမ်းတင်ပါ
+
+  # ပုံစံလိုအပ်ချက်များ
+  - သင်၏ ပြန်လည်ဖြေကြားချက်သည် JSON အရာဝတ္ထုတစ်ခုဖြစ်ပြီး အောက်ပါကွက်လပ်များ ပါဝင်ရပါမည် -
+  - `justification` - အကဲဖြတ်ရလဒ်အတွက် အကျဉ်းချုပ်ရှင်းလင်းချက်
+  - `meetExpectation` - အကဲဖြတ်ရလဒ် (true သို့မဟုတ် false)
+
+  # နမူနာအင်ပုတ်ဖွဲ့စည်းပုံ -
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # နမူနာပြန်လည်ဖြေကြားချက်ဖွဲ့စည်းပုံ -
+  ```json
+  {{
+      "memory": <ယခင်ဖြတ်ပိုင်းအချက်အလက်များအပေါ် ချုပ်ငယ်>,
+      "justification": "<အကဲဖြတ်ရလဒ်အတွက် အကျဉ်းချုပ်ရှင်းလင်းချက်>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+lao: |-
+  # ຂໍ້ມູນລະບົບ
+  {env_info}
+
+  # ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້
+  {user_instruction}
+
+  # ຄຳອະທິບາຍພື້ນຖານ
+  - ນີ້ແມ່ນສາກການສົນທະນາລະຫວ່າງ user ແລະ assistant, ບ່ອນທີ່ assistant ສາມາດເອີ້ນໃຊ້ເຄື່ອງມືເພື່ອດຶງຂໍ້ມູນ ແລະ ດຳເນີນການ, ຜົນການຕອບກັບຂອງເຄື່ອງມືຈະເລີ່ມຕົ້ນດ້ວຍ tool
+  - ທ່ານຕ້ອງປະເມີນວ່າຄຳສັ່ງຂອງຜູ້ໃຊ້ໄດ້ຖືກປະຕິບັດສຳເລັດຫຼືບໍ່
+  - ເນື່ອງຈາກຈຳນວນຮອບການສົນທະນາມີຫຼາຍ, ພວກເຮົານຳໃຊ້ວິທີການປະເມີນແບບປ່ອງຢ້ຽມເລື່ອນ, ນັ້ນແມ່ນແຕ່ລະຄັ້ງຈະເຫັນ 10 ຮອບການສົນທະນາ, ລະຫວ່າງແຕ່ລະປ່ອງຢ້ຽມ ມີ 2 ຮອບການສົນທະນາຊ້ອນກັນ
+  - ທ່ານກຳລັງປະເມີນປ່ອງຢ້ຽມ ທີ່ {window_idx} (ວຽກງານຄັ້ງນີ້ມີທັງໝົດ {total_windows} ປ່ອງຢ້ຽມ)
+  - <window_content>ປະກອບມີເນື້ອຫາການສົນທະນາຂອງປ່ອງຢ້ຽມ ປະຈຸບັນ
+  - <memory>ປະກອບມີບົດສະຫຼຸບຄວາມຈື່ຈຳຂອງຂໍ້ມູນປ່ອງຢ້ຽມ ກ່ອນໜ້າ
+  - <current_evaluation>ປະກອບມີຜົນການປະເມີນຂອງປ່ອງຢ້ຽມ ກ່ອນໜ້າ
+
+  # ພາລະກິດ
+  - ອີງໃສ່ເນື້ອຫາການສົນທະນາຂອງປ່ອງຢ້ຽມ ປະຈຸບັນ, ຕັດສິນວ່າຄວາມຕ້ອງການໃນຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້ໄດ້ຖືກຕອບສະໜອງຄົບຖ້ວນຫຼືບໍ່
+  - ທ່ານສາມາດປັບປຸງສະຖານະຈາກ false ເປັນ true, ກໍ່ຕໍ່ເມື່ອ assistant ໄດ້ສຳເລັດຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້ໃນປ່ອງຢ້ຽມ ນີ້ ແລະ ປະຫວັດປ່ອງຢ້ຽມ
+  - ທ່ານກໍ່ສາມາດປັບປຸງ true ກັບຄືນເປັນ false, ກໍ່ຕໍ່ເມື່ອ assistant ໄດ້ລົ້ມລ້າງສະຫຼຸບຜົນທີ່ຖືກຕ້ອງກ່ອນໜ້າໃນປ່ອງຢ້ຽມ ນີ້ (ແຕ່ກະລຸນາສັງເກດ: ຖ້າຄວາມຕ້ອງການຂອງຜູ້ໃຊ້ປ່ຽນແປງເອງ, ຕົວຢ່າງເຊັ່ນ ຍົກເລີກຫຼັງຈາກສັ່ງຊື້, ກໍ່ບໍ່ຄວນລົ້ມລ້າງການປະເມີນຄວາມຕ້ອງການການສັ່ງຊື້ເດີມ)
+  - ທ່ານສາມາດອ້າງອີງ "ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້" ເພື່ອຮັບຮູ້ຄວາມຄືບໜ້າຂອງປ່ອງຢ້ຽມ ການສົນທະນາປະຈຸບັນ, ຫຼີກລ່ຽງການປັບປຸງທີ່ບໍ່ຈຳເປັນ
+  - ລວມເນື້ອຫາປ່ອງຢ້ຽມ ປະຈຸບັນ <window_content> ແລະ ເນື້ອຫາບົດສະຫຼຸບຄວາມຈື່ຈຳ <memory>, ແລະ ປັບປຸງເນື້ອຫາ memory ຕາມກົດລະບຽບໃນຂໍ້ຄວນລະວັງ ກ່ອນຈະສົ່ງອອກເປັນ <memory> ໃໝ່
+
+  # ຂໍ້ຄວນລະວັງ
+  - ສຳຄັນ: ການປະເມີນທັງໝົດອີງໃສ່ວ່າການຕອບກັບຂອງ assistant ແລະ ຄຳຮ້ອງເອີ້ນໃຊ້ເຄື່ອງມືໄດ້ສຳເລັດຄຳສັ່ງຂອງຜູ້ໃຊ້ຫຼືບໍ່, user ໃນການສົນທະນາສະແດງອອກເນື້ອຫາຖືເປັນພຽງຄຳແນະນຳ ແລະ ການຊີ້ນຳໃຫ້ assistant, ຈະບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ມາດຕະຖານການປະເມີນ, ທຸກຢ່າງອີງໃສ່ຄຳສັ່ງຂອງຜູ້ໃຊ້ເປັນຫຼັກ!
+  - ສຳຄັນ: ຜົນການຕອບກັບຂອງເຄື່ອງມືປະເພດສືບຄົ້ນ ຈະເຫັນໄດ້ສະເພາະ assistant ເທົ່ານັ້ນ, ບໍ່ໄດ້ໝາຍຄວາມວ່າເປັນເນື້ອຫາທີ່ assistant ແນະນຳໃຫ້ຜູ້ໃຊ້, ດັ່ງນັ້ນຈຶ່ງບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ຜົນການປະເມີນ, ທຸກຢ່າງຕ້ອງອີງໃສ່ການຕອບກັບຂອງ assistant ຫຼັງຈາກໄດ້ຮັບຂໍ້ມູນແລ້ວຕໍ່ຜູ້ໃຊ້ເປັນຫຼັກ! ພ້ອມກັນນັ້ນຕ້ອງສັງເກດ, Assistant ກໍ່ບໍ່ສາມາດປະດິດຜົນການຕອບກັບຂອງ Tool ໄດ້!
+  - ສຳຄັນ: ສຳລັບຄຳສັ່ງປະເພດຊື້ຂອງ (ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້, ຕ້ອງສ້າງຄຳສັ່ງຊື້), ຕ້ອງຢືນຢັນວ່າ assistant ໄດ້ສຳເລັດການດຳເນີນການສັ່ງຊື້ແທ້ຫຼືບໍ່. ມັນອາດຈະເປັນໄປໄດ້ທີ່ assistant ເຂົ້າໃຈຜິດວ່າໄດ້ສຳເລັດການສັ່ງຊື້, ແຕ່ຕົວຈິງແລ້ວການເອີ້ນໃຊ້ເຄື່ອງມືລົ້ມເຫຼວ; ຫຼື user ສະແດງວ່າສາມາດ "ສັ່ງຊື້ເອງໄດ້" ແລະ ອື່ນໆ, ຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບຄຳສັ່ງຂອງຜູ້ໃຊ້ທີ່ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້ ເຊັ່ນ ຈຳນວນສິນຄ້າ, ເວລາສົ່ງ, ຕ້ອງຕອບສະໜອງຄວາມຕ້ອງການຂອງຄຳສັ່ງຜູ້ໃຊ້ເດີມຢ່າງເຂັ້ມງວດ (ບໍ່ສາມາດມີຄວາມຜິດພາດຈຳນວນສິນຄ້າ, ບໍ່ສາມາດຊ້າກວ່າເວລາສົ່ງທີ່ຄາດຫວັງ), ການປະນີປະນອມຂອງຜູ້ໃຊ້ບໍ່ສົ່ງຜົນຕໍ່ຜົນການຕັດສິນ (ຕົວຢ່າງເຊັ່ນ user ບອກວ່າ "ສິນຄ້າບາງຢ່າງໜ້ອຍກໍ່ໄດ້", "ບໍ່ມີຄຳຄັດຄ້ານຕໍ່ເນື້ອຫາຄຳສັ່ງຊື້" ຫຼື "ສົ່ງຊ້າກໍ່ໄດ້" ແລະ ອື່ນໆ), ສະຖານະການແບບນີ້ຍັງຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບຄຳສັ່ງຂອງຜູ້ໃຊ້ປະເພດທີ່ກ່ຽວຂ້ອງກັບການຈັບຄູ່ເນື້ອຫາຂໍ້ຄວາມເຊັ່ນ ທີ່ຢູ່ ຫຼື ຫມາຍເຫດຄຳສັ່ງຊື້, ໃຊ້ຫຼັກການເທົ່າທຽມກັນດ້ານຟັງຊັນ: ຖ້າເນື້ອຫາຕົວຈິງສາມາດບັນລຸຟັງຊັນດຽວກັນໄດ້ (ເຊັ່ນ ກຳນົດຕຳແໜ່ງຈັດສົ່ງໂດຍປະມານ ຫຼື ສົ່ງຕໍ່ຄວາມຕ້ອງການຫຼັກຂອງລູກຄ້າ), ເຖິງແມ່ນວ່າການສະແດງອອກຈະບໍ່ຄືກັນຢ່າງສົມບູນ ຫຼື ຂາດລາຍລະອຽດບາງສ່ວນ, ກໍ່ຖືວ່າຕອບສະໜອງຄວາມຕ້ອງການ
+  - ແຍກຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້ອອກເປັນສ່ວນໆຢ່າງເໝາະສົມ, ແລະ ປະເມີນວ່າແຕ່ລະຄວາມຕ້ອງການຍ່ອຍໄດ້ຖືກຕອບສະໜອງຫຼືບໍ່:
+    - ຖ້າປ່ອງຢ້ຽມ ປະຈຸບັນບໍ່ກ່ຽວຂ້ອງກັບຄວາມຕ້ອງການຍ່ອຍໃດໜຶ່ງ, ກໍ່ບັນທຶກວ່າປະຈຸບັນບໍ່ກ່ຽວຂ້ອງ;
+    - ຖ້າປ່ອງຢ້ຽມ ປະຈຸບັນກ່ຽວຂ້ອງກັບຄວາມຕ້ອງການຍ່ອຍໃດໜຶ່ງແຕ່ບໍ່ສາມາດຕັດສິນໄດ້ຢ່າງສົມບູນ, ກໍ່ບັນທຶກຂໍ້ມູນສຳຄັນໃນ memory ເພື່ອລໍຖ້າການຕັດສິນໃນພາຍຫຼັງ
+    - ບັນທຶກຂໍ້ມູນສຳຄັນທີ່ກ່ຽວຂ້ອງກັບຄວາມຕ້ອງການຍ່ອຍ ແລະ ຮອບທີ່ກົງກັນ [x] ໃນ memory, ເພື່ອໃຫ້ປ່ອງຢ້ຽມ ຕໍ່ໄປສາມາດຕັດສິນໄດ້ຕໍ່
+
+  # ຄວາມຕ້ອງການຮູບແບບ
+  - ການຕອບກັບຂອງທ່ານຄວນເປັນວັດຖຸ JSON, ປະກອບມີຟີລດັ່ງຕໍ່ໄປນີ້:
+  - `justification`: ຄຳອະທິບາຍສັ້ນໆກ່ຽວກັບຜົນການປະເມີນ
+  - `meetExpectation`: ຜົນການປະເມີນ (true ຫຼື false)
+
+  # ໂຄງສ້າງຕົວຢ່າງການປ້ອນຂໍ້ມູນ:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # ໂຄງສ້າງຕົວຢ່າງການຕອບກັບ:
+  ```json
+  {{
+      "memory": <ບົດສະຫຼຸບຂອງຂໍ້ມູນປ່ອງຢ້ຽມກ່ອນໜ້າ>,
+      "justification": "<ຄຳອະທິບາຍສັ້ນໆກ່ຽວກັບຜົນການປະເມີນ>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+tamil: |-
+  # அமைப்பு தகவல்
+  {env_info}
+
+  # பயனரின் முழுமையான வழிமுறை
+  {user_instruction}
+
+  # பின்னணி விளக்கம்
+  - இது பயனர் மற்றும் உதவியாளருக்கு இடையேயான உரையாடல் காட்சியாகும், இதில் உதவியாளர் தகவலைப் பெறவும் செயல்பாடுகளை முடிக்கவும் கருவிகளை அழைக்கலாம், கருவி திரும்பும் முடிவுகள் tool என்று தொடங்கும்
+  - பயனர் வழிமுறை நிறைவேற்றப்பட்டதா என நீங்கள் மதிப்பிட வேண்டும்
+  - உரையாடல் சுற்றுகள் அதிகமாக இருப்பதால், நாங்கள் sliding window மதிப்பீட்டு முறையைப் பயன்படுத்துகிறோம், அதாவது ஒவ்வொரு முறையும் 10 உரையாடல் சுற்றுகள் தெரியும், ஒவ்வொரு சாளரத்திற்கும் இடையில் 2 உரையாடல் சுற்றுகள் ஒன்றுபட்டிருக்கும்
+  - நீங்கள் {window_idx} வது சாளரத்தை மதிப்பிடுகிறீர்கள் (இந்த பணிக்காக மொத்தம் {total_windows} சாளரங்கள்)
+  - <window_content> தற்போதைய சாளரத்தின் உரையாடல் உள்ளடக்கத்தைக் கொண்டுள்ளது
+  - <memory> முந்தைய சாளர தகவல்களின் நினைவக சுருக்கத்தைக் கொண்டுள்ளது
+  - <current_evaluation> முந்தைய சாளரங்களின் மதிப்பீட்டு முடிவுகளைக் கொண்டுள்ளது
+
+  # பணி
+  - தற்போதைய சாளரத்தின் உரையாடல் உள்ளடக்கத்தின் அடிப்படையில், பயனரின் முழுமையான வழிமுறையில் உள்ள தேவைகள் அனைத்தும் பூர்த்தி செய்யப்பட்டதா என தீர்மானிக்கவும்
+  - உதவியாளர் இந்த சாளரம் மற்றும் வரலாற்று சாளரங்களில் பயனரின் முழுமையான வழிமுறையை முடித்தால் மட்டுமே, நீங்கள் நிலையை false இருந்து true ஆக புதுப்பிக்கலாம்
+  - உதவியாளர் இந்த சாளரத்தில் முந்தைய சரியான முடிவை மாற்றினால் மட்டுமே, நீங்கள் true ஐ மீண்டும் false ஆக புதுப்பிக்கலாம் (ஆனால் கவனிக்கவும்: பயனர் தேவைகளே மாறினால், உதாரணமாக ஆர்டர் செய்த பிறகு சுயமாக ரத்து செய்தால், ஆர்டர் தேவைக்கான அசல் மதிப்பீட்டை மாற்றக்கூடாது)
+  - தேவையற்ற மாற்றங்களைத் தவிர்க்க, தற்போதைய உரையாடல் சாளரத்தின் முன்னேற்றத்தைப் பெற "பயனரின் முழுமையான வழிமுறை" ஐ நீங்கள் குறிக்கலாம்
+  - தற்போதைய சாளர உள்ளடக்கம் <window_content> மற்றும் நினைவக சுருக்க உள்ளடக்கம் <memory> ஆகியவற்றை இணைத்து, எச்சரிக்கைகளில் உள்ள விதிகளின்படி memory உள்ளடக்கத்தை சரிசெய்த பிறகு புதிய <memory> ஆக வெளியிடவும்
+
+  # எச்சரிக்கைகள்
+  - முக்கியம்: அனைத்து மதிப்பீடுகளும் உதவியாளரின் பதில் மற்றும் கருவி அழைப்பு கோரிக்கைகள் பயனர் வழிமுறையை நிறைவேற்றியதா என்பதை அடிப்படையாகக் கொண்டது, உரையாடலில் பயனர் வெளிப்படுத்தும் உள்ளடக்கம் உதவியாளருக்கான குறிப்பு மற்றும் வழிகாட்டலாக மட்டுமே கருதப்படும், இது மதிப்பீட்டு நிலைகளை நேரடியாக பாதிக்காது, அனைத்தும் பயனர் வழிமுறையை அடிப்படையாகக் கொண்டது!
+  - முக்கியம்: விசாரணை வகை tool திரும்பும் முடிவுகள் உதவியாளருக்கு மட்டுமே தெரியும், இது பயனருக்கு உதவியாளர் பரிந்துரைக்கும் உள்ளடக்கத்தை குறிக்காது, எனவே இது மதிப்பீட்டு முடிவுகளையும் நேரடியாக பாதிக்காது, அனைத்தும் உதவியாளர் தகவலைப் பெற்ற பிறகு பயனருக்கு அளிக்கும் பதிலை அடிப்படையாகக் கொண்டது! அதே நேரத்தில், உதவியாளர் Tool இன் திரும்பும் முடிவுகளை உருவாக்கக்கூடாது என்பதையும் கவனிக்க வேண்டும்!
+  - முக்கியம்: வாங்குதல் வகை வழிமுறைகளுக்கு (ஆர்டர் விவரங்களை உள்ளடக்கியது, ஆர்டரை உருவாக்க வேண்டியது), உதவியாளர் உண்மையில் ஆர்டர் செயல்பாட்டை முடித்தாரா என்பதை உறுதிப்படுத்த வேண்டும். உதவியாளர் ஆர்டர் செயல்பாட்டை முடித்ததாக தவறாக நினைக்கலாம், உண்மையில் கருவி அழைப்பு தோல்வியடைந்திருக்கலாம்; அல்லது பயனர் "தானே ஆர்டர் செய்யலாம்" என்று கூறும் நிலைகள் போன்றவை, அனைத்தும் தேவைகள் பூர்த்தி செய்யப்படவில்லை என கருதப்பட வேண்டும்
+  - பொருள் அளவு, டெலிவரி நேரம் போன்ற ஆர்டர் விவரங்களை உள்ளடக்கிய பயனர் வழிமுறைகளுக்கு, அசல் பயனர் வழிமுறை தேவைகள் கண்டிப்பாக பூர்த்தி செய்யப்பட வேண்டும் (பொருள் அளவில் வேறுபாடு இருக்கக்கூடாது, எதிர்பார்க்கப்படும் டெலிவரி நேரத்தை விட தாமதமாக இருக்கக்கூடாது), பயனர் சமரசம் செய்வது மதிப்பீட்டு முடிவை பாதிக்காது (உதாரணமாக பயனர் "சில பொருட்கள் குறைவாக இருந்தாலும் பரவாயில்லை", "ஆர்டர் உள்ளடக்கத்தில் எந்த ஆட்சேபனையும் இல்லை" அல்லது "தாமதமாக டெலிவரி செய்தாலும் பரவாயில்லை" என்று கூறுவது போன்றவை), இத்தகைய நிலைகள் இன்னும் தேவைகள் பூர்த்தி செய்யப்படவில்லை என கருதப்பட வேண்டும்
+  - உரை உள்ளடக்க பொருத்தமான முகவரி அல்லது ஆர்டர் குறிப்பு வகை பயனர் வழிமுறைகளுக்கு, செயல்பாட்டு சமநிலை கொள்கையைப் பயன்படுத்தவும்: உண்மையான உள்ளடக்கம் அதே செயல்பாட்டைச் செய்ய முடிந்தால் (டெலிவரி இடத்தை தோராயமாக இடம்பெறுத்தல் அல்லது வாடிக்கையாளரின் முதன்மை தேவைகளை தெரிவித்தல் போன்றவை), கூற்று முழுமையாக ஒத்துப்போகாவிட்டாலும் அல்லது சில விவரங்கள் காணாமல் போனாலும், தேவைகள் பூர்த்தி செய்யப்பட்டதாக கருதப்படும்
+  - பயனரின் முழுமையான வழிமுறையை பொருத்தமாக பிரித்து, ஒவ்வொரு துணை தேவையும் பூர்த்தி செய்யப்பட்டதா என மதிப்பிடவும்:
+    - தற்போதைய சாளரம் ஒரு குறிப்பிட்ட துணை தேவையை உள்ளடக்கவில்லை என்றால், தற்போது உள்ளடக்கப்படவில்லை என பதிவு செய்யவும்;
+    - தற்போதைய சாளரம் ஒரு குறிப்பிட்ட துணை தேவையை உள்ளடக்கியது ஆனால் முழுமையாக தீர்மானிக்க முடியவில்லை என்றால், முக்கிய தகவலை memory இல் பதிவு செய்து பின்னர் தீர்மானிக்க வைக்கவும்
+    - பின்னர் சாளரங்கள் தொடர்ந்து தீர்மானிக்க, memory இல் துணை தேவைகளுடன் தொடர்புடைய முக்கிய தகவல் மற்றும் அதற்கான சுற்று [x] ஆகியவற்றை பதிவு செய்யவும்
+
+  # வடிவமைப்பு தேவைகள்
+  - உங்கள் பதில் ஒரு JSON பொருளாக இருக்க வேண்டும், பின்வரும் புலங்களைக் கொண்டிருக்க வேண்டும்:
+  - `justification`: மதிப்பீட்டு முடிவுக்கான சுருக்கமான விளக்கம்
+  - `meetExpectation`: மதிப்பீட்டு முடிவு (true அல்லது false)
+
+  # மாதிரி உள்ளீட்டு கட்டமைப்பு:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # மாதிரி பதில் கட்டமைப்பு:
+  ```json
+  {{
+      "memory": <முந்தைய சாளர தகவல்களின் சுருக்கம்>,
+      "justification": "<மதிப்பீட்டு முடிவுக்கான சுருக்கமான விளக்கம்>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+telugu: |-
+  # సిస్టమ్ సమాచారం
+  {env_info}
+
+  # వినియోగదారు పూర్తి సూచన
+  {user_instruction}
+
+  # నేపథ్య వివరణ
+  - ఇది వినియోగదారు మరియు అసిస్టెంట్ మధ్య సంభాషణ సందర్భం, ఇక్కడ అసిస్టెంట్ సమాచారాన్ని పొందడానికి మరియు పనులను పూర్తి చేయడానికి సాధనాలను పిలవగలదు, సాధనం తిరిగి ఇచ్చే ఫలితాలు tool తో ప్రారంభమవుతాయి
+  - వినియోగదారు సూచన పూర్తయిందో లేదో మీరు అంచనా వేయాలి
+  - సంభాషణ చుట్లు ఎక్కువగా ఉన్నందున, మేము స్లైడింగ్ విండో అంచనా పద్ధతిని ఉపయోగిస్తాము, అంటే ప్రతిసారీ 10 సంభాషణ చుట్లు కనిపిస్తాయి, ప్రతి విండో మధ్య 2 సంభాషణ చుట్లు ఓవర్‌ల్యాప్ అవుతాయి
+  - మీరు {window_idx}వ విండోను అంచనా వేస్తున్నారు (ఈ పనికి మొత్తం {total_windows} విండోలు)
+  - <window_content> ప్రస్తుత విండో యొక్క సంభాషణ కంటెంట్‌ను కలిగి ఉంటుంది
+  - <memory> మునుపటి విండో సమాచారం యొక్క మెమరీ సారాంశాన్ని కలిగి ఉంటుంది
+  - <current_evaluation> మునుపటి విండోల అంచనా ఫలితాలను కలిగి ఉంటుంది
+
+  # పని
+  - ప్రస్తుత విండో యొక్క సంభాషణ కంటెంట్ ఆధారంగా, వినియోగదారు పూర్తి సూచనలోని అవసరాలు అన్నీ నెరవేరాయో లేదో నిర్ణయించండి
+  - అసిస్టెంట్ ఈ విండో మరియు చరిత్ర విండోలలో వినియోగదారు పూర్తి సూచనను పూర్తి చేసినప్పుడు మాత్రమే మీరు స్థితిని false నుండి true కు నవీకరించవచ్చు
+  - అసిస్టెంట్ ఈ విండోలో మునుపటి సరైన నిర్ధారణను తిరస్కరించినప్పుడు మాత్రమే మీరు true ను మళ్లీ false కు నవీకరించవచ్చు (కానీ గమనించండి: వినియోగదారు అవసరాలు స్వయంగా మారినట్లయితే, ఉదాహరణకు ఆర్డర్ చేసిన తర్వాత స్వయంగా రద్దు చేసుకోవడం, అప్పుడు ఆర్డర్ అవసరం యొక్క అసలు అంచనాను తిరస్కరించకూడదు)
+  - అనవసరమైన మార్పులను నివారించడానికి, ప్రస్తుత సంభాషణ విండో యొక్క పురోగతిని పొందడానికి మీరు "వినియోగదారు పూర్తి సూచన"ను సూచించవచ్చు
+  - ప్రస్తుత విండో కంటెంట్ <window_content> మరియు మెమరీ సారాంశ కంటెంట్ <memory>ను విలీనం చేసి, నోట్లలోని నియమాల ప్రకారం memory కంటెంట్‌ను సర్దుబాటు చేసిన తర్వాత కొత్త <memory>గా అవుట్‌పుట్ చేయండి
+
+  # గమనికలు
+  - ముఖ్యం: అన్ని అంచనాలు అసిస్టెంట్ యొక్క సమాధానం మరియు సాధనం పిలుపు అభ్యర్థన వినియోగదారు సూచనను పూర్తి చేసిందో లేదో దానిపై ఆధారపడి ఉంటాయి, సంభాషణలో వినియోగదారు వ్యక్తపరిచిన కంటెంట్ కేవలం అసిస్టెంట్ కోసం సూచన మరియు మార్గదర్శకంగా పరిగణించబడుతుంది, అంచనా ప్రమాణాలను నేరుగా ప్రభావితం చేయదు, అన్నీ వినియోగదారు సూచన ప్రకారం ఉంటాయి!
+  - ముఖ్యం: క్వెరీ రకం tool తిరిగి ఇచ్చే ఫలితాలు కేవలం అసిస్టెంట్‌కు కనిపిస్తాయి, ఇది వినియోగదారుకు అసిస్టెంట్ సిఫార్సు చేసిన కంటెంట్‌ను సూచించదు, కాబట్టి ఇది అంచనా ఫలితాలను నేరుగా ప్రభావితం చేయదు, అన్నీ అసిస్టెంట్ సమాచారాన్ని పొందిన తర్వాత వినియోగదారుకు ఇచ్చే సమాధానం ప్రకారం ఉండాలి! అదే సమయంలో, అసిస్టెంట్ Tool యొక్క తిరిగి వచ్చే ఫలితాలను కల్పించకూడదు అని గమనించాలి!
+  - ముఖ్యం: కొనుగోలు రకం సూచనల కోసం (ఆర్డర్ వివరాలను కలిగి ఉంటుంది, ఆర్డర్‌ను సృష్టించాల్సిన అవసరం ఉంటుంది), అసిస్టెంట్ వాస్తవానికి ఆర్డర్ చేసే పనిని పూర్తి చేసిందో లేదో నిర్ధారించుకోవాలి. అసిస్టెంట్ ఆర్డర్ చేసే పనిని పూర్తి చేసిందని తప్పుగా భావించే అవకాశం ఉంది, వాస్తవానికి సాధనం పిలుపు విఫలమైంది; లేదా వినియోగదారు "తానే ఆర్డర్ చేసుకోవచ్చు" అని సూచించిన సందర్భాలు, అన్నీ అవసరాలు నెరవేరలేదని పరిగణించాలి
+  - వస్తువుల సంఖ్య, డెలివరీ సమయం వంటి ఆర్డర్ వివరాలను కలిగి ఉన్న వినియోగదారు సూచనల కోసం, అసలు వినియోగదారు సూచన అవసరాలను కచ్చితంగా సంతృప్తి పరచాలి (వస్తువుల సంఖ్యలో వ్యత్యాసం ఉండకూడదు, అనుకున్న డెలివరీ సమయం కంటే ఆలస్యం కాకూడదు), వినియోగదారు రాజీ పడటం అంచనా ఫలితాన్ని ప్రభావితం చేయదు (ఉదాహరణకు వినియోగదారు "కొన్ని వస్తువులు తక్కువగా ఉన్నా పర్లేదు", "ఆర్డర్ కంటెంట్‌పై అభ్యంతరం లేదు" లేదా "కొంచెం ఆలస్యంగా డెలివరీ అయినా పర్లేదు" అని సూచించినప్పుడు), అటువంటి సందర్భాలు ఇప్పటికీ అవసరాలు నెరవేరలేదని పరిగణించాలి
+  - టెక్స్ట్ కంటెంట్ మ్యాచింగ్ చిరునామా లేదా ఆర్డర్ నోట్స్ రకం వినియోగదారు సూచనల కోసం, ఫంక్షనల్ ఈక్వివలెన్స్ సూత్రాన్ని ఉపయోగించండి: వాస్తవ కంటెంట్ ఒకే ఫంక్షన్‌ను అమలు చేయగలిగినంత వరకు (ఉదాహరణకు డెలివరీ స్థలాన్ని సుమారుగా గుర్తించడం లేదా కస్టమర్ యొక్క ప్రధాన అవసరాలను తెలియజేయడం), వ్యక్తీకరణ పూర్తిగా సమానంగా లేకపోయినా లేదా కొన్ని వివరాలు లేకపోయినా, అవసరాలు నెరవేరాయని పరిగణించాలి
+  - వినియోగదారు పూర్తి సూచనను సరిగ్గా విభజించండి, మరియు ప్రతి ఉప-అవసరం నెరవేరిందో లేదో అంచనా వేయండి:
+    - ప్రస్తుత విండోలో ఏదైనా ఉప-అవసరం ఉండకపోతే, ప్రస్తుతం అది లేదని నమోదు చేయండి;
+    - ప్రస్తుత విండోలో ఏదైనా ఉప-అవసరం ఉంది కానీ పూర్తిగా నిర్ణయించలేకపోతే, కీలక సమాచారాన్ని తర్వాతి నిర్ణయం కోసం memoryలో నమోదు చేయండి
+    - తర్వాతి విండోలు కొనసాగించి నిర్ణయించడానికి, memoryలో ఉప-అవసరానికి సంబంధించిన కీలక సమాచారం మరియు దానికి అనుగుణంగా ఉన్న చుట్టు [x] నమోదు చేయండి
+
+  # ఫార్మాట్ అవసరాలు
+  - మీ సమాధానం ఒక JSON ఆబ్జెక్ట్‌గా ఉండాలి, ఇది క్రింది ఫీల్డ్‌లను కలిగి ఉంటుంది:
+  - `justification`: అంచనా ఫలితానికి సంక్షిప్త వివరణ
+  - `meetExpectation`: అంచనా ఫలితం (true లేదా false)
+
+  # ఉదాహరణ ఇన్‌పుట్ నిర్మాణం:
+  <window_content>xxx</window_content>
+  <memory>xxx</memory>
+  <current_evaluation>xxx</current_evaluation>
+
+  # ఉదాహరణ సమాధాన నిర్మాణం:
+  ```json
+  {{
+      "memory": <మునుపటి విండో సమాచారం యొక్క సారాంశ>,
+      "justification": "<అంచనా ఫలితానికి సంక్షిప్త వివరణ>",
+      "meetExpectation": <true లేదా false>
+  }}
+  ```

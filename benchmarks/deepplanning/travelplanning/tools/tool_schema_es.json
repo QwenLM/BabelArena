@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "Consultar información de boletos de tren, admite la búsqueda de datos de boletos de tren por origen, destino, fecha y otras condiciones. Devuelve información de tren que cumple con los criterios, incluyendo: número de tren, hora de salida/llegada, información de estación, duración del viaje, clase de asiento, estado de asientos restantes, precio, etc. Admite rutas directas y de transferencia. Las rutas directas muestran solo el primer segmento, mientras que las rutas de transferencia muestran información detallada para cada segmento. En la planificación de viajes, toda la información relacionada con trenes debe provenir estrictamente de los resultados devueltos por esta herramienta y no debe ser fabricada; los nombres de estaciones y trenes deben ser exactamente los mismos que los resultados de la consulta.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Ciudad de origen, admite nombre de ciudad"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Ciudad de destino, admite nombre de ciudad"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Fecha de salida, formato: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Clase de asiento de tren: Asiento de Primera Clase, Asiento de Segunda Clase, Asiento de Negocios"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "Consultar información de vuelos, admite la búsqueda de datos de vuelos por origen, destino, fecha y otras condiciones. Devuelve información de vuelo que cumple con los criterios, incluyendo: número de vuelo, hora de salida/llegada, información del aeropuerto, duración del viaje, clase de asiento, estado de asientos restantes, precio, tipo de aeronave, etc. Admite vuelos directos y de conexión. Los vuelos directos muestran solo el primer segmento, mientras que los vuelos de conexión muestran información detallada para cada segmento. En la planificación de viajes, toda la información relacionada con vuelos debe provenir estrictamente de los resultados devueltos por esta herramienta y no debe ser fabricada; los nombres de aeropuertos, números de vuelo, etc. deben ser exactamente los mismos que los resultados de la consulta.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Ciudad de origen, admite nombre de ciudad"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Ciudad de destino, admite nombre de ciudad"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Fecha de salida, formato: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Clase de asiento de vuelo: Clase Económica, Clase de Negocios, Primera Clase"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "Consultar información de hoteles, buscar hoteles según el destino (región administrativa), fecha de entrada, fecha de salida, clasificación por estrellas del hotel y marca del hotel. En la planificación de viajes, toda la información relacionada con hoteles debe provenir estrictamente de los resultados devueltos por esta herramienta y no debe ser fabricada; los nombres de los hoteles deben ser exactamente los mismos que los resultados de la consulta.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Destino (país, provincia, ciudad, nombre de distrito/condado)"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "Fecha de entrada, formato: yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "Fecha de salida, formato: yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "Clasificación por estrellas del hotel: 1~5; valor único"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "Marca de hotel, solo admite consulta de valor único. Marcas opcionales: Hotel Ji, Hotel Atour, Marriott, Hilton, Home Inn, Jinjiang Inn, Hotel Hanting, Hotel Orange"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "Consultar información detallada de atracciones. Basado en el nombre de la atracción, devuelve información completa incluyendo: ID de atracción, nombre, ciudad, coordenadas de latitud y longitud, descripción de la atracción, calificación de usuarios, hora de apertura, hora de cierre, fechas de cierre, duración recomendada de visita (mínimo/máximo horas), precio de entrada, tipo de atracción, etc.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "Nombre de la atracción"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "Buscar y devolver información de atracciones populares para una ciudad basada en la palabra clave de la ciudad (nombre de atracción, descripción, tipo, etc.). Durante la generación del plan de viaje, toda la información de atracciones debe provenir estrictamente de los resultados devueltos por esta herramienta, y no debe ser fabricada ni usar datos de atracciones de otras fuentes. Los nombres de las atracciones utilizadas deben ser exactamente los mismos que los resultados de la consulta, y no pueden ser abreviados ni renombrados.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "Nombre de la ciudad o palabra clave"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "Filtro de tipo de atracción (enum), opciones: 'Histórico y cultural', 'Paisaje natural', 'Exposición de arte', 'Monumento de la ciudad', 'Theme Park', 'Experiencia de ocio'."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "Consultar las coordenadas de latitud y longitud correspondientes a un nombre de lugar. Por ejemplo, al ingresar 'Beijing South Railway Station' devuelve sus coordenadas, con valores retenidos hasta seis decimales. En los planes de viaje, todos los nombres de lugares involucrados deben provenir estrictamente de los resultados devueltos por otras herramientas y deben ser exactamente los mismos.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "El nombre del lugar para consultar, por ejemplo: 'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "Calcular y devolver detalles de la ruta por carretera entre dos ubicaciones, incluyendo distancia (metros), duración estimada (minutos) y costo estimado (moneda). Esta función selecciona automáticamente el modo de transporte basado en la distancia total: caminando para 2 kilómetros o menos (costo 0), y modo de conducción (taxi) para más de 2 kilómetros. El costo estimado es para un vehículo, que puede acomodar a 4 personas por defecto.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Coordenadas de origen (formato: latitud,longitud), precisión mantenida a 6 decimales"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Coordenadas de destino (formato: latitud,longitud), precisión mantenida a 6 decimales"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "Recomendar información de restaurantes cercanos basada en coordenadas de latitud y longitud especificadas. La lista devuelta contiene información detallada como nombre del restaurante, coordenadas de latitud y longitud, precio por persona, calificación, horario de atención, etc.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Coordenada de latitud, precisión mantenida a 6 decimales"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Coordenada de longitud, precisión mantenida a 6 decimales"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "Consultar información detallada sobre un restaurante. Basado en el nombre del restaurante, devuelve información completa incluyendo: nombre del restaurante, coordenadas de latitud y longitud, precio por persona, hora de apertura, hora de cierre, calificación y otra información detallada.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "Nombre del restaurante"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

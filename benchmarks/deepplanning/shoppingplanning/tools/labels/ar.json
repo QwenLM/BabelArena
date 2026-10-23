@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "إجمالي السلة {base_total} غير كافٍ لهذه المجموعة من القسائم (يتطلب على الأقل {total_threshold_required})",
+    "coupon_name_required": "coupon_name مطلوب",
+    "quantity_positive": "يجب أن تكون الكمية رقماً موجباً",
+    "coupon_not_found": "لم يتم العثور على القسيمة: '{coupon_name}'. القسائم الصالحة هي: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "كمية القسيمة غير كافية: المستخدم يملك {user_coupon_count} من '{coupon_name}'، السلة تستخدم بالفعل {existing_cart_count}، لا يمكن إضافة {quantity} أكثر",
+    "vip_coupon_required": "قسيمة VIP '{coupon_name}' تتطلب حالة VIP، لكن المستخدم ليس VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id مطلوب",
+    "quantity_positive": "يجب أن تكون الكمية رقماً موجباً",
+    "product_not_found": "لم يتم العثور على المنتج: product_id '{product_id}'",
+    "insufficient_stock": "المخزون غير كافٍ: المنتج '{product_name}' (المعرف: {product_id}) لديه {stock_quantity} في المخزون، العربة تحتوي بالفعل على {existing_quantity}، لا يمكن إضافة {quantity} أكثر",
+    "save_cart_failed": "فشل في حفظ العربة: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "يجب أن تكون المعلمات سلسلة JSON صالحة! خطأ: {err}",
+    "missing_required_arg": "المعلمة المطلوبة مفقودة: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "المنتج ذو المعرف '{product_id}' غير موجود.",
+    "shipping_origin_not_found": "لم يتم العثور على منشأ الشحن للمنتج '{product_id}'.",
+    "cannot_determine_province": "تعذر تحديد مقاطعة صالحة من عنوان المنشأ: '{address}'.",
+    "cannot_determine_destination_province": "تعذر تحديد مقاطعة صالحة من عنوان الوجهة: '{address}'.",
+    "valid_province_required": "يرجى تقديم اسم مقاطعة صينية صالح.",
+    "cannot_map_to_region": "تعذر مطابقة المقاطعات مع المناطق الجغرافية."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name مطلوب",
+    "quantity_positive": "يجب أن تكون الكمية رقماً موجباً",
+    "invalid_coupon_name": "اسم القسيمة غير صالح: '{coupon_name}'. القسائم الصالحة هي: {valid_coupons_str}",
+    "coupon_not_in_cart": "القسيمة ليست في السلة: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "كمية القسيمة غير كافية في السلة: تحتوي السلة على {cart_count} من '{coupon_name}'، لا يمكن إزالة {quantity}",
+    "save_cart_failed": "فشل في حفظ العربة: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id مطلوب",
+    "quantity_positive": "يجب أن تكون الكمية رقماً موجباً",
+    "product_not_found": "لم يتم العثور على المنتج: product_id '{product_id}'",
+    "product_not_in_cart": "المنتج ليس في السلة: product_id '{product_id}'",
+    "save_cart_failed": "فشل في حفظ العربة: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "بعض product_ids غير موجودة في قاعدة البيانات: {missing_ids}",
+    "invalid_coupon_names": "أسماء القسائم غير صالحة: {coupon_names}. القسائم الصالحة هي: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "بعض product_ids غير موجودة في قاعدة البيانات: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "بعض product_ids غير موجودة في قاعدة البيانات: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "بعض product_ids غير موجودة في قاعدة البيانات: {missing_ids}",
+    "missing_range_params": "المعلمات المطلوبة مفقودة: condition_key، operator، أو value.",
+    "condition_key_not_found": "لا يمكن العثور على condition_key في بيانات المنتج، يرجى التحقق مرة أخرى."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "بعض product_ids غير موجودة في قاعدة البيانات: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "المستخدم مع user_id '{user_id}' غير موجود"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "فهرس BM25 غير متاح. تحقق من تحميل قاعدة البيانات."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "المعلمة المطلوبة مفقودة: sort_by.",
+    "invalid_order": "قيمة غير صالحة لـ 'order': '{order}'. يجب أن تكون 'asc' أو 'desc'.",
+    "sort_error": "حدث خطأ أثناء الفرز على المفتاح '{sort_by}': {e}",
+    "sort_key_not_found": "لا يمكن العثور على مفتاح الفرز '{sort_by}' في بيانات المنتج أو هو null. يرجى التحقق مرة أخرى."
+  }
+}

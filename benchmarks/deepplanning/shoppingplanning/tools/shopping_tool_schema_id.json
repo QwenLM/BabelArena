@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "Menangani kueri bahasa alami yang luas dan terbuka. Ini melakukan pencarian semantik pada informasi produk kunci (nama, merek, kategori, tag) untuk dengan cepat mengambil set awal produk yang relevan. Ini adalah langkah pertama dalam eksplorasi pengguna.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Kueri bahasa alami pengguna. Misalnya, 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Opsional. Membatasi jumlah product_ids yang dikembalikan. Defaultnya adalah 20 untuk mencegah hasil yang terlalu besar."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "Menyaring daftar ID produk yang diberikan berdasarkan satu atau lebih nama merek. Jika beberapa nama merek diberikan, ini mengembalikan produk yang cocok dengan salah satu merek (logika OR).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar opsional product_ids untuk disaring. Jika tidak disediakan, menyaring dari seluruh katalog produk."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar nama merek untuk dicocokkan. Misalnya, [\"UNIQLO\"] atau [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "Menyaring daftar ID produk yang diberikan berdasarkan satu atau lebih warna. Jika beberapa warna diberikan, ini mengembalikan produk yang cocok dengan salah satu warna (logika OR). Pencocokan warna memeriksa bidang 'color' produk. Jika product_ids tidak disediakan, menyaring dari seluruh katalog produk.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar opsional product_ids untuk disaring. Jika tidak disediakan, menyaring dari seluruh katalog produk."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar nama warna untuk dicocokkan. Misalnya, [\"White\"] atau [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "Menyaring daftar ID produk yang diberikan berdasarkan satu atau lebih ukuran. Jika beberapa ukuran diberikan, ini mengembalikan produk yang cocok dengan salah satu ukuran (logika OR). Pencocokan ukuran memeriksa bidang 'size' produk (misalnya, 'M', 'L', '42', '140cm'). Jika product_ids tidak disediakan, menyaring dari seluruh katalog produk.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar opsional product_ids untuk disaring. Jika tidak disediakan, menyaring dari seluruh katalog produk."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar ukuran untuk dicocokkan. misalnya, [\"M\"] atau [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "Menyaring daftar ID produk berdasarkan kupon yang berlaku. Alat ini mencocokkan semua produk yang `applicable_coupons`-nya berisi nama kupon yang diberikan. Misalnya, menggunakan [\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"] akan mencocokkan produk yang memiliki kedua kupon ini dalam daftar applicable_coupons mereka.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar opsional product_ids untuk disaring. Jika tidak disediakan, menyaring dari seluruh katalog produk."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar nama kupon untuk dicocokkan. misalnya, [\"Cross-store: ¥30 off every ¥300\"] atau [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "Menyaring daftar ID produk berdasarkan fitur numerik, operator perbandingan, dan nilai ambang batas.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar opsional product_ids untuk disaring. Jika tidak disediakan, menyaring dari seluruh katalog produk."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "Dimensi fitur numerik untuk disaring.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "Operator perbandingan.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "Nilai numerik untuk dibandingkan."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "Mengurutkan daftar ID produk yang diberikan menurut dimensi dan urutan yang ditentukan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar opsional product_ids untuk diurutkan. Jika tidak disediakan, mengurutkan dari seluruh katalog produk."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Dimensi fitur yang digunakan sebagai dasar pengurutan.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "Urutan pengurutan. Default adalah 'desc' (menurun).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "Mengambil informasi lengkap dan terperinci untuk daftar ID produk.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Daftar pengidentifikasi produk unik untuk mengambil detailnya."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "Menghitung perkiraan waktu pengiriman dalam hari untuk sebuah produk. Ini menggunakan asal pengiriman produk dan alamat tujuan pengguna. Hasil akhirnya adalah jumlah hari dalam bentuk bilangan bulat.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Pengidentifikasi unik produk untuk menemukan asal pengirimannya."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "Alamat tujuan pengguna, yang harus berupa nama provinsi yang ditulis dalam pinyin, seperti 'guangdong', 'beijing', 'shanghai', dll. Hanya pinyin yang diterima untuk parameter input ini."
+          },
+          "provider": {
+            "type": "string",
+            "description": "Opsional. Nama penyedia pengiriman untuk menyesuaikan waktu pengiriman. Penyedia yang didukung termasuk 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default'. Jika tidak disediakan, menggunakan penyedia default produk."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "Mengambil informasi pengguna dari database, termasuk alamat pengguna, ukuran tubuh, dan detail profil lainnya. Jika user_id disediakan, mengembalikan informasi spesifik pengguna tersebut; jika tidak, mengembalikan informasi pengguna default/saat ini.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Opsional. Pengidentifikasi unik pengguna untuk diambil. Jika tidak disediakan, mengembalikan informasi pengguna default."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "Menambahkan produk ke keranjang belanja. Memvalidasi bahwa produk ada dalam katalog produk dan memeriksa ketersediaan stok. Jika produk sudah ada di keranjang, itu meningkatkan jumlahnya. Alat ini secara otomatis memperbarui ringkasan keranjang (jumlah total item dan total harga) setelah menambahkan. Mengembalikan keranjang yang diperbarui dengan semua item dan informasi ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Pengidentifikasi unik produk untuk ditambahkan ke keranjang. Harus ada dalam katalog produk."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Opsional. Jumlah untuk ditambahkan. Harus berupa bilangan bulat positif. Default adalah 1. Alat memeriksa apakah menambahkan jumlah ini akan melebihi stock_quantity produk (termasuk item yang sudah ada di keranjang)."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "Menghapus produk dari keranjang belanja atau mengurangi jumlahnya. Memvalidasi bahwa produk ada dalam katalog produk dan saat ini ada di keranjang. Jika jumlah yang akan dihapus sama dengan atau melebihi jumlah di keranjang, item tersebut dihapus sepenuhnya. Alat ini secara otomatis memperbarui ringkasan keranjang dan menghapus item dengan jumlah nol. Mengembalikan keranjang yang diperbarui dengan semua item dan informasi ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Pengidentifikasi unik produk untuk dihapus dari keranjang. Harus ada dalam katalog produk dan saat ini ada di keranjang."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Opsional. Jumlah untuk dihapus. Harus berupa bilangan bulat positif. Default adalah 1. Jika jumlahnya sama atau melebihi jumlah di keranjang, item dihapus sepenuhnya."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "Mengambil informasi keranjang belanja saat ini termasuk semua item dan statistik ringkasan. Mengembalikan daftar item keranjang (masing-masing dengan product_id, nama, jumlah, dan harga) dan objek ringkasan yang berisi total_items_count (jumlah semua kuantitas) dan total_price (jumlah semua harga item * kuantitas). Tidak diperlukan parameter - mengembalikan keadaan keranjang saat ini.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "Menambahkan kupon ke keranjang belanja. Memvalidasi bahwa kupon ada dalam daftar kupon yang valid, memeriksa kepemilikan pengguna atas kupon dan memastikan total keranjang memenuhi persyaratan ambang batas kupon. Jika kupon yang sama sudah ada di keranjang, itu memperbarui jumlahnya. Alat ini secara otomatis memperbarui ringkasan keranjang (jumlah total item dan total harga setelah diskon) setelah menambahkan. Mengembalikan keranjang yang diperbarui dengan semua item, kupon yang digunakan, dan informasi ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Nama kupon untuk ditambahkan ke keranjang. Harus salah satu kupon yang valid dari daftar kupon. Contoh: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Opsional. Jumlah kupon untuk ditambahkan. Harus berupa bilangan bulat positif. Default adalah 1. Alat memeriksa apakah pengguna memiliki cukup kupon dan apakah total keranjang cukup untuk jumlah yang diminta."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "Menghapus kupon dari keranjang belanja atau mengurangi jumlahnya. Memvalidasi bahwa kupon ada dalam daftar kupon yang valid dan saat ini ada di keranjang. Jika jumlah yang akan dihapus sama dengan atau melebihi jumlah di keranjang, kupon tersebut dihapus sepenuhnya. Alat ini secara otomatis memperbarui ringkasan keranjang (jumlah total item dan total harga setelah diskon) dan menghapus kupon dengan jumlah nol. Mengembalikan keranjang yang diperbarui dengan semua item, kupon yang digunakan, dan informasi ringkasan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Nama kupon untuk dihapus dari keranjang. Harus salah satu kupon yang valid dan saat ini ada di keranjang."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Opsional. Jumlah kupon yang akan dihapus. Harus berupa bilangan bulat positif. Defaultnya adalah 1. Jika jumlahnya sama dengan atau melebihi jumlah keranjang, kupon akan dihapus sepenuhnya."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

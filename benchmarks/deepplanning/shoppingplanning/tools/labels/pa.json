@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "ਕਾਰਟ ਕੁੱਲ {base_total} ਇਸ ਕੂਪਨ ਦੇ組ਨ ਲਈ ਅਪਰਾਪਤ ਹੈ (ਘੱਟੋ-ਘੱਟ {total_threshold_required} ਦੀ ਲੋੜ ਹੈ)",
+    "coupon_name_required": "coupon_name ਦੀ ਲੋੜ ਹੈ",
+    "quantity_positive": "ਮਾਤਰਾ ਇੱਕ ਸਕਾਰਾਤਮਕ ਸੰਖਿਆ ਹੋਣੀ ਚਾਹੀਦੀ ਹੈ",
+    "coupon_not_found": "ਕੂਪਨ ਨਹੀਂ ਮਿਲਿਆ: '{coupon_name}'. ਵੈਧ ਕੂਪਨ ਹਨ: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "ਅਪਰਾਪਤ ਕੂਪਨ ਮਾਤਰਾ: ਯੂਜ਼ਰ ਕੋਲ {user_coupon_count} '{coupon_name}' ਦੇ ਹਨ, ਕਾਰਟ ਪਹਿਲਾਂ ਹੀ {existing_cart_count} ਵਰਤਦਾ ਹੈ, {quantity} ਹੋਰ ਨਹੀਂ ਜੋੜ ਸਕਦਾ",
+    "vip_coupon_required": "VIP ਕੂਪਨ '{coupon_name}' ਲਈ VIP ਦਰਜੇ ਦੀ ਲੋੜ ਹੈ, ਪਰ ਯੂਜ਼ਰ VIP ਨਹੀਂ ਹੈ"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id ਦੀ ਲੋੜ ਹੈ",
+    "quantity_positive": "ਮਾਤਰਾ ਇੱਕ ਸਕਾਰਾਤਮਕ ਸੰਖਿਆ ਹੋਣੀ ਚਾਹੀਦੀ ਹੈ",
+    "product_not_found": "ਉਤਪਾਦ ਨਹੀਂ ਮਿਲਿਆ: product_id '{product_id}'",
+    "insufficient_stock": "ਅਪਰਿਆਪਤ ਸਟਾਕ: ਉਤਪਾਦ '{product_name}' (ID: {product_id}) ਦੇ ਕੋਲ {stock_quantity} ਸਟਾਕ ਵਿੱਚ ਹੈ, ਕਾਰਟ ਵਿੱਚ ਪਹਿਲਾਂ ਹੀ {existing_quantity} ਹੈ, {quantity} ਹੋਰ ਨਹੀਂ ਜੋੜ ਸਕਦੇ",
+    "save_cart_failed": "ਕਾਰਟ ਸੇਵ ਕਰਨ ਵਿੱਚ ਅਸਫਲ: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "ਪੈਰਾਮੀਟਰ ਇੱਕ ਵੈਧ JSON ਸਟਰਿੰਗ ਹੋਣੇ ਚਾਹੀਦੇ ਹਨ! ਗਲਤੀ: {err}",
+    "missing_required_arg": "ਲੋੜੀਂਦਾ ਦਲੀਲ ਗੁੰਮ ਹੈ: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID '{product_id}' ਵਾਲਾ ਉਤਪਾਦ ਨਹੀਂ ਮਿਲਿਆ।",
+    "shipping_origin_not_found": "ਉਤਪਾਦ '{product_id}' ਲਈ ਸ਼ਿਪਿੰਗ ਮੂਲ ਨਹੀਂ ਮਿਲਿਆ।",
+    "cannot_determine_province": "ਮੂਲ ਪਤੇ ਤੋਂ ਇੱਕ ਵੈਧ ਸੂਬਾ ਨਿਰਧਾਰਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ: '{address}'।",
+    "cannot_determine_destination_province": "ਮੰਜ਼ਿਲ ਪਤੇ ਤੋਂ ਇੱਕ ਵੈਧ ਸੂਬਾ ਨਿਰਧਾਰਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ: '{address}'।",
+    "valid_province_required": "ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਚੀਨੀ ਸੂਬੇ ਦਾ ਨਾਮ ਪ੍ਰਦਾਨ ਕਰੋ।",
+    "cannot_map_to_region": "ਸੂਬਿਆਂ ਨੂੰ ਭੂਗੋਲਿਕ ਖੇਤਰਾਂ ਨਾਲ ਨਹੀਂ ਜੋੜਿਆ ਜਾ ਸਕਿਆ।"
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name ਦੀ ਲੋੜ ਹੈ",
+    "quantity_positive": "ਮਾਤਰਾ ਇੱਕ ਸਕਾਰਾਤਮਕ ਸੰਖਿਆ ਹੋਣੀ ਚਾਹੀਦੀ ਹੈ",
+    "invalid_coupon_name": "ਅਵੈਧ ਕੂਪਨ ਨਾਮ: '{coupon_name}'. ਵੈਧ ਕੂਪਨ ਹਨ: {valid_coupons_str}",
+    "coupon_not_in_cart": "ਕੂਪਨ ਕਾਰਟ ਵਿੱਚ ਨਹੀਂ ਹੈ: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "ਕਾਰਟ ਵਿੱਚ ਕੂਪਨ ਦੀ ਮਾਤਰਾ ਅਪਰਯਾਪਤ ਹੈ: ਕਾਰਟ ਵਿੱਚ '{coupon_name}' ਦੇ {cart_count} ਹਨ, {quantity} ਨੂੰ ਹਟਾਇਆ ਨਹੀਂ ਜਾ ਸਕਦਾ",
+    "save_cart_failed": "ਕਾਰਟ ਸੇਵ ਕਰਨ ਵਿੱਚ ਅਸਫਲ: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id ਦੀ ਲੋੜ ਹੈ",
+    "quantity_positive": "ਮਾਤਰਾ ਇੱਕ ਸਕਾਰਾਤਮਕ ਸੰਖਿਆ ਹੋਣੀ ਚਾਹੀਦੀ ਹੈ",
+    "product_not_found": "ਉਤਪਾਦ ਨਹੀਂ ਮਿਲਿਆ: product_id '{product_id}'",
+    "product_not_in_cart": "ਉਤਪਾਦ ਕਾਰਟ ਵਿੱਚ ਨਹੀਂ ਹੈ: product_id '{product_id}'",
+    "save_cart_failed": "ਕਾਰਟ ਸੇਵ ਕਰਨ ਵਿੱਚ ਅਸਫਲ: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "ਕੁਝ product_ids ਡਾਟਾਬੇਸ ਵਿੱਚ ਨਹੀਂ ਮਿਲੇ: {missing_ids}",
+    "invalid_coupon_names": "ਅਵੈਧ ਕੂਪਨ ਨਾਮ: {coupon_names}. ਵੈਧ ਕੂਪਨ ਹਨ: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "ਕੁਝ product_ids ਡਾਟਾਬੇਸ ਵਿੱਚ ਨਹੀਂ ਮਿਲੇ: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "ਕੁਝ product_ids ਡਾਟਾਬੇਸ ਵਿੱਚ ਨਹੀਂ ਮਿਲੇ: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "ਕੁਝ product_ids ਡਾਟਾਬੇਸ ਵਿੱਚ ਨਹੀਂ ਮਿਲੇ: {missing_ids}",
+    "missing_range_params": "ਲੋੜੀਂਦੇ ਪੈਰਾਮੀਟਰ ਗੁੰਮ ਹਨ: condition_key, operator, ਜਾਂ value.",
+    "condition_key_not_found": "condition_key ਉਤਪਾਦ ਡਾਟਾ ਵਿੱਚ ਨਹੀਂ ਮਿਲ ਸਕਦਾ, ਕਿਰਪਾ ਕਰਕੇ ਮੁੜ ਜਾਂਚ ਕਰੋ।"
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "ਕੁਝ product_ids ਡਾਟਾਬੇਸ ਵਿੱਚ ਨਹੀਂ ਮਿਲੇ: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' ਵਾਲਾ ਯੂਜ਼ਰ ਨਹੀਂ ਮਿਲਿਆ"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 ਇੰਡੈਕਸ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਡਾਟਾਬੇਸ ਲੋਡਿੰਗ ਦੀ ਜਾਂਚ ਕਰੋ।"
+  },
+  "SortProductsTool": {
+    "sort_by_required": "ਲੋੜੀਂਦਾ ਪੈਰਾਮੀਟਰ ਗੁੰਮ ਹੈ: sort_by.",
+    "invalid_order": "'order' ਲਈ ਅਵੈਧ ਮੁੱਲ: '{order}'. 'asc' ਜਾਂ 'desc' ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ।",
+    "sort_error": "ਕੁੰਜੀ '{sort_by}' 'ਤੇ ਸੋਰਟਿੰਗ ਦੌਰਾਨ ਗਲਤੀ ਆਈ: {e}",
+    "sort_key_not_found": "ਸੋਰਟ ਕੁੰਜੀ '{sort_by}' ਉਤਪਾਦ ਡਾਟਾ ਵਿੱਚ ਨਹੀਂ ਮਿਲ ਸਕਦੀ ਜਾਂ ਨੱਲ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਮੁੜ ਜਾਂਚ ਕਰੋ।"
+  }
+}

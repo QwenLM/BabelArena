@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "Geniş, açık uçlu doğal dil sorgularını işler. Ana ürün bilgileri (isim, marka, kategori, etiketler) üzerinde anlamsal bir arama yaparak ilgili ürünlerin başlangıç setini hızlı bir şekilde alır. Bu, kullanıcı keşfinin ilk adımıdır.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Kullanıcının doğal dil sorgusu. örneğin, 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Opsiyonel. Döndürülen product_ids sayısını sınırlar. Aşırı büyük sonuçları önlemek için varsayılan olarak 20'dir."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "Belirtilen bir ürün kimlikleri listesini bir veya daha fazla marka adına göre filtreler. Birden fazla marka adı sağlanırsa, herhangi bir markayla eşleşen ürünleri döndürür (VEYA mantığı).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filtrelemek için opsiyonel bir product_ids listesi. Sağlanmazsa, tüm ürün kataloğundan filtreler."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Eşleştirilecek marka adlarının bir listesi. örneğin, [\"UNIQLO\"] veya [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "Belirtilen bir ürün kimlikleri listesini bir veya daha fazla renge göre filtreler. Birden fazla renk sağlanırsa, herhangi bir renkle eşleşen ürünleri döndürür (VEYA mantığı). Renk eşleştirme, ürünün 'renk' alanını kontrol eder. Eğer product_ids sağlanmazsa, tüm ürün kataloğundan filtreler.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filtrelemek için opsiyonel bir product_ids listesi. Sağlanmazsa, tüm ürün kataloğundan filtreler."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Eşleştirilecek renk adlarının bir listesi. örneğin, [\"White\"] veya [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "Belirtilen bir ürün kimlikleri listesini bir veya daha fazla bedene göre filtreler. Birden fazla beden sağlanırsa, herhangi bir bedene eşleşen ürünleri döndürür (VEYA mantığı). Beden eşleştirme, ürünün 'beden' alanını kontrol eder (örneğin, 'M', 'L', '42', '140cm'). Eğer product_ids sağlanmazsa, tüm ürün kataloğundan filtreler.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filtrelemek için opsiyonel bir product_ids listesi. Sağlanmazsa, tüm ürün kataloğundan filtreler."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Eşleştirilecek boyutların listesi. Örneğin, [\"M\"] veya [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "Bir ürün kimlikleri listesini geçerli kuponlara göre filtreler. Bu araç, `geçerli_kuponlar` listesinde sağlanan kupon adlarını içeren tüm ürünleri eşleştirir. Örneğin, [\"Mağaza çapında: Her ¥300 için ¥30 indirim\", \"Aynı marka: Her ¥200 için ¥25 indirim\"] kullanmak, geçerli_kuponlar listesinde her iki kuponu da içeren ürünleri eşleştirir.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filtrelemek için opsiyonel bir product_ids listesi. Sağlanmazsa, tüm ürün kataloğundan filtreler."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Eşleştirilecek kupon isimlerinin listesi. Örneğin, [\"Cross-store: ¥30 off every ¥300\"] veya [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "Bir ürün kimlikleri listesini sayısal bir özelliğe, bir karşılaştırma operatörüne ve bir eşik değerine göre filtreler.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Filtrelemek için opsiyonel bir product_ids listesi. Sağlanmazsa, tüm ürün kataloğundan filtreler."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "Filtrelenecek sayısal özellik boyutu.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "Karşılaştırma operatörü.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "Karşılaştırılacak sayısal değer."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "Belirtilen bir ürün kimlikleri listesini belirtilen bir boyut ve sıraya göre sıralar.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Sıralamak için isteğe bağlı product_ids listesi. Sağlanmazsa, tüm ürün kataloğundan sıralar."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Sıralama temeli olarak kullanılacak özellik boyutu.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "Sıralama düzeni. Varsayılan olarak 'desc' (azalan).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "Bir ürün kimlikleri listesi için tam, ayrıntılı bilgileri alır.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Detaylarını almak için benzersiz ürün tanımlayıcılarının listesi."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "Bir ürün için tahmini teslimat süresini gün olarak hesaplar. Ürünün gönderim kaynağını ve kullanıcının varış adresini kullanır. Sonuç, gün sayısı olarak bir tam sayı olur.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Gönderim kaynağını bulmak için ürünün benzersiz tanımlayıcısı."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "Kullanıcının varış adresi, pinyin ile yazılmış il adı olmalıdır, örneğin 'guangdong', 'beijing', 'shanghai', vb. Bu giriş parametresi için yalnızca pinyin kabul edilir."
+          },
+          "provider": {
+            "type": "string",
+            "description": "İsteğe bağlı. Teslimat süresini ayarlamak için gönderim sağlayıcı adı. Desteklenen sağlayıcılar arasında 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default' bulunur. Sağlanmazsa, ürünün varsayılan sağlayıcısını kullanır."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "Veritabanından kullanıcı bilgilerini alır, kullanıcının adresi, vücut ölçüleri ve diğer profil detayları dahil. Eğer bir user_id sağlanırsa, o kullanıcının özel bilgilerini döndürür; sağlanmazsa, varsayılan/mevcut kullanıcının bilgilerini döndürür.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "İsteğe bağlı. Alınacak kullanıcının benzersiz tanımlayıcısı. Sağlanmazsa, varsayılan kullanıcı bilgilerini döndürür."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "Bir ürünü alışveriş sepetine ekler. Ürünün ürün kataloğunda mevcut olduğunu doğrular ve stok uygunluğunu kontrol eder. Ürün zaten sepette ise, miktarı artırır. Araç, eklemeden sonra sepet özetini (toplam ürün sayısı ve toplam fiyat) otomatik olarak günceller. Tüm ürünler ve özet bilgileri ile güncellenmiş sepeti döndürür.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Sepete eklemek için ürünün benzersiz tanımlayıcısı. Ürün kataloğunda mevcut olmalıdır."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "İsteğe bağlı. Eklenecek miktar. Pozitif bir tam sayı olmalıdır. Varsayılan olarak 1. Araç, bu miktarın eklenmesinin ürünün stok_miktarını aşıp aşmayacağını kontrol eder (sepetteki öğeler dahil)."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "Bir ürünü alışveriş sepetinden çıkarır veya miktarını azaltır. Ürünün ürün kataloğunda mevcut olduğunu ve şu anda sepette olduğunu doğrular. Çıkarılacak miktar sepet miktarına eşit veya fazla ise, ürün tamamen çıkarılır. Araç, sepet özetini otomatik olarak günceller ve sıfır miktarlı ürünleri çıkarır. Tüm ürünler ve özet bilgileri ile güncellenmiş sepeti döndürür.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Sepetten kaldırılacak ürünün benzersiz tanımlayıcısı. Ürün kataloğunda mevcut olmalı ve şu anda sepette olmalıdır."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "İsteğe bağlı. Kaldırılacak miktar. Pozitif bir tam sayı olmalıdır. Varsayılan olarak 1. Miktar, sepet miktarına eşit veya daha fazla ise, öğe tamamen kaldırılır."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "Mevcut alışveriş sepeti bilgilerini, tüm ürünler ve özet istatistikler dahil alır. Sepet ürünlerinin bir listesini (her biri product_id, isim, miktar ve fiyat ile) ve toplam_items_count (tüm miktarların toplamı) ve toplam_fiyat (tüm ürün fiyatları * miktarlar toplamı) içeren bir özet nesnesi döndürür. Parametre gerekmez - sepetin mevcut durumunu döndürür.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "Bir kuponu alışveriş sepetine ekler. Kuponun geçerli kupon listesinde mevcut olduğunu doğrular, kullanıcının kupon sahipliğini kontrol eder ve sepet toplamının kuponun eşik gereksinimini karşıladığını sağlar. Aynı kupon zaten sepette ise, miktarı günceller. Araç, eklemeden sonra sepet özetini (toplam ürün sayısı ve indirim sonrası toplam fiyat) otomatik olarak günceller. Tüm ürünler, kullanılan kuponlar ve özet bilgileri ile güncellenmiş sepeti döndürür.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Sepete eklenecek kuponun adı. Kupon listesindeki geçerli kuponlardan biri olmalıdır. Örnekler: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "İsteğe bağlı. Eklenecek kupon miktarı. Pozitif bir tam sayı olmalıdır. Varsayılan olarak 1. Araç, kullanıcının yeterli kupona sahip olup olmadığını ve sepet toplamının istenen miktar için yeterli olup olmadığını kontrol eder."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "Bir kuponu alışveriş sepetinden çıkarır veya miktarını azaltır. Kuponun geçerli kupon listesinde mevcut olduğunu ve şu anda sepette olduğunu doğrular. Çıkarılacak miktar sepet miktarına eşit veya fazla ise, kupon tamamen çıkarılır. Araç, sepet özetini otomatik olarak günceller ve sıfır miktarlı kuponları çıkarır. Tüm ürünler, kullanılan kuponlar ve özet bilgileri ile güncellenmiş sepeti döndürür.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Sepetten kaldırılacak kuponun adı. Geçerli kuponlardan biri olmalı ve şu anda sepette olmalıdır."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "İsteğe bağlı. Çıkartılacak kuponların miktarı. Pozitif bir tam sayı olmalıdır. Varsayılan değer 1'dir. Miktar, sepet miktarına eşit veya daha fazla ise, kupon tamamen kaldırılır."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

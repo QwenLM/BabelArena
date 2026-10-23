@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "Tren bileti bilgilerini sorgula, kalkış yeri, varış yeri, tarih ve diğer koşullara göre tren bileti verilerini aramayı destekler. Kriterlere uyan tren bilgilerini döndürür, bunlar arasında: tren numarası, kalkış/varış zamanı, istasyon bilgileri, yolculuk süresi, koltuk sınıfı, kalan koltuk durumu, fiyat, vb. Direkt ve aktarmalı güzergahları destekler. Direkt güzergahlar sadece ilk segmenti gösterirken, aktarmalı güzergahlar her segment için detaylı bilgi gösterir. Seyahat planlamasında, tüm trenle ilgili bilgiler kesinlikle bu araç tarafından döndürülen sonuçlardan gelmelidir ve uydurulmamalıdır; istasyon ve tren isimleri sorgu sonuçlarıyla tam olarak aynı olmalıdır.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Kalkış şehri, şehir ismini destekler"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Varış şehri, şehir ismini destekler"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Kalkış tarihi, format: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Tren koltuk sınıfı: Birinci Sınıf Koltuk, İkinci Sınıf Koltuk, Business Koltuk"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "Uçuş bilgilerini sorgula, kalkış yeri, varış yeri, tarih ve diğer koşullara göre uçuş verilerini aramayı destekler. Kriterlere uyan uçuş bilgilerini döndürür, bunlar arasında: uçuş numarası, kalkış/varış zamanı, havaalanı bilgileri, yolculuk süresi, koltuk sınıfı, kalan koltuk durumu, fiyat, uçak tipi, vb. Direkt ve aktarmalı uçuşları destekler. Direkt uçuşlar sadece ilk segmenti gösterirken, aktarmalı uçuşlar her segment için detaylı bilgi gösterir. Seyahat planlamasında, tüm uçuşla ilgili bilgiler kesinlikle bu araç tarafından döndürülen sonuçlardan gelmelidir ve uydurulmamalıdır; havaalanı isimleri, uçuş numaraları, vb. sorgu sonuçlarıyla tam olarak aynı olmalıdır.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Kalkış şehri, şehir ismini destekler"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Varış şehri, şehir ismini destekler"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Kalkış tarihi, format: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Uçuş koltuk sınıfı: Ekonomi Sınıfı, Business Class, Birinci Sınıf"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "Otel bilgilerini sorgula, varış yeri (idari bölge), giriş tarihi, çıkış tarihi, otel yıldız derecelendirmesi ve otel markasına göre otelleri ara. Seyahat planlamasında, tüm otelle ilgili bilgiler kesinlikle bu araç tarafından döndürülen sonuçlardan gelmelidir ve uydurulmamalıdır; otel isimleri sorgu sonuçlarıyla tam olarak aynı olmalıdır.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Varış yeri (ülke, il, şehir, ilçe/kasaba ismi)"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "Giriş tarihi, format: yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "Çıkış tarihi, format: yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "Otel yıldız derecelendirmesi: 1~5; tek değer"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "Otel markası, sadece tek değer sorgusunu destekler. Opsiyonel markalar: Ji Otel, Atour Otel, Marriott, Hilton, Home Inn, Jinjiang Inn, Hanting Otel, Orange Otel"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "Turistik yer detaylı bilgilerini sorgula. Turistik yer ismine göre, tam bilgileri döndürür, bunlar arasında: turistik yer ID, isim, şehir, enlem ve boylam koordinatları, turistik yer açıklaması, kullanıcı değerlendirmesi, açılış zamanı, kapanış zamanı, kapanış tarihleri, önerilen ziyaret süresi (minimum/maksimum saat), bilet fiyatı, turistik yer türü, vb.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "Turistik yer ismi"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "Bir şehir için popüler turistik yer bilgilerini şehir anahtar kelimesine (turistik yer ismi, açıklama, tür, vb.) göre ara ve döndür. Seyahat planı oluşturma sırasında, tüm turistik yer bilgileri kesinlikle bu araç tarafından döndürülen sonuçlardan gelmelidir ve uydurulmamalıdır veya diğer kaynaklardan turistik yer verileri kullanılmamalıdır. Kullanılan turistik yer isimleri sorgu sonuçlarıyla tam olarak aynı olmalı ve kısaltılmamalı veya yeniden adlandırılmamalıdır.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "Şehir adı veya anahtar kelime"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "Çekim türü filtresi (enum), seçenekler: 'Tarihi ve Kültürel', 'Doğal Manzara', 'Sanat Sergisi', 'Şehir Simgesi', 'Theme Park', 'Eğlence Deneyimi'."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "Bir yer ismine karşılık gelen enlem ve boylam koordinatlarını sorgula. Örneğin, 'Beijing South Railway Station' girildiğinde, koordinatlarını döndürür, değerler altı ondalık basamağa kadar korunur. Seyahat planlarında, tüm ilgili yer isimleri kesinlikle diğer araçlar tarafından döndürülen sonuçlardan gelmelidir ve tam olarak aynı olmalıdır.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "Sorgulanacak yer adı, örneğin: 'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "İki yer arasında yol güzergahı detaylarını hesapla ve döndür, bunlar arasında mesafe (metre), tahmini süre (dakika) ve tahmini maliyet (para birimi) bulunur. Bu işlev, toplam mesafeye göre ulaşım modunu otomatik olarak seçer: 2 kilometre veya daha az için yürüyüş (maliyet 0) ve 2 kilometreden fazla için sürüş (taksi) modu. Tahmini maliyet, varsayılan olarak 4 kişiyi barındırabilen bir araç içindir.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Başlangıç koordinatları (format: enlem, boylam), hassasiyet 6 ondalık basamak olarak korunur"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Varış koordinatları (format: enlem, boylam), hassasiyet 6 ondalık basamak olarak korunur"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "Belirtilen enlem ve boylam koordinatlarına göre yakınlardaki restoran bilgilerini öner. Döndürülen liste, restoran ismi, enlem ve boylam koordinatları, kişi başı fiyat, değerlendirme, çalışma saatleri, vb. gibi detaylı bilgileri içerir.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Enlem koordinatı, hassasiyet 6 ondalık basamak olarak korunur"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Boylam koordinatı, hassasiyet 6 ondalık basamak olarak korunur"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "Bir restoran hakkında detaylı bilgileri sorgula. Restoran ismine göre, tam bilgileri döndürür, bunlar arasında: restoran ismi, enlem ve boylam koordinatları, kişi başı fiyat, açılış zamanı, kapanış zamanı, değerlendirme ve diğer detaylı bilgiler.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "Restoran adı"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

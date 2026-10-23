@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "カートの合計 {base_total} はこのクーポンの組み合わせには不十分です（少なくとも {total_threshold_required} が必要です）",
+    "coupon_name_required": "coupon_name は必須です",
+    "quantity_positive": "数量は正の数でなければなりません",
+    "coupon_not_found": "クーポンが見つかりません: '{coupon_name}'。有効なクーポンは: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "クーポンの数量が不足しています: ユーザーは '{coupon_name}' を {user_coupon_count} 所持していますが、カートにはすでに {existing_cart_count} 使用されています。さらに {quantity} を追加することはできません",
+    "vip_coupon_required": "VIPクーポン '{coupon_name}' はVIPステータスが必要ですが、ユーザーはVIPではありません"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id は必須です",
+    "quantity_positive": "数量は正の数でなければなりません",
+    "product_not_found": "商品が見つかりません: product_id '{product_id}'",
+    "insufficient_stock": "在庫不足: 商品 '{product_name}' (ID: {product_id}) の在庫は {stock_quantity} です。カートにはすでに {existing_quantity} があります。さらに {quantity} を追加できません。",
+    "save_cart_failed": "カートの保存に失敗しました: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "パラメータは有効なJSON文字列でなければなりません！エラー: {err}",
+    "missing_required_arg": "必須の引数が欠けています: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID '{product_id}' の商品が見つかりません。",
+    "shipping_origin_not_found": "商品 '{product_id}' の発送元が見つかりません。",
+    "cannot_determine_province": "発送元住所から有効な州を特定できませんでした: '{address}'。",
+    "cannot_determine_destination_province": "配送先住所から有効な州を特定できませんでした: '{address}'。",
+    "valid_province_required": "有効な中国の省の名前を提供してください。",
+    "cannot_map_to_region": "省を地理的地域にマッピングできませんでした。"
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name は必須です",
+    "quantity_positive": "数量は正の数でなければなりません",
+    "invalid_coupon_name": "無効なクーポン名: '{coupon_name}'。有効なクーポンは: {valid_coupons_str}",
+    "coupon_not_in_cart": "カートにクーポンがありません: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "カート内のクーポン数量が不足しています: カートには'{coupon_name}'が{cart_count}ありますが、{quantity}を削除できません",
+    "save_cart_failed": "カートの保存に失敗しました: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id は必須です",
+    "quantity_positive": "数量は正の数でなければなりません",
+    "product_not_found": "商品が見つかりません: product_id '{product_id}'",
+    "product_not_in_cart": "カートに商品がありません: product_id '{product_id}'",
+    "save_cart_failed": "カートの保存に失敗しました: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "データベースで見つからないproduct_idがあります: {missing_ids}",
+    "invalid_coupon_names": "無効なクーポン名: {coupon_names}。有効なクーポンは: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "データベースで見つからないproduct_idがあります: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "データベースで見つからないproduct_idがあります: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "データベースで見つからないproduct_idがあります: {missing_ids}",
+    "missing_range_params": "必要なパラメータが欠落しています: condition_key、operator、または value。",
+    "condition_key_not_found": "condition_key が製品データに見つかりません。再度確認してください。"
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "データベースで見つからないproduct_idがあります: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' のユーザーが見つかりません"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 インデックスが利用できません。データベースの読み込みを確認してください。"
+  },
+  "SortProductsTool": {
+    "sort_by_required": "必要なパラメータが欠落しています: sort_by。",
+    "invalid_order": "無効な 'order' の値: '{order}'。'asc' または 'desc' でなければなりません。",
+    "sort_error": "キー '{sort_by}' のソート中にエラーが発生しました: {e}",
+    "sort_key_not_found": "ソートキー '{sort_by}' が製品データに見つからないか、null です。再度確認してください。"
+  }
+}

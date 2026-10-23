@@ -1,0 +1,9 @@
+# tau2 task subset: standard
+# task_set=mock split=base
+# population=10 sampled=5 fraction=0.5 seed=42
+# regenerate: python tools/build_task_subsets.py --apply
+create_task_1
+create_task_1_nl_eval
+update_task_1
+update_task_with_initialization_actions
+update_task_with_user_tools

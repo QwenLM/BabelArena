@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "Арбадағы жалпы {base_total} купондар комбинациясы үшін жеткіліксіз (ең аз дегенде {total_threshold_required} қажет)",
+    "coupon_name_required": "coupon_name қажет",
+    "quantity_positive": "сан оң сан болуы керек",
+    "coupon_not_found": "Купон табылмады: '{coupon_name}'. Жарамды купондар: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "Купон саны жеткіліксіз: Пайдаланушыда '{coupon_name}' купонының {user_coupon_count} бар, арбада {existing_cart_count} қолданылады, {quantity} көбірек қосу мүмкін емес",
+    "vip_coupon_required": "VIP купон '{coupon_name}' VIP мәртебесін талап етеді, бірақ пайдаланушы VIP емес"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "product_id қажет",
+    "quantity_positive": "сан оң сан болуы керек",
+    "product_not_found": "Өнім табылмады: product_id '{product_id}'",
+    "insufficient_stock": "Қор жеткіліксіз: '{product_name}' өнімінің (ID: {product_id}) қоймада {stock_quantity} бар, себетте қазірдің өзінде {existing_quantity} бар, {quantity} көбірек қосу мүмкін емес",
+    "save_cart_failed": "Себетті сақтау сәтсіз аяқталды: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "Параметрлер жарамды JSON жолы болуы керек! Қате: {err}",
+    "missing_required_arg": "Қажетті аргумент жоқ: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ID '{product_id}' бар өнім табылмады.",
+    "shipping_origin_not_found": "'{product_id}' өнімінің жеткізу шығу тегі табылмады.",
+    "cannot_determine_province": "Шығу мекенжайынан жарамды облысты анықтау мүмкін болмады: '{address}'.",
+    "cannot_determine_destination_province": "Мақсат мекенжайынан жарамды облысты анықтау мүмкін болмады: '{address}'.",
+    "valid_province_required": "Қытай провинциясының жарамды атауын беріңіз.",
+    "cannot_map_to_region": "Провинцияларды географиялық аймақтарға сәйкестендіру мүмкін болмады."
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "coupon_name қажет",
+    "quantity_positive": "сан оң сан болуы керек",
+    "invalid_coupon_name": "Жарамсыз купон атауы: '{coupon_name}'. Жарамды купондар: {valid_coupons_str}",
+    "coupon_not_in_cart": "Купон себетте жоқ: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "Себеттегі купон саны жеткіліксіз: Себетте '{coupon_name}' саны {cart_count}, {quantity} алып тастау мүмкін емес",
+    "save_cart_failed": "Себетті сақтау сәтсіз аяқталды: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "product_id қажет",
+    "quantity_positive": "сан оң сан болуы керек",
+    "product_not_found": "Өнім табылмады: product_id '{product_id}'",
+    "product_not_in_cart": "Өнім себетте жоқ: product_id '{product_id}'",
+    "save_cart_failed": "Себетті сақтау сәтсіз аяқталды: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "Кейбір product_id дерекқорда табылмады: {missing_ids}",
+    "invalid_coupon_names": "Жарамсыз купон атаулары: {coupon_names}. Жарамды купондар: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "Кейбір product_id дерекқорда табылмады: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "Кейбір product_id дерекқорда табылмады: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "Кейбір product_id дерекқорда табылмады: {missing_ids}",
+    "missing_range_params": "Қажетті параметрлер жоқ: condition_key, operator немесе value.",
+    "condition_key_not_found": "condition_key өнім деректерінде табылмады, қайта тексеріңіз."
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "Кейбір product_id дерекқорда табылмады: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "user_id '{user_id}' пайдаланушы табылмады"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "BM25 индексі қолжетімді емес. Деректер базасын жүктеуді тексеріңіз."
+  },
+  "SortProductsTool": {
+    "sort_by_required": "Қажетті параметр жоқ: sort_by.",
+    "invalid_order": "'order' үшін жарамсыз мән: '{order}'. 'asc' немесе 'desc' болуы керек.",
+    "sort_error": "'{sort_by}' кілті бойынша сұрыптау кезінде қате пайда болды: {e}",
+    "sort_key_not_found": "Сұрыптау кілті '{sort_by}' өнім деректерінде табылмады немесе null. Қайта тексеріңіз."
+  }
+}

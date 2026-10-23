@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "Interroger les informations sur les billets de train, prend en charge la recherche de données de billets de train par origine, destination, date et autres conditions. Retourne les informations sur les trains qui répondent aux critères, y compris : numéro de train, heure de départ/arrivée, informations sur la gare, durée du trajet, classe de siège, statut des sièges restants, prix, etc. Prend en charge les itinéraires directs et avec correspondance. Les itinéraires directs affichent uniquement le premier segment, tandis que les itinéraires avec correspondance affichent des informations détaillées pour chaque segment. Dans la planification de voyage, toutes les informations liées aux trains doivent provenir strictement des résultats retournés par cet outil et ne doivent pas être fabriquées ; les noms des gares et des trains doivent être exactement les mêmes que les résultats de la requête.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Ville d'origine, prend en charge le nom de la ville"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Ville de destination, prend en charge le nom de la ville"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Date de départ, format : YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Classe de siège de train : Première Classe, Deuxième Classe, Classe Affaires"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "Interroger les informations sur les vols, prend en charge la recherche de données de vol par origine, destination, date et autres conditions. Retourne les informations sur les vols qui répondent aux critères, y compris : numéro de vol, heure de départ/arrivée, informations sur l'aéroport, durée du trajet, classe de siège, statut des sièges restants, prix, type d'avion, etc. Prend en charge les vols directs et avec correspondance. Les vols directs affichent uniquement le premier segment, tandis que les vols avec correspondance affichent des informations détaillées pour chaque segment. Dans la planification de voyage, toutes les informations liées aux vols doivent provenir strictement des résultats retournés par cet outil et ne doivent pas être fabriquées ; les noms des aéroports, les numéros de vol, etc. doivent être exactement les mêmes que les résultats de la requête.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Ville d'origine, prend en charge le nom de la ville"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Ville de destination, prend en charge le nom de la ville"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Date de départ, format : YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Classe de siège de vol : Classe Économique, Classe Affaires, Première Classe"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "Interroger les informations sur les hôtels, rechercher des hôtels en fonction de la destination (région administrative), date d'arrivée, date de départ, classement par étoiles de l'hôtel et marque de l'hôtel. Dans la planification de voyage, toutes les informations liées aux hôtels doivent provenir strictement des résultats retournés par cet outil et ne doivent pas être fabriquées ; les noms des hôtels doivent être exactement les mêmes que les résultats de la requête.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Destination (pays, province, ville, nom du district/du comté)"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "Date d'arrivée, format : yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "Date de départ, format : yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "Classement par étoiles de l'hôtel : 1~5 ; valeur unique"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "Marque d'hôtel, ne prend en charge que la requête à valeur unique. Marques optionnelles : Hôtel Ji, Hôtel Atour, Marriott, Hilton, 如家, Jinjiang Inn, Hôtel Hanting, Hôtel Orange"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "Interroger les informations détaillées sur une attraction. Basé sur le nom de l'attraction, retourne des informations complètes y compris : ID de l'attraction, nom, ville, coordonnées de latitude et longitude, description de l'attraction, note des utilisateurs, heure d'ouverture, heure de fermeture, dates de fermeture, durée de visite recommandée (heures minimum/maximum), prix du billet, type d'attraction, etc.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "Nom de l'attraction"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "Rechercher et retourner des informations sur les attractions populaires d'une ville en fonction du mot-clé de la ville (nom de l'attraction, description, type, etc.). Lors de la génération de plans de voyage, toutes les informations sur les attractions doivent provenir strictement des résultats retournés par cet outil, et ne doivent pas être fabriquées ou utiliser des données d'attractions provenant d'autres sources. Les noms des attractions utilisés doivent être exactement les mêmes que les résultats de la requête, et ne peuvent pas être abrégés ou renommés.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "Nom de la ville ou mot-clé"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "Filtre de type d'attraction (énumération), options : 'Historique et culturel', 'Paysage naturel', 'Exposition d'art', 'Monument de la ville', 'Theme Park', 'Expérience de loisirs'."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "Interroger les coordonnées de latitude et de longitude correspondant à un nom de lieu. Par exemple, entrer 'Beijing South Railway Station' retourne ses coordonnées, avec des valeurs conservées à six décimales. Dans les plans de voyage, tous les noms de lieux impliqués doivent provenir strictement des résultats retournés par d'autres outils et doivent être exactement les mêmes.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "Le nom du lieu à interroger, par exemple : 'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "Calculer et retourner les détails de l'itinéraire routier entre deux emplacements, y compris la distance (mètres), la durée estimée (minutes) et le coût estimé (devise). Cette fonction sélectionne automatiquement le mode de transport en fonction de la distance totale : marche pour 2 kilomètres ou moins (coût 0), et mode de conduite (taxi) pour plus de 2 kilomètres. Le coût estimé est pour un véhicule, qui peut accueillir 4 personnes par défaut.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Coordonnées d'origine (format : latitude,longitude), précision conservée à 6 décimales"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Coordonnées de destination (format : latitude,longitude), précision conservée à 6 décimales"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "Recommander des informations sur les restaurants à proximité en fonction des coordonnées de latitude et de longitude spécifiées. La liste retournée contient des informations détaillées telles que le nom du restaurant, les coordonnées de latitude et de longitude, le prix par personne, la note, les heures d'ouverture, etc.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Coordonnée de latitude, précision conservée à 6 décimales"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Coordonnée de longitude, précision conservée à 6 décimales"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "Interroger des informations détaillées sur un restaurant. Basé sur le nom du restaurant, retourne des informations complètes y compris : nom du restaurant, coordonnées de latitude et de longitude, prix par personne, heure d'ouverture, heure de fermeture, note et autres informations détaillées.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "Nom du restaurant"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

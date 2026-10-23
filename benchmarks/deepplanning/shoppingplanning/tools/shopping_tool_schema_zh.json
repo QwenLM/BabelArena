@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "处理宽泛、开放式的自然语言查询。它对关键产品信息（名称、品牌、类目、标签）进行语义搜索，快速召回初步的相关商品集合。这是用户探索的第一步。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "用户的自然语言查询。例如，'Uniqlo T恤'、'Nike 跑鞋'。"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "可选。限制返回的 product_id 数量。默认为 20，以防止结果过大。"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "根据一个或多个品牌名称过滤给定的商品ID列表。如果提供多个品牌名称，则返回匹配其中任一品牌的商品（或逻辑）。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "用于筛选的 product_id 可选列表。如果未提供，则从整个商品目录中进行筛选。"
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "要匹配的品牌名称列表。例如，[\"UNIQLO\"] 或 [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "根据一种或多种颜色过滤给定的商品ID列表。如果提供多种颜色，则返回匹配其中任一颜色的商品（或逻辑）。颜色匹配会检查商品的“color”字段。如果未提供product_ids，则从整个商品目录中进行过滤。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "用于筛选的 product_id 可选列表。如果未提供，则从整个商品目录中进行筛选。"
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "要匹配的颜色名称列表。例如，[\"白色\"] 或 [\"黑色\", \"蓝色\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "根据一个或多个尺码过滤给定的商品ID列表。如果提供多个尺码，则返回匹配其中任一尺码的商品（或逻辑）。尺码匹配会检查商品的“size”字段（例如“M”、“L”、“42”、“140cm”）。如果未提供product_ids，则从整个商品目录中进行过滤。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "用于筛选的 product_ids 可选列表。如果未提供，则从整个产品目录中筛选。"
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "要匹配的尺码列表。例如，[\"M\"] 或 [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "根据适用优惠券过滤商品ID列表。此工具会匹配所有在 `applicable_coupons` 中包含所提供优惠券名称的商品。例如，使用 [\"跨店：每满¥300减¥30\", \"同品牌：每满¥200减¥25\"] 将匹配其适用优惠券列表中同时包含这两张优惠券的商品。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "用于筛选的 product_ids 可选列表。如果未提供，则从整个产品目录中筛选。"
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "要匹配的优惠券名称列表。例如，[\"跨店：每满¥300减¥30\"] 或 [\"同品牌：每满¥200减¥25\", \"VIP：每满¥1,000减¥200\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "根据数值特征、比较运算符和阈值过滤商品ID列表。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "用于筛选的 product_ids 可选列表。如果未提供，则从整个产品目录中筛选。"
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "要筛选的数值特征维度。",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "比较运算符。",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "要比较的数值。"
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "根据指定的维度和顺序对给定的商品ID列表进行排序。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "用于排序的 product_ids 可选列表。如果未提供，则对整个产品目录进行排序。"
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "用作排序依据的特征维度。",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "排序顺序。默认为 'desc'（降序）。",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "获取商品ID列表的完整详细信息。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "用于获取详情的唯一产品标识符列表。"
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "计算商品的预计送达天数。该计算基于商品的发货地和用户的收货地址。最终结果为整数天数。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "用于查找发货地的产品唯一标识符。"
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "用户的目的地地址，必须为拼音格式的省份名称，如 'guangdong'、'beijing'、'shanghai' 等。此输入参数仅接受拼音。"
+          },
+          "provider": {
+            "type": "string",
+            "description": "可选。用于调整配送时间的物流提供商名称。支持的提供商包括 'sf_express'、'jd_logistics'、'yto_express'、'zto_express'、'sto_express'、'yunda_express'、'cainiao'、'china_post'、'ems'、'deppon_express'、'default'。如未提供，则使用产品的默认提供商。"
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "从数据库中获取用户信息，包括用户地址、身体尺寸及其他个人资料详情。如果提供了 user_id，则返回该用户的专属信息；否则返回默认或当前用户的信息。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "可选。要检索的用户唯一标识符。如未提供，则返回默认用户信息。"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "将商品添加到购物车。验证商品是否存在于商品目录中并检查库存情况。如果商品已在购物车中，则增加数量。该工具会在添加后自动更新购物车摘要（商品总数和总价）。返回包含所有商品和摘要信息的更新后的购物车。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "要添加到购物车的产品唯一标识符。必须存在于产品目录中。"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "可选。要添加的数量。必须为正整数。默认为 1。工具会检查添加此数量是否会超过产品的 stock_quantity（包括购物车中已有的商品）。"
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "从购物车中移除商品或减少其数量。验证商品是否存在于商品目录中且当前在购物车中。如果要移除的数量等于或超过购物车中的数量，则完全移除该商品。该工具会自动更新购物车摘要并移除数量为零的商品。返回包含所有商品和摘要信息的更新后的购物车。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "要从购物车中移除的产品唯一标识符。必须存在于产品目录中且当前在购物车内。"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "可选。要移除的数量。必须为正整数。默认值为1。如果该数量等于或超过购物车中的数量，则完全移除该商品。"
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "检索当前购物车信息，包括所有商品和摘要统计。返回购物车商品列表（每个商品包含 product_id、名称、数量和价格）以及一个摘要对象，其中包含 total_items_count（所有数量之和）和 total_price（所有商品价格乘以数量之和）。无需参数 - 返回购物车的当前状态。",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "将优惠券添加到购物车。验证优惠券是否存在于有效优惠券列表中，检查用户是否拥有该优惠券，并确保购物车总额满足优惠券的门槛要求。如果同一优惠券已在购物车中，则更新其数量。该工具会在添加后自动更新购物车摘要（商品总数和折后总价）。返回包含所有商品、已使用优惠券和摘要信息的更新后的购物车。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "要添加到购物车的优惠券名称。必须是优惠券列表中的有效优惠券之一。示例：“跨店：每满¥300减¥30”、“同品牌：每满¥200减¥25”、“VIP：每满¥1,000减¥200”。"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "可选。要添加的优惠券数量。必须为正整数。默认值为1。该工具会检查用户是否拥有足够的优惠券，以及购物车总价是否满足所请求数量的使用条件。"
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "从购物车中移除优惠券或减少其数量。验证优惠券是否存在于有效优惠券列表中且当前在购物车中。如果要移除的数量等于或超过购物车中的数量，则完全移除该优惠券。该工具会自动更新购物车摘要（商品总数和折后总价）并移除数量为零的优惠券。返回包含所有商品、已使用优惠券和摘要信息的更新后的购物车。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "要从购物车中移除的优惠券名称。必须是有效优惠券之一，且当前已在购物车中。"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "可选。要移除的优惠券数量。必须为正整数。默认值为1。如果该数量等于或超过购物车中的数量，则完全移除该优惠券。"
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

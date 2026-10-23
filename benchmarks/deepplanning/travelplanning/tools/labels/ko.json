@@ -1,0 +1,85 @@
+{
+  "AttractionDetailsQueryTool": {
+    "db_not_loaded": "데이터베이스가 로드되지 않았습니다",
+    "not_found": "명소 {name}에 대한 자세한 정보를 찾을 수 없습니다",
+    "attraction_id": "명소 ID",
+    "attraction_name": "명소 이름",
+    "city": "도시",
+    "address": "주소",
+    "coordinates": "좌표",
+    "latitude": "위도",
+    "longitude": "경도",
+    "description": "설명",
+    "rating": "평점",
+    "visitor_rating": "(평균 방문자 평점)",
+    "opening_hours": "영업 시간",
+    "to": "부터",
+    "closed_dates": "휴무일",
+    "min_visit_hours": "최소 방문 시간",
+    "max_visit_hours": "최대 방문 시간",
+    "hours_unit": "시간",
+    "ticket_price": "티켓 가격",
+    "currency_unit": "RMB",
+    "attraction_type": "관광지 유형",
+    "db_loaded": "✓ 관광지 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: {path}에서 관광지 데이터베이스를 찾을 수 없음"
+  },
+  "AttractionRecommendTool": {
+    "db_not_loaded": "데이터베이스가 로드되지 않았습니다",
+    "not_found": "추천 관광지를 찾을 수 없습니다",
+    "recommendations": "추천 관광지:",
+    "attraction_suffix": "{name}, {desc}. 이것은 {atype} 유형의 관광지입니다",
+    "db_loaded": "✓ 관광지 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: {path}에서 관광지 데이터베이스를 찾을 수 없음"
+  },
+  "FlightQueryTool": {
+    "segment": "구간 {idx}",
+    "remaining_seats": "남은 좌석",
+    "sufficient": "사용 가능",
+    "no_info": "정보를 찾을 수 없습니다, 입력 매개변수를 확인하세요",
+    "not_found": "{date}에 {o}에서 {d}로 가는 항공편 정보를 찾을 수 없습니다",
+    "db_loaded": "✓ 항공편 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: {path}에서 항공편 데이터베이스를 찾을 수 없음"
+  },
+  "HotelQueryTool": {
+    "db_not_loaded": "데이터베이스가 로드되지 않았습니다",
+    "not_found": "{checkin}부터 {checkout}까지 {dest}에서 호텔 정보를 찾을 수 없습니다, 매개변수를 확인하거나 제약을 줄이세요",
+    "db_loaded": "✓ 호텔 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: {path}에서 호텔 데이터베이스를 찾을 수 없음"
+  },
+  "LocationSearchTool": {
+    "db_not_loaded": "데이터베이스가 로드되지 않았습니다",
+    "not_found": "{place} 위치에 대한 좌표 정보를 찾을 수 없습니다, 다음을 확인하세요: 1. 장소 이름이 다른 도구 결과에서 온 것인지; 2. 장소 이름이 도구 결과와 정확히 일치하는지, 약어, 이름 변경 또는 추가 설명이 허용되지 않음",
+    "db_loaded": "✓ 위치 좌표 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: {path}에서 위치 좌표 데이터베이스를 찾을 수 없음"
+  },
+  "RestaurantRecommendTool": {
+    "db_not_loaded": "데이터베이스가 로드되지 않았습니다",
+    "not_found": "좌표 ({lat}, {lon}) 근처에서 추천 레스토랑을 찾을 수 없습니다, 좌표 소스를 확인하세요",
+    "db_loaded": "✓ 레스토랑 추천 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: 레스토랑 추천 데이터베이스를 {path}에서 찾을 수 없습니다"
+  },
+  "RestaurantDetailsQueryTool": {
+    "db_not_loaded": "데이터베이스가 로드되지 않았습니다",
+    "not_found": "레스토랑 {name}에 대한 상세 정보를 찾을 수 없습니다",
+    "db_loaded": "✓ 레스토랑 상세 정보 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: 레스토랑 상세 정보 데이터베이스를 {path}에서 찾을 수 없습니다"
+  },
+  "RoadRouteInfoQueryTool": {
+    "db_not_loaded": "데이터베이스가 로드되지 않았습니다",
+    "not_found": "{origin}에서 {dest}까지의 교통 정보를 찾을 수 없습니다",
+    "coord_not_in_range": "좌표 {coord}가 쿼리 범위에 포함되지 않습니다. 다음을 확인하십시오:\n1. 좌표가 유효한 도구 쿼리 결과에서 나온 것이며, 수동 입력이나 조작이 아닌지;\n2. 좌표의 정밀도가 쿼리 결과와 정확히 일치하는지, 소수점 6자리",
+    "db_loaded": "✓ 도로 경로 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: 도로 경로 데이터베이스를 {path}에서 찾을 수 없습니다"
+  },
+  "TrainQueryTool": {
+    "segment": "구간 {idx}",
+    "remaining_seats": "남은 좌석",
+    "sufficient": "사용 가능",
+    "no_info": "정보를 찾을 수 없습니다",
+    "not_found": "{date}에 {o}에서 {d}까지의 기차 정보를 찾을 수 없습니다",
+    "station_sep": "역",
+    "db_loaded": "✓ 기차 데이터베이스 로드 완료: {count} 기록 (경로: {path})",
+    "db_not_found": "⚠ 경고: 기차 데이터베이스를 {path}에서 찾을 수 없습니다"
+  }
+}

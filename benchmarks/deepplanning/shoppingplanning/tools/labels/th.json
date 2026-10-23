@@ -1,0 +1,74 @@
+{
+  "AddCouponToCartTool": {
+    "cart_total_insufficient": "ยอดรวมในตะกร้า {base_total} ไม่เพียงพอสำหรับการใช้คูปองนี้ (ต้องการอย่างน้อย {total_threshold_required})",
+    "coupon_name_required": "ต้องระบุ coupon_name",
+    "quantity_positive": "จำนวนต้องเป็นตัวเลขบวก",
+    "coupon_not_found": "ไม่พบคูปอง: '{coupon_name}'. คูปองที่ใช้ได้คือ: {valid_coupons_str}",
+    "insufficient_coupon_quantity": "จำนวนคูปองไม่เพียงพอ: ผู้ใช้มี {user_coupon_count} ของ '{coupon_name}', ตะกร้าใช้ไปแล้ว {existing_cart_count}, ไม่สามารถเพิ่มได้อีก {quantity}",
+    "vip_coupon_required": "คูปอง VIP '{coupon_name}' ต้องการสถานะ VIP แต่ผู้ใช้ไม่ใช่ VIP"
+  },
+  "AddProductToCartTool": {
+    "product_id_required": "ต้องระบุ product_id",
+    "quantity_positive": "จำนวนต้องเป็นตัวเลขบวก",
+    "product_not_found": "ไม่พบสินค้า: product_id '{product_id}'",
+    "insufficient_stock": "สต็อกไม่เพียงพอ: สินค้า '{product_name}' (ID: {product_id}) มี {stock_quantity} ในสต็อก, ในตะกร้ามีอยู่แล้ว {existing_quantity}, ไม่สามารถเพิ่ม {quantity} ได้อีก",
+    "save_cart_failed": "ไม่สามารถบันทึกตะกร้าได้: {err}"
+  },
+  "BaseShoppingTool": {
+    "invalid_json_params": "พารามิเตอร์ต้องเป็นสตริง JSON ที่ถูกต้อง! ข้อผิดพลาด: {err}",
+    "missing_required_arg": "ขาดอาร์กิวเมนต์ที่จำเป็น: {name}"
+  },
+  "CalculateTransportTimeTool": {
+    "product_not_found": "ไม่พบสินค้าที่มี ID '{product_id}'.",
+    "shipping_origin_not_found": "ไม่พบแหล่งที่มาของการจัดส่งสำหรับสินค้า '{product_id}'.",
+    "cannot_determine_province": "ไม่สามารถระบุจังหวัดที่ถูกต้องจากที่อยู่ต้นทาง: '{address}'.",
+    "cannot_determine_destination_province": "ไม่สามารถระบุจังหวัดที่ถูกต้องจากที่อยู่ปลายทาง: '{address}'.",
+    "valid_province_required": "กรุณาระบุชื่อมณฑลในประเทศจีนที่ถูกต้อง",
+    "cannot_map_to_region": "ไม่สามารถจับคู่มณฑลกับภูมิภาคทางภูมิศาสตร์ได้"
+  },
+  "DeleteCouponFromCartTool": {
+    "coupon_name_required": "ต้องระบุ coupon_name",
+    "quantity_positive": "จำนวนต้องเป็นตัวเลขบวก",
+    "invalid_coupon_name": "ชื่อคูปองไม่ถูกต้อง: '{coupon_name}'. คูปองที่ถูกต้องคือ: {valid_coupons_str}",
+    "coupon_not_in_cart": "คูปองไม่อยู่ในตะกร้า: '{coupon_name}'",
+    "insufficient_coupon_in_cart": "จำนวนคูปองในตะกร้าไม่เพียงพอ: ตะกร้ามี {cart_count} ของ '{coupon_name}', ไม่สามารถลบ {quantity}",
+    "save_cart_failed": "ไม่สามารถบันทึกตะกร้าได้: {err}"
+  },
+  "DeleteProductFromCartTool": {
+    "product_id_required": "ต้องระบุ product_id",
+    "quantity_positive": "จำนวนต้องเป็นตัวเลขบวก",
+    "product_not_found": "ไม่พบสินค้า: product_id '{product_id}'",
+    "product_not_in_cart": "สินค้าไม่อยู่ในตะกร้า: product_id '{product_id}'",
+    "save_cart_failed": "ไม่สามารถบันทึกตะกร้าได้: {err}"
+  },
+  "FilterByApplicableCouponsTool": {
+    "missing_product_ids": "ไม่พบ product_ids บางรายการในฐานข้อมูล: {missing_ids}",
+    "invalid_coupon_names": "ชื่อคูปองไม่ถูกต้อง: {coupon_names}. คูปองที่ถูกต้องคือ: {valid_coupons}"
+  },
+  "FilterByBrandTool": {
+    "missing_product_ids": "ไม่พบ product_ids บางรายการในฐานข้อมูล: {missing_ids}"
+  },
+  "FilterByColorTool": {
+    "missing_product_ids": "ไม่พบ product_ids บางรายการในฐานข้อมูล: {missing_ids}"
+  },
+  "FilterByRangeTool": {
+    "missing_product_ids": "ไม่พบ product_ids บางรายการในฐานข้อมูล: {missing_ids}",
+    "missing_range_params": "ขาดพารามิเตอร์ที่จำเป็น: condition_key, operator, หรือ value",
+    "condition_key_not_found": "ไม่พบ condition_key ในข้อมูลผลิตภัณฑ์ กรุณาตรวจสอบอีกครั้ง"
+  },
+  "FilterBySizeTool": {
+    "missing_product_ids": "ไม่พบ product_ids บางรายการในฐานข้อมูล: {missing_ids}"
+  },
+  "GetUserInfoTool": {
+    "user_not_found": "ไม่พบผู้ใช้ที่มี user_id '{user_id}'"
+  },
+  "SearchProductsTool": {
+    "bm25_unavailable": "ดัชนี BM25 ไม่พร้อมใช้งาน โปรดตรวจสอบการโหลดฐานข้อมูล"
+  },
+  "SortProductsTool": {
+    "sort_by_required": "ขาดพารามิเตอร์ที่จำเป็น: sort_by",
+    "invalid_order": "ค่าไม่ถูกต้องสำหรับ 'order': '{order}'. ต้องเป็น 'asc' หรือ 'desc'",
+    "sort_error": "เกิดข้อผิดพลาดระหว่างการจัดเรียงบนคีย์ '{sort_by}': {e}",
+    "sort_key_not_found": "ไม่พบคีย์การจัดเรียง '{sort_by}' ในข้อมูลผลิตภัณฑ์หรือเป็นค่าว่าง กรุณาตรวจสอบอีกครั้ง"
+  }
+}

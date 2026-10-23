@@ -1,0 +1,233 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "query_train_info",
+      "description": "Truy vấn thông tin vé tàu, hỗ trợ tìm kiếm dữ liệu vé tàu theo điểm xuất phát, điểm đến, ngày và các điều kiện khác. Trả về thông tin tàu đáp ứng tiêu chí, bao gồm: số tàu, thời gian khởi hành/đến, thông tin ga, thời gian hành trình, hạng ghế, tình trạng ghế còn lại, giá vé, v.v. Hỗ trợ tuyến trực tiếp và tuyến chuyển tiếp. Tuyến trực tiếp chỉ hiển thị đoạn đầu tiên, trong khi tuyến chuyển tiếp hiển thị thông tin chi tiết cho từng đoạn. Trong lập kế hoạch du lịch, tất cả thông tin liên quan đến tàu phải đến từ kết quả trả về của công cụ này và không được bịa đặt; tên ga và tên tàu phải chính xác như kết quả truy vấn.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Thành phố xuất phát, hỗ trợ tên thành phố"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Thành phố điểm đến, hỗ trợ tên thành phố"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Ngày khởi hành, định dạng: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Hạng ghế tàu: Ghế hạng nhất, Ghế hạng hai, Ghế hạng thương gia"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_flight_info",
+      "description": "Truy vấn thông tin chuyến bay, hỗ trợ tìm kiếm dữ liệu chuyến bay theo điểm xuất phát, điểm đến, ngày và các điều kiện khác. Trả về thông tin chuyến bay đáp ứng tiêu chí, bao gồm: số chuyến bay, thời gian khởi hành/đến, thông tin sân bay, thời gian hành trình, hạng ghế, tình trạng ghế còn lại, giá vé, loại máy bay, v.v. Hỗ trợ chuyến bay trực tiếp và chuyến bay nối chuyến. Chuyến bay trực tiếp chỉ hiển thị đoạn đầu tiên, trong khi chuyến bay nối chuyến hiển thị thông tin chi tiết cho từng đoạn. Trong lập kế hoạch du lịch, tất cả thông tin liên quan đến chuyến bay phải đến từ kết quả trả về của công cụ này và không được bịa đặt; tên sân bay, số chuyến bay, v.v. phải chính xác như kết quả truy vấn.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Thành phố xuất phát, hỗ trợ tên thành phố"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Thành phố điểm đến, hỗ trợ tên thành phố"
+          },
+          "depDate": {
+            "type": "string",
+            "description": "Ngày khởi hành, định dạng: YYYY-MM-DD"
+          },
+          "seatClassName": {
+            "type": "string",
+            "description": "Hạng ghế chuyến bay: Hạng phổ thông, Hạng công vụ, Hạng nhất"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "depDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_hotel_info",
+      "description": "Truy vấn thông tin khách sạn, tìm kiếm khách sạn dựa trên điểm đến (khu vực hành chính), ngày nhận phòng, ngày trả phòng, xếp hạng sao khách sạn và thương hiệu khách sạn. Trong lập kế hoạch du lịch, tất cả thông tin liên quan đến khách sạn phải đến từ kết quả trả về của công cụ này và không được bịa đặt; tên khách sạn phải chính xác như kết quả truy vấn.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "destination": {
+            "type": "string",
+            "description": "Điểm đến (quốc gia, tỉnh, thành phố, tên quận/huyện)"
+          },
+          "checkinDate": {
+            "type": "string",
+            "description": "Ngày nhận phòng, định dạng: yyyy-MM-dd"
+          },
+          "checkoutDate": {
+            "type": "string",
+            "description": "Ngày trả phòng, định dạng: yyyy-MM-dd"
+          },
+          "hotelStar": {
+            "type": "string",
+            "description": "Xếp hạng sao khách sạn: 1~5; giá trị đơn"
+          },
+          "hotelBrands": {
+            "type": "string",
+            "description": "Thương hiệu khách sạn, chỉ hỗ trợ truy vấn giá trị đơn. Các thương hiệu tùy chọn: Khách sạn Ji, Khách sạn Atour, Marriott, Hilton, Home Inn, Jinjiang Inn, Khách sạn Hanting, Khách sạn Orange"
+          }
+        },
+        "required": [
+          "destination",
+          "checkinDate",
+          "checkoutDate"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_attraction_details",
+      "description": "Truy vấn thông tin chi tiết về điểm tham quan. Dựa trên tên điểm tham quan, trả về thông tin đầy đủ bao gồm: ID điểm tham quan, tên, thành phố, tọa độ vĩ độ và kinh độ, mô tả điểm tham quan, đánh giá của người dùng, thời gian mở cửa, thời gian đóng cửa, ngày đóng cửa, thời gian đề xuất tham quan (giờ tối thiểu/tối đa), giá vé, loại điểm tham quan, v.v.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "attraction_name": {
+            "type": "string",
+            "description": "Tên điểm tham quan"
+          }
+        },
+        "required": [
+          "attraction_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_attractions",
+      "description": "Tìm kiếm và trả về thông tin điểm tham quan phổ biến cho một thành phố dựa trên từ khóa thành phố (tên điểm tham quan, mô tả, loại, v.v.). Trong quá trình tạo kế hoạch du lịch, tất cả thông tin điểm tham quan phải đến từ kết quả trả về của công cụ này và không được bịa đặt hoặc sử dụng dữ liệu điểm tham quan từ nguồn khác. Tên điểm tham quan được sử dụng phải chính xác như kết quả truy vấn và không được viết tắt hoặc đổi tên.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "Tên thành phố hoặc từ khóa"
+          },
+          "attraction_type": {
+            "type": "string",
+            "description": "Bộ lọc loại điểm tham quan (enum), tùy chọn: 'Lịch sử và văn hóa', 'Cảnh quan thiên nhiên', 'Triển lãm nghệ thuật', 'Danh thắng thành phố', 'Theme Park', 'Trải nghiệm giải trí'."
+          }
+        },
+        "required": [
+          "city"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_location",
+      "description": "Truy vấn tọa độ vĩ độ và kinh độ tương ứng với tên địa điểm. Ví dụ, nhập 'Beijing South Railway Station' trả về tọa độ của nó, với giá trị giữ nguyên đến sáu chữ số thập phân. Trong kế hoạch du lịch, tất cả tên địa điểm liên quan phải đến từ kết quả trả về của các công cụ khác và phải chính xác như vậy.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "place_name": {
+            "type": "string",
+            "description": "Tên địa điểm để truy vấn, ví dụ: 'Lao She Teahouse'"
+          }
+        },
+        "required": [
+          "place_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_road_route_info",
+      "description": "Tính toán và trả về chi tiết tuyến đường giữa hai địa điểm, bao gồm khoảng cách (mét), thời gian ước tính (phút) và chi phí ước tính (tiền tệ). Chức năng này tự động chọn phương thức vận chuyển dựa trên tổng khoảng cách: đi bộ cho 2 km trở xuống (chi phí 0), và chế độ lái xe (taxi) cho hơn 2 km. Chi phí ước tính là cho một phương tiện, có thể chứa 4 người theo mặc định.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Tọa độ điểm xuất phát (định dạng: vĩ độ, kinh độ), độ chính xác giữ nguyên đến 6 chữ số thập phân"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Tọa độ điểm đến (định dạng: vĩ độ, kinh độ), độ chính xác giữ nguyên đến 6 chữ số thập phân"
+          }
+        },
+        "required": [
+          "origin",
+          "destination"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "recommend_restaurants",
+      "description": "Đề xuất thông tin nhà hàng gần đó dựa trên tọa độ vĩ độ và kinh độ được chỉ định. Danh sách trả về chứa thông tin chi tiết như tên nhà hàng, tọa độ vĩ độ và kinh độ, giá mỗi người, đánh giá, giờ hoạt động, v.v.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Tọa độ vĩ độ, độ chính xác giữ nguyên đến 6 chữ số thập phân"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Tọa độ kinh độ, độ chính xác giữ nguyên đến 6 chữ số thập phân"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "query_restaurant_details",
+      "description": "Truy vấn thông tin chi tiết về một nhà hàng. Dựa trên tên nhà hàng, trả về thông tin đầy đủ bao gồm: tên nhà hàng, tọa độ vĩ độ và kinh độ, giá mỗi người, thời gian mở cửa, thời gian đóng cửa, đánh giá và các thông tin chi tiết khác.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "description": "Tên nhà hàng"
+          }
+        },
+        "required": [
+          "restaurant_name"
+        ]
+      }
+    }
+  }
+]

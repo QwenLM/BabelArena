@@ -1,0 +1,875 @@
+name: full_trajectory_no_rubrics_eval_template
+chinese: |-
+  # 系统信息
+  {env_info}
+
+  # 用户完整指令
+  {user_instruction}
+
+  # 背景说明
+  - 这是一个user与assistant之间的对话场景，其中assistant可以调用工具获取信息和完成操作，工具返回结果将以tool开头
+  - 你需要评估用户指令是否被完成
+  - <trajectory_content>包含了user与assistant之间的完整对话内容
+
+  # 任务
+  - 基于对话内容，判断用户完整指令中所有子需求是否被全部完成
+
+  # 注意事项
+  - 重要：所有的评估以assistant的回复及工具调用请求是否完成用户指令为准，user在对话中表达的内容仅视为对assistant的提示和引导，不会直接影响评估标准，一切以用户指令为准！
+  - 重要：查询类tool返回的结果仅对assistant可见，并不代表assistant对用户推荐的内容，因此也不直接影响评估结果，一切都要以assistant获取信息后对用户的回复为准！同时需要注意，Assistant 也不能编造 Tool 的返回结果！
+  - 重要：对于购买类指令（涉及到订单细节，必须生成订单的），必须确认assistant是否真的完成了下单操作。有可能assistant误以为完成了下单操作，实际上工具调用失败；或user表示可以“可以自己下单”等情况，都应视为未满足要求
+  - 对于涉及到订单细节如商品数量、送达时间的用户指令，必须严格满足原始用户指令要求（不能有商品数量偏差，不得晚于期望送达时间），用户妥协行为不影响评判结果（例如user表示“某商品少点也行”、“对订单内容没有异议”或“晚点送达也行”等），这类情况仍应视为未满足要求
+  - 对于涉及到文本内容匹配的地址或订单备注类的用户指令，采用功能等效原则：只要实际内容能实现相同功能（如大致定位配送地点或传达顾客的主要需求），即使表述不完全一致或缺少部分细节，也视为满足要求
+  - 在justification中记录与用户指令有关的关键信息、判断是否完成的依据及其对应的轮次[x]
+
+  # 格式要求
+  - 你的回复应为一个JSON对象，包含以下字段：
+  - `justification`：对评估结果的简要解释
+  - `meetExpectation`：评估结果（true或false）
+
+  # 示例输入结构：
+  <trajectory_content>xxx</trajectory_content>
+
+  # 示例回复结构：
+  ```json
+  {{
+      "justification": "<对评估结果的简要解释>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+english: |-
+  # System Information
+  {env_info}
+
+  # User Complete Instruction
+  {user_instruction}
+
+  # Background
+  - This is a conversation scenario between a user and an assistant, where the assistant can call tools to retrieve information and complete operations. Tool return results will start with "tool"
+  - You need to evaluate whether the user instruction has been completed
+  - <trajectory_content> contains the complete conversation content between the user and assistant
+
+  # Task
+  - Based on the conversation content, determine whether all sub-requirements in the user's complete instruction have been fully completed
+
+  # Important Notes
+  - Important: All evaluations are based on whether the assistant's responses and tool call requests complete the user instruction. User expressions in the conversation are only considered as guidance for the assistant and do not directly affect evaluation standards. Everything is based on the user instruction!
+  - Important: Query tool return results are only visible to the assistant and do not represent content recommended by the assistant to users, so they do not directly affect evaluation results either. Everything must be based on the assistant's responses to users after obtaining information! Also note that Assistant cannot fabricate Tool return results!
+  - Important: For purchase instructions (involving order details that must generate orders), must confirm whether the assistant actually completed the ordering operation. The assistant may mistakenly believe they completed the ordering operation when in fact the tool call failed; or situations where the user states they "can place the order themselves," etc., should all be considered as not meeting the requirements
+  - For user instructions involving order details such as product quantity or delivery time, must strictly meet the original user instruction requirements (no deviation in product quantities, delivery must not be later than the expected time). User compromise behavior does not affect evaluation results (for example, when a user states "fewer items is okay", "I have no objections to the order content" or "later delivery is fine" etc.). These situations should still be considered as not meeting the requirements
+  - For user instructions involving text content matching of addresses or order notes, apply the functional equivalence principle: as long as the actual content can achieve the same function (such as roughly locating the delivery location or conveying the customer's main needs), it is considered to meet the requirements even if the expression is not completely consistent or lacks some details
+  - Record key information related to the user instruction, basis for determining completion, and their corresponding round [x] in justification
+
+  # Format Requirements
+  - Your response should be a JSON object containing the following fields:
+  - `justification`: brief explanation of the evaluation result
+  - `meetExpectation`: evaluation result (true or false)
+
+  # Example Input Structure:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Example Response Structure:
+  ```json
+  {{
+      "justification": "<brief explanation of the evaluation result>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+japanese: |-
+  # システム情報
+  {env_info}
+
+  # ユーザーの完全な指示
+  {user_instruction}
+
+  # 背景説明
+  - これは user と assistant の間の対話シーンであり、assistant はツールを呼び出して情報を取得し、操作を完了できます。ツールの返却結果は tool で始まります
+  - ユーザーの指示が完了されたかどうかを評価する必要があります
+  - <trajectory_content> には user と assistant の間の完全な対話内容が含まれています
+
+  # タスク
+  - 対話内容に基づき、ユーザーの完全な指示にあるすべてのサブ要件がすべて完了されたかどうかを判断します
+
+  # 注意事項
+  - 重要：すべての評価は、assistant の返信およびツール呼び出しリクエストがユーザーの指示を完了したかどうかを基準とし、user が対話中で表現した内容は assistant へのヒントやガイダンスとみなされのみで、評価基準に直接影響しません。すべてはユーザーの指示を基準とします！
+  - 重要：検索系 tool の返却結果は assistant のみに表示され、assistant がユーザーに推奨した内容を表すわけではないため、評価結果にも直接影響しません。すべては assistant が情報を取得した後のユーザーへの返信を基準とします！同時に、Assistant は Tool の返却結果を捏造してはいけないことにも注意してください！
+  - 重要：購入系指示（注文詳細に関わり、注文を生成する必要があるもの）については、assistant が実際に注文操作を完了したかどうかを確認する必要があります。assistant が注文操作を完了したと誤解しているが、実際にはツール呼び出しが失敗していた場合や、user が「自分で注文できる」などと表示した場合などは、要件未充足とみなすべきです
+  - 商品数量や配達時間などの注文詳細に関わるユーザー指示については、元のユーザー指示の要件を厳格に満たす必要があります（商品数量の偏差があってはならず、希望配達時間より遅れてはなりません）。ユーザーの妥協行為は評価結果に影響しません（例えば、user が「ある商品が少なくてもいい」、「注文内容に異議はない」、「遅れて配達されてもいい」などと表示した場合など）。こうした状況でも要件未充足とみなすべきです
+  - テキスト内容マッチング涉及的な住所や注文備考類のユーザー指示については、機能等価の原則を採用します：実際の内容が同じ機能を実現できる限り（配送場所のおおよその特定や顧客の主要な要件の伝達など）、表現が完全に一致していなかったり一部の詳細が欠けていたりしても、要件充足とみなします
+  - justification には、ユーザー指示に関連する重要な情報、完了かどうかを判断した根拠、およびそれに対応するラウンド [x] を記録します
+
+  # フォーマット要件
+  - あなたの返信は JSON オブジェクトであり、以下のフィールドを含む必要があります：
+  - \`justification\`：評価結果の簡単な説明
+  - \`meetExpectation\`：評価結果（true または false）
+
+  # 入力構造の例：
+  <trajectory_content>xxx</trajectory_content>
+
+  # 返信構造の例：
+  ```json
+  {{
+      "justification": "<評価結果の簡単な説明>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+french: |-
+  # Informations système
+  {env_info}
+
+  # Instructions complètes de l'utilisateur
+  {user_instruction}
+
+  # Contexte
+  - Il s'agit d'un scénario de conversation entre un utilisateur et un assistant, où l'assistant peut appeler des outils pour obtenir des informations et effectuer des opérations ; les résultats retournés par les outils commenceront par tool
+  - Vous devez évaluer si les instructions de l'utilisateur ont été accomplies
+  - <trajectory_content> contient le contenu complet de la conversation entre l'utilisateur et l'assistant
+
+  # Tâche
+  - Sur la base du contenu de la conversation, déterminer si toutes les sous-exigences des instructions complètes de l'utilisateur ont été entièrement accomplies
+
+  # Remarques importantes
+  - Important : Toutes les évaluations sont basées sur les réponses de l'assistant et les demandes d'appel d'outil pour déterminer si les instructions de l'utilisateur sont accomplies. Le contenu exprimé par l'utilisateur dans la conversation est considéré uniquement comme des indications et des guides pour l'assistant et n'affecte pas directement les critères d'évaluation ; tout est basé sur les instructions de l'utilisateur !
+  - Important : Les résultats retournés par les outils de type requête sont visibles uniquement par l'assistant et ne représentent pas le contenu recommandé par l'assistant à l'utilisateur, donc n'affectent pas directement le résultat de l'évaluation ; tout doit être basé sur la réponse de l'assistant à l'utilisateur après avoir obtenu les informations ! Il faut également noter que l'assistant ne doit pas non plus fabriquer les résultats retournés par les outils !
+  - Important : Pour les instructions de type achat (impliquant des détails de commande, où la génération d'une commande est requise), il faut confirmer si l'assistant a réellement effectué l'opération de commande. Il est possible que l'assistant pense à tort avoir effectué l'opération de commande alors que l'appel d'outil a échoué ; ou que l'utilisateur indique qu'il peut "passer la commande lui-même", etc. ; toutes ces situations doivent être considérées comme non conformes aux exigences
+  - Pour les instructions de l'utilisateur impliquant des détails de commande tels que la quantité de produits ou l'heure de livraison, les exigences originales de l'utilisateur doivent être strictement satisfaites (aucun écart sur la quantité de produits, pas de livraison plus tardive que l'heure de livraison souhaitée). Les comportements de compromis de l'utilisateur n'affectent pas le résultat de l'évaluation (par exemple, si l'utilisateur indique "un peu moins de tel produit ça va", "pas d'objection sur le contenu de la commande" ou "une livraison plus tardive ça va", etc.) ; ces situations doivent toujours être considérées comme non conformes aux exigences
+  - Pour les instructions de l'utilisateur impliquant des adresses ou des notes de commande correspondant à du contenu textuel, le principe d'équivalence fonctionnelle est adopté : tant que le contenu réel peut réaliser la même fonction (comme localiser approximativement le lieu de livraison ou transmettre les besoins principaux du client), même si la formulation n'est pas entièrement cohérente ou manque certains détails, cela est considéré comme satisfaisant aux exigences
+  - Enregistrer dans `justification` les informations clés liées aux instructions de l'utilisateur, la base pour déterminer si c'est accompli et le tour correspondant [x]
+
+  # Exigences de format
+  - Votre réponse doit être un objet JSON contenant les champs suivants :
+  - `justification` : Brève explication du résultat de l'évaluation
+  - `meetExpectation` : Résultat de l'évaluation (true ou false)
+
+  # Structure d'exemple d'entrée :
+  <trajectory_content>xxx</trajectory_content>
+
+  # Structure d'exemple de réponse :
+  ```json
+  {{
+      "justification": "<Brève explication du résultat de l'évaluation>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+russian: |-
+  # Системная информация
+  {env_info}
+
+  # Полная инструкция пользователя
+  {user_instruction}
+
+  # Описание контекста
+  - Это сценарий диалога между user и assistant, где assistant может вызывать инструменты для получения информации и выполнения операций; результаты возврата инструментов будут начинаться с tool
+  - Вам необходимо оценить, была ли выполнена инструкция пользователя
+  - <trajectory_content> содержит полное содержание диалога между user и assistant
+
+  # Задача
+  - На основе содержания диалога определите, были ли полностью выполнены все подтребования полной инструкции пользователя
+
+  # Примечания
+  - Важно: Все оценки основываются на том, отвечают ли ответы assistant и запросы на вызов инструментов инструкции пользователя; содержание, выраженное user в диалоге, считается только подсказкой и руководством для assistant и не влияет напрямую на критерии оценки; все основывается на инструкции пользователя!
+  - Важно: Результаты, возвращенные инструментами запроса (tool), видны только assistant и не представляют собой контент, рекомендованный assistant пользователю, поэтому они также не влияют напрямую на результат оценки; все должно основываться на ответе assistant пользователю после получения информации! Также следует отметить, что assistant не должен фабриковать результаты возврата tool!
+  - Важно: Для инструкций типа покупки (касающиеся деталей заказа, требующие создания заказа) необходимо подтвердить, действительно ли assistant завершил операцию размещения заказа. Возможно, assistant ошибочно полагает, что завершил размещение заказа, но на самом деле вызов инструмента не удался; или user указывает, что может «разместить заказ самостоятельно» и т. д.; все такие случаи должны считаться невыполненными требованиями
+  - Для инструкций пользователя, касающихся деталей заказа, таких как количество товаров, время доставки, необходимо строго соблюдать требования исходной инструкции пользователя (не должно быть отклонений в количестве товаров, нельзя доставлять позже ожидаемого времени доставки); уступки со стороны пользователя не влияют на результат оценки (например, user указывает «немного меньше товара тоже подойдет», «нет возражений против содержания заказа» или «можно доставить позже» и т. д.); такие случаи все равно должны считаться невыполненными требованиями
+  - Для инструкций пользователя, касающихся адресов или примечаний к заказу, где требуется сопоставление текстового содержания, применяется принцип функциональной эквивалентности: пока фактическое содержание может реализовать ту же функцию (например, примерно определить место доставки или передать основные потребности клиента), даже если формулировка не полностью совпадает или отсутствуют некоторые детали, это также считается выполнением требования
+  - В поле justification запишите ключевую информацию, связанную с инструкцией пользователя, основание для оценки выполнения и соответствующий раунд [x]
+
+  # Требования к формату
+  - Ваш ответ должен быть JSON-объектом, содержащим следующие поля:
+  - `justification`: Краткое объяснение результата оценки
+  - `meetExpectation`: Результат оценки (true или false)
+
+  # Пример структуры ввода:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Пример структуры ответа:
+  ```json
+  {{
+      "justification": "<Краткое объяснение результата оценки>",
+      "meetExpectation": <true или false>
+  }}
+  ```
+arabic: |-
+  # معلومات النظام
+  {env_info}
+
+  # تعليمات المستخدم الكاملة
+  {user_instruction}
+
+  # خلفية توضيحية
+  - هذا سيناريو محادثة بين user و assistant، حيث يمكن لـ assistant استدعاء أدوات للحصول على المعلومات وإكمال العمليات، وستبدأ نتائج إرجاع الأداة بـ tool
+  - تحتاج إلى تقييم ما إذا تم تنفيذ تعليمات المستخدم
+  - <trajectory_content> يحتوي على محتوى المحادثة الكامل بين user و assistant
+
+  # المهمة
+  - بناءً على محتوى المحادثة، حدد ما إذا تم استيفاء جميع المتطلبات الفرعية في تعليمات المستخدم الكاملة
+
+  # ملاحظات هامة
+  - مهم: جميع التقييمات تعتمد على ما إذا كانت ردود assistant وطلبات استدعاء الأداة قد أكملت تعليمات المستخدم، يعتبر المحتوى الذي يعبر عنه user في المحادثة فقط كتلميحات وتوجيهات لـ assistant، ولا يؤثر مباشرة على معايير التقييم، كل شيء يعتمد على تعليمات المستخدم!
+  - مهم: نتائج إرجاع أداة الاستعلام مرئية فقط لـ assistant، ولا تمثل المحتوى الذي يوصي به assistant للمستخدم، وبالتالي لا تؤثر مباشرة على نتيجة التقييم، كل شيء يجب أن يعتمد على رد assistant للمستخدم بعد الحصول على المعلومات! في الوقت نفسه، يجب ملاحظة أن Assistant لا يمكنه أيضًا تلفيق نتائج إرجاع Tool!
+  - مهم: بالنسبة لتعليمات الشراء (تتضمن تفاصيل الطلب، يجب إنشاء الطلب)، يجب تأكيد ما إذا كان assistant قد أكمل فعليًا عملية تقديم الطلب. من الممكن أن يعتقد assistant خطأً أنه أكمل عملية تقديم الطلب، بينما فشل استدعاء الأداة فعليًا؛ أو إذا أشار user إلى أنه يمكنه "تقديم الطلب بنفسه" وما شابه ذلك، يجب اعتبار كل هذه الحالات على أنها لم تستوفِ المتطلبات
+  - بالنسبة لتعليمات المستخدم التي تتضمن تفاصيل الطلب مثل كمية البضائع ووقت التسليم، يجب استيفاء متطلبات تعليمات المستخدم الأصلية بدقة (لا يمكن أن يكون هناك انحراف في كمية البضائع، لا يمكن أن يكون لاحقًا لوقت التسليم المتوقع)، سلوك تنازل المستخدم لا يؤثر على نتيجة التقييم (على سبيل المثال إذا أشار user إلى أن "قليل من سلعة معينة مقبول"، أو "لا اعتراض على محتوى الطلب"، أو "التسليم لاحقًا مقبول" وما شابه)، لا تزال هذه الحالات تعتبر على أنها لم تستوفِ المتطلبات
+  - بالنسبة لتعليمات المستخدم التي تتضمن عناوين أو ملاحظات طلب مطابقة لمحتوى النص، يتم اعتماد مبدأ التكافؤ الوظيفي: طالما أن المحتوى الفعلي يمكنه تحقيق نفس الوظيفة (مثل تحديد موقع التسليم تقريبًا أو نقل الاحتياجات الرئيسية للعميل)، حتى لو لم يكن التعبير متطابقًا تمامًا أو افتقر إلى بعض التفاصيل، يعتبر ذلك مستوفيًا للمتطلبات
+  - سجل في justification المعلومات الرئيسية المتعلقة بتعليمات المستخدم، والأساس لتحديد ما إذا تم الانتهاء منها، والجولة المقابلة لها [x]
+
+  # متطلبات التنسيق
+  - يجب أن يكون ردك كائن JSON، يحتوي على الحقول التالية:
+  - `justification`: شرح موجز لنتيجة التقييم
+  - `meetExpectation`: نتيجة التقييم (true أو false)
+
+  # هيكل مثال الإدخال:
+  <trajectory_content>xxx</trajectory_content>
+
+  # هيكل مثال الرد:
+  ```json
+  {{
+      "justification": "<شرح موجز لنتيجة التقييم>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+hindi: |-
+  # सिस्टम जानकारी
+  {env_info}
+
+  # उपयोगकर्ता का पूर्ण निर्देश
+  {user_instruction}
+
+  # पृष्ठभूमि विवरण
+  - यह उपयोगकर्ता और सहायक के बीच की बातचीत का दृश्य है, जहाँ सहायक जानकारी प्राप्त करने और कार्य पूरा करने के लिए टूल का उपयोग कर सकता है, टूल द्वारा लौटाए गए परिणाम tool से शुरू होंगे
+  - आपको यह मूल्यांकन करना होगा कि उपयोगकर्ता का निर्देश पूरा हुआ है या नहीं
+  - <trajectory_content> में उपयोगकर्ता और सहायक के बीच की पूरी बातचीत शामिल है
+
+  # कार्य
+  - बातचीत की सामग्री के आधार पर, यह निर्णय लें कि उपयोगकर्ता के पूर्ण निर्देश में सभी उप-आवश्यकताएं पूरी तरह से पूरी हुई हैं या नहीं
+
+  # सावधानियां
+  - महत्वपूर्ण: सभी मूल्यांकन इस आधार पर किए जाएंगे कि क्या सहायक के उत्तर और टूल कॉल अनुरोधों ने उपयोगकर्ता के निर्देश को पूरा किया है, बातचीत में उपयोगकर्ता द्वारा व्यक्त सामग्री को केवल सहायक के लिए संकेत और मार्गदर्शन माना जाता है, यह मूल्यांकन मानकों को सीधे प्रभावित नहीं करेगा, सब कुछ उपयोगकर्ता के निर्देश के अनुसार होगा!
+  - महत्वपूर्ण: क्वेरी प्रकार के टूल द्वारा लौटाए गए परिणाम केवल सहायक के लिए दृश्यमान हैं, यह सहायक द्वारा उपयोगकर्ता के लिए अनुशंसित सामग्री का प्रतिनिधित्व नहीं करते हैं, इसलिए यह मूल्यांकन परिणाम को सीधे प्रभावित नहीं करते हैं, सब कुछ सहायक द्वारा जानकारी प्राप्त करने के बाद उपयोगकर्ता को दिए गए उत्तर के आधार पर होना चाहिए! साथ ही ध्यान दें, सहायक टूल के परिणामों को गढ़ भी नहीं सकता है!
+  - महत्वपूर्ण: खरीद संबंधी निर्देशों के लिए (जिनमें ऑर्डर विवरण शामिल हैं, ऑर्डर जनरेट करना आवश्यक है), यह पुष्टि करना आवश्यक है कि क्या सहायक ने वास्तव में ऑर्डर प्लेस करने की कार्रवाई पूरी की है। हो सकता है कि सहायक को गलतफहमी हो कि ऑर्डर प्लेस करने की कार्रवाई पूरी हो गई है, वास्तव में टूल कॉल विफल रही हो; या उपयोगकर्ता यह इंगित करे कि "मैं स्वयं ऑर्डर कर सकता हूं" ऐसी स्थितियों को भी आवश्यकताओं को पूरा नहीं किया गया माना जाना चाहिए
+  - ऑर्डर विवरण जैसे उत्पाद मात्रा, डिलीवरी समय से संबंधित उपयोगकर्ता निर्देशों के लिए, मूल उपयोगकर्ता निर्देश आवश्यकताओं को कड़ाई से पूरा करना आवश्यक है (उत्पाद मात्रा में विचलन नहीं हो सकता है, अपेक्षित डिलीवरी समय से बाद में नहीं हो सकता है), उपयोगकर्ता की समझौता व्यवहार मूल्यांकन परिणाम को प्रभावित नहीं करता है (जैसे उपयोगकर्ता का कहना है "कुछ उत्पाद कम भी चलेंगे", "ऑर्डर सामग्री से कोई आपत्ति नहीं" या "बाद में डिलीवरी भी चलेंगे" आदि), ऐसी स्थितियों को अभी भी आवश्यकताओं को पूरा नहीं किया गया माना जाना चाहिए
+  - पाठ सामग्री मिलान से संबंधित पते या ऑर्डर नोट्स प्रकार के उपयोगकर्ता निर्देशों के लिए, कार्यात्मक समानता सिद्धांत अपनाएं: जब तक वास्तविक सामग्री समान कार्य प्राप्त कर सकती है (जैसे डिलीवरी स्थान का मोटे तौर पर पता लगाना या ग्राहक की मुख्य आवश्यकताओं को संप्रेषित करना), भले ही अभिव्यक्ति पूरी तरह से सुसंगत न हो या कुछ विवरण गायब हों, इसे आवश्यकताओं को पूरा किया गया माना जाता है
+  - justification में उपयोगकर्ता निर्देश से संबंधित महत्वपूर्ण जानकारी, पूरा हुआ है या नहीं इसका निर्णय लेने का आधार और इसके संबंधित राउंड [x] रिकॉर्ड करें
+
+  # प्रारूप आवश्यकताएं
+  - आपका उत्तर एक JSON ऑब्जेक्ट होना चाहिए, जिसमें निम्नलिखित फ़ील्ड शामिल हैं:
+  - `justification`: मूल्यांकन परिणाम का संक्षिप्त विवरण
+  - `meetExpectation`: मूल्यांकन परिणाम (true या false)
+
+  # उदाहरण इनपुट संरचना:
+  <trajectory_content>xxx</trajectory_content>
+
+  # उदाहरण उत्तर संरचना:
+  ```json
+  {{
+      "justification": "<मूल्यांकन परिणाम का संक्षिप्त विवरण>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+thai: |-
+  # ข้อมูลระบบ
+  {env_info}
+
+  # คำสั่งเต็มจากผู้ใช้
+  {user_instruction}
+
+  # คำอธิบายพื้นหลัง
+  - นี่คือสถานการณ์การสนทนาระหว่าง user และ assistant โดยที่ assistant สามารถเรียกใช้เครื่องมือเพื่อรับข้อมูลและดำเนินการได้ ผลลัพธ์ที่ส่งกลับจากเครื่องมือจะขึ้นต้นด้วย tool
+  - คุณจำเป็นต้องประเมินว่าคำสั่งของผู้ใช้ถูกดำเนินการเสร็จสิ้นหรือไม่
+  - <trajectory_content> ประกอบด้วยเนื้อหาการสนทนาฉบับเต็มระหว่าง user และ assistant
+
+  # ภารกิจ
+  - จากเนื้อหาการสนทนา ให้ตัดสินว่าความต้องการย่อยทั้งหมดในคำสั่งเต็มของผู้ใช้ถูกดำเนินการเสร็จสิ้นครบถ้วนหรือไม่
+
+  # ข้อควรระวัง
+  - สำคัญ: การประเมินทั้งหมดยึดถือจากการตอบกลับของ assistant และการเรียกใช้เครื่องมือว่าสามารถดำเนินการคำสั่งของผู้ใช้เสร็จสิ้นหรือไม่ เนื้อหาที่ user แสดงออกในการสนทนาถือเป็นเพียงคำแนะนำและแนวทางสำหรับ assistant ไม่ส่งผลโดยตรงต่อเกณฑ์การประเมิน ทุกอย่างยึดถือตามคำสั่งของผู้ใช้เป็นหลัก!
+  - สำคัญ: ผลลัพธ์ที่ส่งกลับจาก tool ประเภทการค้นหาจะปรากฏเฉพาะต่อ assistant เท่านั้น ไม่ได้หมายถึงเนื้อหาที่ assistant แนะนำให้ผู้ใช้ ดังนั้นจึงไม่ส่งผลโดยตรงต่อผลการประเมิน ทุกอย่างต้องยึดถือจากการตอบกลับของ assistant ที่มีต่อผู้ใช้หลังจากได้รับข้อมูลแล้ว! ในขณะเดียวกันต้องระวังว่า Assistant ไม่สามารถแต่งผลลัพธ์ที่ส่งกลับจาก Tool ขึ้นเองได้!
+  - สำคัญ: สำหรับคำสั่งประเภทการซื้อ (เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ ต้องมีการสร้างคำสั่งซื้อ) ต้องยืนยันว่า assistant ดำเนินการสั่งซื้อเสร็จสิ้นจริงหรือไม่ เป็นไปได้ที่ assistant อาจเข้าใจผิดว่าดำเนินการสั่งซื้อเสร็จสิ้นแล้ว แต่ในความเป็นจริง การเรียกใช้เครื่องมือล้มเหลว; หรือ user ระบุว่าสามารถ "สั่งซื้อเองได้" เป็นต้น กรณีเช่นนี้ควรถือว่าไม่ตรงตามข้อกำหนด
+  - สำหรับคำสั่งผู้ใช้ที่เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ เช่น จำนวนสินค้า เวลาจัดส่ง ต้องปฏิบัติตามข้อกำหนดในคำสั่งผู้ใช้ต้นฉบับอย่างเคร่งครัด (ไม่มีความคลาดเคลื่อนของจำนวนสินค้า ไม่ช้ากว่าเวลาจัดส่งที่ต้องการ) การประนีประนอมของผู้ใช้ไม่ส่งผลต่อผลการตัดสิน (เช่น user ระบุว่า "สินค้าบางอย่างน้อยหน่อยก็ได้", "ไม่มีข้อโต้แย้งต่อเนื้อหาคำสั่งซื้อ" หรือ "จัดส่งช้าหน่อยก็ได้" เป็นต้น) กรณีเช่นนี้ยังคงควรถือว่าไม่ตรงตามข้อกำหนด
+  - สำหรับคำสั่งผู้ใช้ที่เกี่ยวข้องกับการจับคู่เนื้อหาข้อความเช่นที่อยู่หรือหมายเหตุคำสั่งซื้อ ใช้หลักการเทียบเท่าฟังก์ชัน: ตราบใดที่เนื้อหาจริงสามารถทำหน้าที่เดียวกันได้ (เช่น ระบุตำแหน่งจัดส่งโดยประมาณหรือสื่อสารความต้องการหลักของลูกค้า) แม้ถ้อยคำจะไม่ตรงกันทั้งหมดหรือขาดรายละเอียดบางส่วน ก็ถือว่าตรงตามข้อกำหนด
+  - ใน justification ให้บันทึกข้อมูลสำคัญที่เกี่ยวข้องกับคำสั่งผู้ใช้ เกณฑ์ที่ใช้ตัดสินว่าเสร็จสิ้นหรือไม่ และรอบการสนทนาที่เกี่ยวข้อง [x]
+
+  # ข้อกำหนดรูปแบบ
+  - การตอบกลับของคุณควรเป็นออบเจกต์ JSON ซึ่งมีฟิลด์ดังนี้:
+  - `justification`: คำอธิบายโดยย่อเกี่ยวกับผลการประเมิน
+  - `meetExpectation`: ผลการประเมิน (true หรือ false)
+
+  # โครงสร้างตัวอย่างอินพุต:
+  <trajectory_content>xxx</trajectory_content>
+
+  # โครงสร้างตัวอย่างการตอบกลับ:
+  ```json
+  {{
+      "justification": "<คำอธิบายโดยย่อเกี่ยวกับผลการประเมิน>",
+      "meetExpectation": <true หรือ false>
+  }}
+  ```
+spanish: |-
+  # Información del sistema
+  {env_info}
+
+  # Instrucción completa del usuario
+  {user_instruction}
+
+  # Descripción del contexto
+  - Este es un escenario de conversación entre un usuario y un asistente, donde el asistente puede llamar herramientas para obtener información y completar operaciones, los resultados devueltos por las herramientas comenzarán con tool
+  - Debes evaluar si la instrucción del usuario ha sido completada
+  - <trajectory_content> contiene el contenido completo de la conversación entre el usuario y el asistente
+
+  # Tarea
+  - Basado en el contenido de la conversación, juzga si todos los sub-requisitos en la instrucción completa del usuario han sido completados
+
+  # Notas importantes
+  - Importante: Todas las evaluaciones se basan en si las respuestas del asistente y las solicitudes de llamada a herramientas completan la instrucción del usuario; el contenido expresado por el usuario en la conversación solo se considera como sugerencias y guía para el asistente, y no afecta directamente los criterios de evaluación, ¡todo se basa en la instrucción del usuario!
+  - Importante: Los resultados devueltos por las herramientas de tipo consulta solo son visibles para el asistente, no representan el contenido recomendado por el asistente al usuario, por lo tanto, tampoco afectan directamente el resultado de la evaluación, ¡todo debe basarse en la respuesta del asistente al usuario después de obtener la información! ¡Al mismo tiempo, hay que tener en cuenta que el Asistente tampoco debe fabricar los resultados devueltos por las herramientas!
+  - Importante: Para instrucciones de tipo compra (que involucran detalles del pedido, donde se debe generar un pedido), se debe confirmar si el asistente realmente completó la operación de realizar el pedido. Es posible que el asistente crea erróneamente que completó la operación de pedido, pero en realidad la llamada a la herramienta falló; o si el usuario indica que "puede hacer el pedido por sí mismo", etc., todas estas situaciones deben considerarse como no cumplidas.
+  - Para las instrucciones del usuario que involucran detalles del pedido como la cantidad de productos o el tiempo de entrega, se deben cumplir estrictamente los requisitos de la instrucción original del usuario (no puede haber desviación en la cantidad de productos, no debe ser más tarde que el tiempo de entrega esperado), el comportamiento de compromiso del usuario no afecta el resultado de la evaluación (por ejemplo, si el usuario indica "está bien menos cantidad de cierto producto", "no hay objeción al contenido del pedido" o "está bien entregar más tarde", etc.), estas situaciones aún deben considerarse como no cumplidas.
+  - Para las instrucciones del usuario que involucran direcciones o notas de pedido que coinciden con el contenido del texto, se adopta el principio de equivalencia funcional: siempre que el contenido real pueda lograr la misma función (como ubicar aproximadamente el punto de entrega o transmitir las necesidades principales del cliente), incluso si la expresión no es completamente consistente o faltan algunos detalles, también se considera que cumple los requisitos.
+  - En justification registra la información clave relacionada con la instrucción del usuario, la base para juzgar si se completó y su ronda correspondiente [x]
+
+  # Requisitos de formato
+  - Tu respuesta debe ser un objeto JSON, que contiene los siguientes campos:
+  - `justification`: Una breve explicación del resultado de la evaluación
+  - `meetExpectation`: Resultado de la evaluación (true o false)
+
+  # Estructura de entrada de ejemplo:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Estructura de respuesta de ejemplo:
+  ```json
+  {{
+      "justification": "<Breve explicación del resultado de la evaluación>",
+      "meetExpectation": <true o false>
+  }}
+  ```
+korean: |-
+  # 시스템 정보
+  {env_info}
+
+  # 사용자 전체 명령
+  {user_instruction}
+
+  # 배경 설명
+  - 이는 user 와 assistant 간의 대화 시나리오로, assistant 는 도구를 호출하여 정보를 얻고 작업을 완료할 수 있으며, 도구 반환 결과는 tool 로 시작합니다
+  - 사용자 명령이 완료되었는지 평가해야 합니다
+  - <trajectory_content> 는 user 와 assistant 간의 전체 대화 내용을 포함합니다
+
+  # 작업
+  - 대화 내용을 기반으로 사용자 전체 명령의 모든 하위 요구사항이 모두 완료되었는지 판단합니다
+
+  # 주의 사항
+  - 중요: 모든 평가는 assistant 의 응답 및 도구 호출 요청이 사용자 명령을 완료했는지 여부를 기준으로 하며, user 가 대화 중 표현한 내용은 assistant 에 대한 힌트 및 가이드로만 간주되며 평가 기준에 직접적인 영향을 미치지 않습니다. 모든 것은 사용자 명령을 기준으로 합니다!
+  - 중요: 조회류 tool 의 반환 결과는 assistant 에게만 보이며, assistant 가 사용자에게 추천한 내용을 대표하지 않으므로 평가 결과에도 직접적인 영향을 미치지 않습니다. 모든 것은 assistant 가 정보를 획득한 후 사용자에게 한 응답을 기준으로 합니다! 또한 Assistant 는 Tool 의 반환 결과를 날조해서는 안 됩니다!
+  - 중요: 구매류 명령 (주문 세부 사항 포함, 주문 생성 필수) 의 경우, assistant 가 실제로 주문 작업을 완료했는지 확인해야 합니다. assistant 가 주문 작업을 완료했다고 오인했으나 실제로 도구 호출이 실패했거나, user 가 "스스로 주문할 수 있음"이라고 표시한 경우 등은 모두 요구사항을 충족하지 못한 것으로 간주됩니다
+  - 상품 수량, 배송 시간 등 주문 세부 사항과 관련된 사용자 명령의 경우, 원래 사용자 명령 요구사항을 엄격히 충족해야 합니다 (상품 수량 편차 불가, 예상 배송 시간보다 늦어지면 안 됨). 사용자의 양보 행동은 평가 결과에 영향을 미치지 않습니다 (예: user 가 "특정 상품은 적어도 됨", "주문 내용에 이의 없음" 또는 "늦게 배송되어도 됨" 등 표시). 이러한 경우에도 요구사항을 충족하지 못한 것으로 간주됩니다
+  - 텍스트 내용 매칭 주소 또는 주문 비고류 사용자 명령의 경우 기능 동등 원칙을 적용합니다: 실제 내용이 동일한 기능을 수행할 수만 있다면 (예: 배송 위치 대략적 특정 또는 고객 주요 요구사항 전달), 표현이 완전히 일치하지 않거나 일부 세부 사항이 부족해도 요구사항을 충족한 것으로 간주합니다
+  - justification 에 사용자 명령과 관련된 주요 정보, 완료 여부 판단 근거 및 해당 라운드 [x] 를 기록합니다
+
+  # 형식 요구사항
+  - 응답은 다음 필드를 포함하는 JSON 객체여야 합니다:
+  - \`justification\`: 평가 결과에 대한 간단한 설명
+  - \`meetExpectation\`: 평가 결과 (true 또는 false)
+
+  # 예시 입력 구조:
+  <trajectory_content>xxx</trajectory_content>
+
+  # 예시 응답 구조:
+  ```json
+  {{
+      "justification": "<평가 결과에 대한 간단한 설명>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+indonesian: |-
+  # Informasi Sistem
+  {env_info}
+
+  # Instruksi Lengkap Pengguna
+  {user_instruction}
+
+  # Penjelasan Latar Belakang
+  - Ini adalah skenario percakapan antara pengguna dan asisten, di mana asisten dapat memanggil tool untuk mendapatkan informasi dan menyelesaikan operasi, hasil pengembalian tool akan diawali dengan tool
+  - Anda perlu mengevaluasi apakah instruksi pengguna telah selesai
+  - <trajectory_content> berisi konten percakapan lengkap antara pengguna dan asisten
+
+  # Tugas
+  - Berdasarkan konten percakapan, tentukan apakah semua sub-kebutuhan dalam instruksi lengkap pengguna telah selesai seluruhnya
+
+  # Hal-hal yang Perlu Diperhatikan
+  - Penting: Semua evaluasi didasarkan pada apakah respons asisten dan permintaan panggilan tool menyelesaikan instruksi pengguna, konten yang dinyatakan oleh pengguna dalam percakapan hanya dianggap sebagai petunjuk dan panduan untuk asisten, tidak akan langsung mempengaruhi standar evaluasi, semuanya berdasarkan instruksi pengguna!
+  - Penting: Hasil yang dikembalikan oleh tool jenis kueri hanya terlihat oleh asisten, dan tidak mewakili konten yang direkomendasikan asisten kepada pengguna, oleh karena itu juga tidak langsung mempengaruhi hasil evaluasi, semuanya harus berdasarkan respons asisten kepada pengguna setelah mendapatkan informasi! Pada saat yang sama perlu diperhatikan, Asisten juga tidak boleh mengarang hasil pengembalian Tool!
+  - Penting: Untuk instruksi jenis pembelian (melibatkan detail pesanan, harus menghasilkan pesanan), harus dikonfirmasi apakah asisten benar-benar menyelesaikan operasi pemesanan. Mungkin asisten salah mengira telah menyelesaikan operasi pemesanan, sebenarnya panggilan tool gagal; atau pengguna menyatakan bisa "pesan sendiri" dll, semua situasi ini harus dianggap sebagai tidak memenuhi persyaratan
+  - Untuk instruksi pengguna yang melibatkan detail pesanan seperti jumlah barang, waktu pengiriman, harus secara ketat memenuhi persyaratan instruksi pengguna asli (tidak boleh ada penyimpangan jumlah barang, tidak boleh lebih lambat dari waktu pengiriman yang diharapkan), perilaku kompromi pengguna tidak mempengaruhi hasil penilaian (misalnya pengguna menyatakan "beberapa barang lebih sedikit juga boleh", "tidak ada keberatan terhadap konten pesanan" atau "pengiriman lebih lambat juga boleh" dll), situasi jenis ini tetap harus dianggap sebagai tidak memenuhi persyaratan
+  - Untuk instruksi pengguna jenis alamat atau catatan pesanan yang melibatkan pencocokan konten teks, adopsi prinsip equivalensi fungsional: selama konten aktual dapat mewujudkan fungsi yang sama (seperti memposisikan lokasi pengiriman secara kasar atau menyampaikan kebutuhan utama pelanggan), bahkan jika ekspresinya tidak sepenuhnya konsisten atau kekurangan beberapa detail, juga dianggap memenuhi persyaratan
+  - Catat informasi kunci yang terkait dengan instruksi pengguna, dasar untuk menentukan apakah selesai dan giliran yang sesuai [x] dalam justification
+
+  # Persyaratan Format
+  - Respons Anda harus berupa objek JSON, berisi bidang berikut:
+  - `justification`: Penjelasan singkat tentang hasil evaluasi
+  - `meetExpectation`: Hasil evaluasi (true atau false)
+
+  # Struktur Input Contoh:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Struktur Respons Contoh:
+  ```json
+  {{
+      "justification": "<Penjelasan singkat tentang hasil evaluasi>",
+      "meetExpectation": <true atau false>
+  }}
+  ```
+hebrew: |-
+  # מידע מערכת
+  {env_info}
+
+  # הוראה מלאה של המשתמש
+  {user_instruction}
+
+  # הסבר רקע
+  - זהו תרחיש שיחה בין user ל-assistant, כאשר ה-assistant יכול להפעיל כלים כדי להשיג מידע ולהשלים פעולות, ותוצאות החזרה של הכלים יתחילו ב-tool
+  - עליך להעריך האם הוראת המשתמש בוצעה
+  - <trajectory_content> מכיל את תוכן השיחה המלא בין user ל-assistant
+
+  # משימה
+  - בהתבסס על תוכן השיחה, קבע האם כל תתי-הדרישות בהוראה המלאה של המשתמש בוצעו במלואן
+
+  # נקודות לתשומת לב
+  - חשוב: כל ההערכות מתבססות על האם התגובות של ה-assistant ובקשות הפעלת הכלים משלימות את הוראת המשתמש, התוכן שה-user הביע בשיחה נחשב רק כרמז והנחיה ל-assistant, ולא משפיע ישירות על סטנדרט ההערכה, הכל לפי הוראת המשתמש!
+  - חשוב: תוצאות שהוחזרו על ידי tool מסוג חיפוש גלויות רק ל-assistant, ואינן מייצגות את התוכן שה-assistant המליץ למשתמש, ולכן גם לא משפיעות ישירות על תוצאת ההערכה, הכל חייב להיות לפי התגובה של ה-assistant למשתמש לאחר השגת המידע! יש לשים לב גם כי ה-Assistant לא יכול לזייף תוצאות החזרה של ה-Tool!
+  - חשוב: עבור הוראות רכישה (הכוללות פרטי הזמנה, חייבות ליצור הזמנה), יש לאשר האם ה-assistant אכן השלים את פעולת ביצוע ההזמנה. ייתכן שה-assistant חשב בטעות שהשלים את ביצוע ההזמנה, למעשה הפעלת הכלי נכשלה; או שה-user הצהיר כי "יכול לבצע הזמנה בעצמו" וכדומה, כל מצבים אלו צריכים להיחשב כלא עומדים בדרישות
+  - עבור הוראות משתמש הכוללות פרטי הזמנה כמו כמות מוצרים, זמן אספקה, יש לעמוד בקפדנות בדרישות הוראת המשתמש המקורית (לא יכולה להיות סטייה בכמות המוצרים, לא יכול להיות מאוחר מזמן האספקה הצפוי), התנהגות פשרה של המשתמש אינה משפיעה על תוצאת השיפוט (למשל user מציין "קצת פחות ממוצר מסוים זה בסדר", "אין התנגדות לתוכן ההזמנה" או "אספקה מאוחרת יותר זה בסדר" וכדומה), מצבים מסוג זה עדיין צריכים להיחשב כלא עומדים בדרישות
+  - עבור הוראות משתמש הכוללות התאמת תוכן טקסטואלי של כתובות או הערות הזמנה, יש להשתמש בעקרון שוויון פונקציונלי: כל עוד התוכן בפועל יכול לממש את אותה פונקציה (כגון מיקום כללי של נקודת האספקה או העברת הדרישה העיקרית של הלקוח), גם אם הניסוח אינו זהה לחלוטין או חסרים פרטים מסוימים, זה נחשב כעומד בדרישות
+  - ב-justification רשמו את המידע הקריטי הקשור להוראת המשתמש, הבסיס לקביעה האם בוצעה או לא ואת סיבוב השיחה המתאים [x]
+
+  # דרישות פורמט
+  - התגובה שלך צריכה להיות אובייקט JSON, הכולל את השדות הבאים:
+  - `justification`: הסבר קצר לתוצאת ההערכה
+  - `meetExpectation`: תוצאת ההערכה (true או false)
+
+  # מבנה קלט לדוגמה:
+  <trajectory_content>xxx</trajectory_content>
+
+  # מבנה תגובה לדוגמה:
+  ```json
+  {{
+      "justification": "<הסבר קצר לתוצאת ההערכה>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+turkish: |-
+  # Sistem Bilgisi
+  {env_info}
+
+  # Kullanıcı Tam Talimatı
+  {user_instruction}
+
+  # Arka Plan Açıklaması
+  - Bu, user ile assistant arasında geçen bir konuşma senaryosudur; assistant bilgi edinmek ve işlemleri tamamlamak için araçları çağırabilir ve araç dönüş sonuçları tool ile başlayacaktır
+  - Kullanıcı talimatının tamamlanıp tamamlanmadığını değerlendirmeniz gerekmektedir
+  - <trajectory_content>, user ile assistant arasındaki tam konuşma içeriğini içerir
+
+  # Görev
+  - Konuşma içeriğine dayanarak, kullanıcı tam talimatındaki tüm alt gereksinimlerin eksiksiz olarak tamamlanıp tamamlanmadığını belirleyin
+
+  # Dikkat Edilmesi Gerekenler
+  - Önemli: Tüm değerlendirmeler, assistant'ın yanıtının ve araç çağrı isteğinin kullanıcı talimatını tamamlayıp tamamlamadığına dayanır; user'ın konuşmada ifade ettiği içerik yalnızca assistant için ipucu ve rehber olarak kabul edilir, değerlendirme standartlarını doğrudan etkilemez, her şey kullanıcı talimatına göredir!
+  - Önemli: Sorgu tipi tool'ların dönüş sonuçları yalnızca assistant tarafından görülebilir ve assistant'ın kullanıcıya önerdiği içeriği temsil etmez, bu nedenle değerlendirme sonucunu doğrudan etkilemez; her şey assistant'ın bilgiyi edindikten sonra kullanıcıya verdiği yanıt esas alınmalıdır! Ayrıca Assistant'ın Tool dönüş sonuçlarını uydurmaması gerektiği de dikkate alınmalıdır!
+  - Önemli: Satın alma tipi talimatlar için (sipariş detaylarını içeren, sipariş oluşturulması gereken), assistant'ın sipariş verme işlemini gerçekten tamamlayıp tamamlamadığı doğrulanmalıdır. Assistant'ın sipariş verme işlemini tamamladığını yanlışlıkla düşünmesi, ancak araç çağrısının başarısız olması mümkündür; veya user'ın "kendim sipariş verebilirim" demesi gibi durumlar, gereksinimlerin karşılanmamış sayılmalıdır
+  - Ürün miktarı, teslimat zamanı gibi sipariş detaylarını içeren kullanıcı talimatları için, orijinal kullanıcı talimatı gereksinimleri kesinlikle karşılanmalıdır (ürün miktarında sapma olmamalı, beklenen teslimat zamanından geç olmamalıdır); kullanıcının uzlaşma tutumu değerlendirme sonucunu etkilemez (örneğin user'ın "bir ürün daha az olsa da olur", "sipariş içeriğinde itirazım yok" veya "geç teslimat da olur" demesi gibi), bu tür durumlar hala gereksinimlerin karşılanmamış sayılmalıdır
+  - Metin içeriği eşleşmesini içeren adres veya sipariş notu tipi kullanıcı talimatları için, işlevsel eşdeğerlik ilkesi uygulanır: Gerçekleşen içerik aynı işlevi görebiliyorsa (örneğin teslimat yerini yaklaşık olarak konumlandırma veya müşterinin ana gereksinimlerini iletme), ifade tamamen tutarlı olmasa veya bazı detaylar eksik olsa bile, gereksinimlerin karşılandığı kabul edilir
+  - justification alanında kullanıcı talimatıyla ilgili anahtar bilgileri, tamamlanma durumuna ilişkin kararın gerekçesini ve ilgili tur numarasını [x] kaydedin
+
+  # Format Gereksinimleri
+  - Yanıtınız aşağıdaki alanları içeren bir JSON nesnesi olmalıdır:
+  - `justification`: Değerlendirme sonucunun kısa açıklaması
+  - `meetExpectation`: Değerlendirme sonucu (true veya false)
+
+  # Örnek Giriş Yapısı:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Örnek Yanıt Yapısı:
+  ```json
+  {{
+      "justification": "<Değerlendirme sonucunun kısa açıklaması>",
+      "meetExpectation": <true veya false>
+  }}
+  ```
+vietnamese: |-
+  # Thông tin hệ thống
+  {env_info}
+
+  # Hướng dẫn đầy đủ của người dùng
+  {user_instruction}
+
+  # Mô tả bối cảnh
+  - Đây là kịch bản hội thoại giữa user và assistant, trong đó assistant có thể gọi công cụ để lấy thông tin và thực hiện thao tác, kết quả trả về của công cụ sẽ bắt đầu bằng tool
+  - Bạn cần đánh giá xem hướng dẫn của người dùng đã được hoàn thành hay chưa
+  - <trajectory_content> chứa nội dung hội thoại đầy đủ giữa user và assistant
+
+  # Nhiệm vụ
+  - Dựa trên nội dung hội thoại, xác định xem tất cả các yêu cầu con trong hướng dẫn đầy đủ của người dùng đã được hoàn thành hết chưa
+
+  # Lưu ý
+  - Quan trọng: Tất cả các đánh giá dựa trên việc phản hồi của assistant và yêu cầu gọi công cụ có hoàn thành hướng dẫn của người dùng hay không, nội dung user thể hiện trong hội thoại chỉ được coi là gợi ý và hướng dẫn cho assistant, không trực tiếp ảnh hưởng đến tiêu chí đánh giá, mọi thứ đều dựa trên hướng dẫn của người dùng!
+  - Quan trọng: Kết quả trả về của các tool loại truy vấn chỉ hiển thị với assistant, không đại diện cho nội dung assistant khuyến nghị cho người dùng, do đó cũng không trực tiếp ảnh hưởng đến kết quả đánh giá, mọi thứ đều phải dựa trên phản hồi của assistant đối với người dùng sau khi lấy thông tin! Đồng thời cần lưu ý, Assistant cũng không được bịa đặt kết quả trả về của Tool!
+  - Quan trọng: Đối với các hướng dẫn loại mua hàng (liên quan đến chi tiết đơn hàng, bắt buộc phải tạo đơn hàng), phải xác nhận xem assistant có thực sự hoàn thành thao tác đặt hàng hay không. Có thể assistant nhầm tưởng đã hoàn thành thao tác đặt hàng, thực tế gọi công cụ thất bại; hoặc user biểu thị có thể "tự đặt hàng" và các tình huống khác, đều nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các hướng dẫn của người dùng liên quan đến chi tiết đơn hàng như số lượng hàng hóa, thời gian giao hàng, phải đáp ứng nghiêm ngặt yêu cầu của hướng dẫn người dùng gốc (không được có sai lệch về số lượng hàng hóa, không được muộn hơn thời gian giao hàng mong đợi), hành vi thỏa hiệp của người dùng không ảnh hưởng đến kết quả đánh giá (ví dụ user biểu thị "ít hàng hóa nào đó cũng được", "không có ý kiến gì về nội dung đơn hàng" hoặc "giao muộn cũng được" v.v.), những trường hợp này vẫn nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các hướng dẫn của người dùng loại địa chỉ hoặc ghi chú đơn hàng liên quan đến khớp nội dung văn bản, áp dụng nguyên tắc tương đương chức năng: Chỉ cần nội dung thực tế có thể thực hiện chức năng tương tự (như định vị sơ bộ địa điểm giao hàng hoặc truyền đạt nhu cầu chính của khách hàng), ngay cả khi cách diễn đạt không hoàn toàn giống nhau hoặc thiếu một số chi tiết, cũng được coi là đáp ứng yêu cầu
+  - Ghi lại trong justification các thông tin quan trọng liên quan đến hướng dẫn của người dùng, cơ sở để xác định xem đã hoàn thành hay chưa và vòng tương ứng [x] của nó
+
+  # Yêu cầu định dạng
+  - Phản hồi của bạn phải là một đối tượng JSON, bao gồm các trường sau:
+  - `justification`: Giải thích ngắn gọn về kết quả đánh giá
+  - `meetExpectation`: Kết quả đánh giá (true hoặc false)
+
+  # Cấu trúc đầu vào ví dụ:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Cấu trúc phản hồi ví dụ:
+  ```json
+  {{
+      "justification": "<Giải thích ngắn gọn về kết quả đánh giá>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+malay: |-
+  # Maklumat Sistem
+  {env_info}
+
+  # Arahan Lengkap Pengguna
+  {user_instruction}
+
+  # Penerangan Latar Belakang
+  - Ini adalah senario perbualan antara pengguna dan pembantu, di mana pembantu boleh memanggil alat untuk mendapatkan maklumat dan menyelesaikan operasi, hasil yang dikembalikan oleh alat akan bermula dengan tool
+  - Anda perlu menilai sama ada arahan pengguna telah diselesaikan
+  - <trajectory_content> mengandungi kandungan perbualan lengkap antara pengguna dan pembantu
+
+  # Tugas
+  - Berdasarkan kandungan perbualan, tentukan sama ada semua keperluanย่อย dalam arahan lengkap pengguna telah diselesaikan sepenuhnya
+
+  # Perhatian
+  - Penting: Semua penilaian berdasarkan sama ada respons pembantu dan panggilan alat telah menyelesaikan arahan pengguna, kandungan yang dinyatakan oleh pengguna dalam perbualan hanya dianggap sebagai petunjuk dan panduan kepada pembantu, tidak akan mempengaruhi standard penilaian secara langsung, semuanya berdasarkan arahan pengguna!
+  - Penting: Hasil yang dikembalikan oleh alat jenis pertanyaan hanya boleh dilihat oleh pembantu, tidak mewakili kandungan yang disyorkan oleh pembantu kepada pengguna, oleh itu tidak mempengaruhi hasil penilaian secara langsung, semuanya berdasarkan respons pembantu kepada pengguna setelah mendapatkan maklumat! Pada masa yang sama, perlu diperhatikan, Pembantu juga tidak boleh mereka-reka hasil yang dikembalikan oleh Alat!
+  - Penting: Untuk arahan jenis pembelian (melibatkan butiran pesanan, mesti menjana pesanan), mesti mengesahkan sama ada pembantu benar-benar telah menyelesaikan operasi membuat pesanan. Ada kemungkinan pembantu menyangka telah menyelesaikan operasi membuat pesanan, sebenarnya panggilan alat gagal; atau pengguna menyatakan boleh "tempah sendiri" dan sebagainya, semua keadaan ini harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk arahan pengguna yang melibatkan butiran pesanan seperti kuantiti barang, masa penghantaran, mesti memenuhi keperluan arahan pengguna asal secara ketat (tidak boleh ada penyimpangan kuantiti barang, tidak boleh lewat daripada masa penghantaran yang diharapkan), tindakan kompromi pengguna tidak mempengaruhi hasil penilaian (contohnya pengguna menyatakan "kurangkan sedikit barang tertentu pun boleh", "tiada bantahan terhadap kandungan pesanan" atau "hantar lewat pun boleh" dan sebagainya), keadaan jenis ini masih harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk arahan pengguna jenis alamat atau nota pesanan yang melibatkan padanan kandungan teks, gunakan prinsip kesetaraan fungsi: selagi kandungan sebenar boleh melaksanakan fungsi yang sama (seperti menentukan lokasi penghantaran secara kasar atau menyampaikan keperluan utama pelanggan), walaupun ungkapan tidak sepenuhnya konsisten atau kekurangan beberapa butiran, juga dianggap memenuhi keperluan
+  - Rekod maklumat penting yang berkaitan dengan arahan pengguna, asas untuk menentukan sama ada telah diselesaikan dan pusingan yang sepadan [x] dalam justification
+
+  # Keperluan Format
+  - Respons anda hendaklah menjadi objek JSON, mengandungi medan berikut:
+  - `justification`: Penjelasan ringkas mengenai hasil penilaian
+  - `meetExpectation`: Hasil penilaian (true atau false)
+
+  # Struktur Input Contoh:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Struktur Respons Contoh:
+  ```json
+  {{
+      "justification": "<Penjelasan ringkas mengenai hasil penilaian>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+belarusian: |-
+  # Сістэмная інфармацыя
+  {env_info}
+
+  # Поўная інструкцыя карыстальніка
+  {user_instruction}
+
+  # Апісанне кантэксту
+  - Гэта сцэнарый дыялогу паміж карыстальнікам і асістэнтам, дзе асістэнт можа выклікаць інструменты для атрымання інфармацыі і выканання аперацый; вынікі вяртання інструментаў будуць пачынацца з tool
+  - Вам неабходна ацаніць, ці была выканана інструкцыя карыстальніка
+  - <trajectory_content> змяшчае поўны змест дыялогу паміж карыстальнікам і асістэнтам
+
+  # Задача
+  - На аснове зместу дыялогу вызначыце, ці былі цалкам выкананы ўсе падзапыты ў поўнай інструкцыі карыстальніка
+
+  # Заўвагі
+  - Важна: Уся ацэнка грунтуецца на тым, ці адказы асістэнта і запыты на выклік інструментаў выконваюць інструкцыю карыстальніка; змест, выказаны карыстальнікам у дыялогу, разглядаецца толькі як падказка і кіраўніцтва для асістэнта і не ўплывае непасрэдна на крытэрыі ацэнкі; усё грунтуецца на інструкцыі карыстальніка!
+  - Важна: Вынікі, вернутыя інструментамі тыпу запыту, бачныя толькі асістэнту і не ўяўляюць сабой рэкамендаваны асістэнтам змест для карыстальніка, таму яны таксама не ўплываюць непасрэдна на вынік ацэнкі; усё павінна грунтавацца на адказе асістэнта карыстальніку пасля атрымання інфармацыі! Аднак варта заўважыць, што асістэнт таксама не павінен прыдумваць вынікі вяртання інструмента!
+  - Важна: Для інструкцый тыпу пакупкі (якія закранаюць дэталі замовы і патрабуюць стварэння замовы) неабходна пацвердзіць, ці сапраўды асістэнт выканаў аперацыю размяшчэння замовы. Магчыма, асістэнт памылкова лічыць, што размяшчэнне замовы выканана, але на самой справе выклік інструмента не ўдаўся; або карыстальнік заяўляе, што можа "зрабіць заказ самастойна" і г.д. — усё гэта павінна разглядацца як невыкананне патрабаванняў
+  - Для інструкцый карыстальніка, якія закранаюць дэталі замовы, такія як колькасць тавараў, час дастаўкі, неабходна строга выконваць першапачатковыя патрабаванні інструкцыі карыстальніка (не павінна быць адхіленняў у колькасці тавараў, нельга спазняцца адносна чакаемага часу дастаўкі); саступкі з боку карыстальніка не ўплываюць на вынік ацэнкі (напрыклад, калі карыстальнік кажа "меншая колькасць якога-небудзь тавару таксама падойдзе", "няма пярэчанняў да зместу замовы" або "дастаўка крыху пазней таксама падойдзе" і г.д.), такія выпадкі ўсё роўна павінны разглядацца як невыкананне патрабаванняў
+  - Для інструкцый карыстальніка, якія закранаюць супадзенне тэкставага зместу адрасоў або заўваг да замовы, прымяняецца прынцып функцыянальнай эквівалентнасці: калі фактычны змест можа выконваць тую ж функцыю (напрыклад, прыблізнае вызначэнне месца дастаўкі або перадача асноўных патрабаванняў кліента), нават калі фармулёўка не цалкам супадае або адсутнічаюць некаторыя дэталі, гэта таксама лічыцца выкананнем патрабаванняў
+  - У полі justification запішыце ключавую інфармацыю, звязаную з інструкцыяй карыстальніка, падставы для вызначэння таго, ці была яна выканана, і адпаведныя раўнды [x]
+
+  # Патрабаванні да фармату
+  - Ваш адказ павінен быць аб'ектам JSON, які змяшчае наступныя палі:
+  - `justification`: Кароткае тлумачэнне выніку ацэнкі
+  - `meetExpectation`: Вынік ацэнкі (true або false)
+
+  # Прыклад структуры ўводу:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Прыклад структуры адказу:
+  ```json
+  {{
+      "justification": "<Кароткае тлумачэнне выніку ацэнкі>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+punjabi: |-
+  # ਸਿਸਟਮ ਜਾਣਕਾਰੀ
+  {env_info}
+
+  # ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼
+  {user_instruction}
+
+  # ਪਿਛੋਕੜ ਵੇਰਵਾ
+  - ਇਹ ਉਪਭੋਗਤਾ ਅਤੇ ਸਹਾਇਕ ਵਿਚਕਾਰ ਇੱਕ ਗੱਲਬਾਤ ਦਾ ਦ੍ਰਿਸ਼ ਹੈ, ਜਿੱਥੇ ਸਹਾਇਕ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਕਾਰਵਾਈਆਂ ਪੂਰੀਆਂ ਕਰਨ ਲਈ ਟੂਲਾਂ ਨੂੰ ਕਾਲ ਕਰ ਸਕਦਾ ਹੈ, ਟੂਲ ਦੇ ਨਤੀਜੇ tool ਨਾਲ ਸ਼ੁਰੂ ਹੋਣਗੇ
+  - ਤੁਹਾਨੂੰ ਇਹ ਮੁਲਾਂਕਣ ਕਰਨ ਦੀ ਲੋੜ ਹੈ ਕਿ ਕੀ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ ਪੂਰੇ ਕੀਤੇ ਗਏ ਹਨ
+  - <trajectory_content> ਵਿੱਚ ਉਪਭੋਗਤਾ ਅਤੇ ਸਹਾਇਕ ਵਿਚਕਾਰ ਪੂਰੀ ਗੱਲਬਾਤ ਦੀ ਸਮੱਗਰੀ ਸ਼ਾਮਲ ਹੈ
+
+  # ਕਾਰਜ
+  - ਗੱਲਬਾਤ ਦੀ ਸਮੱਗਰੀ ਦੇ ਆਧਾਰ 'ਤੇ, ਇਹ ਨਿਰਣਾ ਕਰੋ ਕਿ ਕੀ ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼ਾਂ ਵਿੱਚ ਸਾਰੀਆਂ ਉਪ-ਲੋੜਾਂ ਪੂਰੀਆਂ ਕੀਤੀਆਂ ਗਈਆਂ ਹਨ
+
+  # ਧਿਆਨ ਦੇਣ ਯੋਗ ਗੱਲਾਂ
+  - ਮਹੱਤਵਪੂਰਨ: ਸਾਰੇ ਮੁਲਾਂਕਣ ਇਸ ਗੱਲ 'ਤੇ ਨਿਰਭਰ ਕਰਦੇ ਹਨ ਕਿ ਕੀ ਸਹਾਇਕ ਦੇ ਜਵਾਬ ਅਤੇ ਟੂਲ ਕਾਲ ਬੇਨਤੀਆਂ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ ਨੂੰ ਪੂਰਾ ਕਰਦੀਆਂ ਹਨ, ਗੱਲਬਾਤ ਵਿੱਚ ਉਪਭੋਗਤਾ ਦੁਆਰਾ ਪ੍ਰਗਟ ਕੀਤੀ ਗਈ ਸਮੱਗਰੀ ਨੂੰ ਸਿਰਫ ਸਹਾਇਕ ਲਈ ਸੰਕੇਤ ਅਤੇ ਮਾਰਗਦਰਸ਼ਨ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਇਹ ਮੁਲਾਂਕਣ ਮਾਪਦੰਡਾਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦਾ, ਸਭ ਕੁਝ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ!
+  - ਮਹੱਤਵਪੂਰਨ: ਖੋਜ ਵਰਗੇ ਟੂਲਾਂ ਦੁਆਰਾ ਵਾਪਸ ਕੀਤੇ ਗਏ ਨਤੀਜੇ ਸਿਰਫ ਸਹਾਇਕ ਲਈ ਦਿਖਾਈ ਦਿੰਦੇ ਹਨ, ਇਹ ਉਪਭੋਗਤਾ ਲਈ ਸਹਾਇਕ ਦੀਆਂ ਸਿਫਾਰਸ਼ਾਂ ਦੀ ਨੁਮਾਇੰਦਗੀ ਨਹੀਂ ਕਰਦੇ, ਇਸ ਲਈ ਇਹ ਮੁਲਾਂਕਣ ਦੇ ਨਤੀਜਿਆਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦੇ, ਸਭ ਕੁਝ ਸਹਾਇਕ ਦੁਆਰਾ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਤੋਂ ਬਾਅਦ ਉਪਭੋਗਤਾ ਨੂੰ ਦਿੱਤੇ ਗਏ ਜਵਾਬ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ! ਇਸ ਦੇ ਨਾਲ ਹੀ ਧਿਆਨ ਦੇਣਾ ਲੋੜੀਂਦਾ ਹੈ ਕਿ ਸਹਾਇਕ ਟੂਲ ਦੇ ਨਤੀਜੇ ਗੜੜ ਨਹੀਂ ਸਕਦਾ!
+  - ਮਹੱਤਵਪੂਰਨ: ਖਰੀਦਦਾਰੀ ਵਰਗੇ ਨਿਰਦੇਸ਼ਾਂ ਲਈ (ਜੋ ਆਰਡਰ ਦੇ ਵੇਰਵਿਆਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹਨ, ਆਰਡਰ ਬਣਾਉਣਾ ਜ਼ਰੂਰੀ ਹੈ), ਇਹ ਪੁਸ਼ਟੀ ਕਰਨਾ ਜ਼ਰੂਰੀ ਹੈ ਕਿ ਕੀ ਸਹਾਇਕ ਨੇ ਵਾਸਤਵ ਵਿੱਚ ਆਰਡਰ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਪੂਰੀ ਕੀਤੀ ਹੈ। ਇਹ ਸੰਭਵ ਹੈ ਕਿ ਸਹਾਇਕ ਨੇ ਗਲਤੀ ਨਾਲ ਸੋਚਿਆ ਕਿ ਆਰਡਰ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਪੂਰੀ ਹੋ ਗਈ ਹੈ, ਅਸਲ ਵਿੱਚ ਟੂਲ ਕਾਲ ਅਸਫਲ ਰਹੀ; ਜਾਂ ਉਪਭੋਗਤਾ ਨੇ ਇਹ ਦਰਸਾਇਆ ਕਿ ਉਹ "ਖੁਦ ਆਰਡਰ ਕਰ ਸਕਦਾ ਹੈ" ਆਦਿ, ਅਜਿਹੀਆਂ ਸਥਿਤੀਆਂ ਨੂੰ ਅਪੂਰਾ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ ਲਈ ਜੋ ਆਰਡਰ ਦੇ ਵੇਰਵਿਆਂ ਜਿਵੇਂ ਕਿ ਉਤਪਾਦ ਦੀ ਮਾਤਰਾ, ਡਿਲੀਵਰੀ ਦੇ ਸਮੇਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹਨ, ਮੂਲ ਉਪਭੋਗਤਾ ਨਿਰਦੇਸ਼ਾਂ ਦੀਆਂ ਲੋੜਾਂ ਨੂੰ ਸਖਤੀ ਨਾਲ ਪੂਰਾ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ (ਉਤਪਾਦ ਦੀ ਮਾਤਰਾ ਵਿੱਚ ਕੋਈ ਫਰਕ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ, ਉਮੀਦ ਕੀਤੇ ਡਿਲੀਵਰੀ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ), ਉਪਭੋਗਤਾ ਦੇ ਸਮਝੌਤੇ ਦਾ ਵਿਵਹਾਰ ਮੁਲਾਂਕਣ ਦੇ ਨਤੀਜਿਆਂ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦਾ (ਉਦਾਹਰਣ ਵਜੋਂ ਉਪਭੋਗਤਾ ਨੇ ਕਿਹਾ "ਕੁਝ ਉਤਪਾਦ ਘੱਟ ਵੀ ਚੱਲੇਗਾ", "ਆਰਡਰ ਦੀ ਸਮੱਗਰੀ 'ਤੇ ਕੋਈ ਇਤਰਾਜ਼ ਨਹੀਂ" ਜਾਂ "ਬਾਅਦ ਵਿੱਚ ਡਿਲੀਵਰੀ ਚੱਲੇਗੀ" ਆਦਿ), ਅਜਿਹੀਆਂ ਸਥਿਤੀਆਂ ਨੂੰ ਅਜੇ ਵੀ ਅਪੂਰਾ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ ਲਈ ਜੋ ਪਾਠ ਸਮੱਗਰੀ ਮੈਚਿੰਗ ਪਤੇ ਜਾਂ ਆਰਡਰ ਨੋਟਸ ਵਰਗੇ ਹਨ, ਕਾਰਜਾਤਮਕ ਸਮਾਨਤਾ ਦੇ ਸਿਧਾਂਤ ਦੀ ਵਰਤੋਂ ਕਰੋ: ਜੇਕਰ ਅਸਲ ਸਮੱਗਰੀ ਇੱਕੋ ਜਿਹਾ ਕਾਰਜ ਪ੍ਰਾਪਤ ਕਰ ਸਕਦੀ ਹੈ (ਜਿਵੇਂ ਕਿ ਡਿਲੀਵਰੀ ਸਥਾਨ ਦਾ ਮੋਟੇ ਤੌਰ 'ਤੇ ਪਤਾ ਲਗਾਉਣਾ ਜਾਂ ਗਾਹਕ ਦੀਆਂ ਮੁੱਖ ਲੋੜਾਂ ਨੂੰ ਪ੍ਰਸਾਰਿਤ ਕਰਨਾ), ਭਾਵੇਂ ਬਿਆਨ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ ਜਾਂ ਕੁਝ ਵੇਰਵੇ ਗੁੰਮ ਹਨ, ਇਸਨੂੰ ਲੋੜਾਂ ਪੂਰੀਆਂ ਹੋਈਆਂ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ
+  - justification ਵਿੱਚ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ਾਂ ਨਾਲ ਸਬੰਧਤ ਮੁੱਖ ਜਾਣਕਾਰੀ, ਪੂਰਾ ਹੋਣ ਦਾ ਨਿਰਣਾ ਕਰਨ ਦਾ ਆਧਾਰ ਅਤੇ ਇਸਦੇ ਅਨੁਰੂਪ ਗੇੜ [x] ਰਿਕਾਰਡ ਕਰੋ
+
+  # ਫਾਰਮੈਟ ਲੋੜਾਂ
+  - ਤੁਹਾਡਾ ਜਵਾਬ ਇੱਕ JSON ਆਬਜੈਕਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ ਹੇਠ ਲਿਖੇ ਫੀਲਡ ਸ਼ਾਮਲ ਹਨ:
+  - `justification`: ਮੁਲਾਂਕਣ ਦੇ ਨਤੀਜੇ ਦੀ ਇੱਕ ਸੰਖੇਪ ਵਿਆਖਿਆ
+  - `meetExpectation`: ਮੁਲਾਂਕਣ ਦਾ ਨਤੀਜਾ (true ਜਾਂ false)
+
+  # ਉਦਾਹਰਣ ਇਨਪੁਟ ਬਣਤਰ:
+  <trajectory_content>xxx</trajectory_content>
+
+  # ਉਦਾਹਰਣ ਜਵਾਬ ਬਣਤਰ:
+  ```json
+  {{
+      "justification": "<ਮੁਲਾਂਕਣ ਦੇ ਨਤੀਜੇ ਦੀ ਇੱਕ ਸੰਖੇਪ ਵਿਆਖਿਆ>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+kazakh: |-
+  # Жүйе ақпараты
+  {env_info}
+
+  # Пайдаланушының толық нұсқаулығы
+  {user_instruction}
+
+  # Артқы жағдай
+  - Бұл пайдаланушы мен ассистент арасындағы сұхбат сценарийі, мұнда ассистент ақпарат алу және операцияларды орындау үшін құралдарды шақыра алады, құралдың қайтару нәтижесі tool сөзімен басталады
+  - Сіз пайдаланушы нұсқаулығының орындалғанын бағалауыңыз керек
+  - <trajectory_content> пайдаланушы мен ассистент арасындағы толық сұхбат мазмұнын қамтиды
+
+  # Тапсырма
+  - Сұхбат мазмұнына сүйене отырып, пайдаланушының толық нұсқаулығындағы барлық ішкі талаптардың толығымен орындалғанын анықтаңыз
+
+  # Назар аудару қажет
+  - Маңызды: Барлық бағалау ассистенттің жауаптары мен құралды шақыру сұраныстарының пайдаланушы нұсқаулығын орындағанына негізделеді, пайдаланушының сұхбатта білдірген мазмұны тек ассистентке кеңес және бағыт беру ретінде қарастырылады, бағалау критерийлеріне тікелей әсер етпейді, бәрі пайдаланушы нұсқаулығына негізделеді!
+  - Маңызды: Іздеу түріндегі tool қайтарған нәтижелер тек ассистентке көрінеді және бұл ассистенттің пайдаланушыға ұсынған мазмұнын білдірмейді, сондықтан ол да бағалау нәтижесіне тікелей әсер етпейді, бәрі ассистенттің ақпарат алғаннан кейін пайдаланушыға берген жауабына негізделеді! Сонымен қатар, Ассистент Tool қайтару нәтижелерін ойлап табуға болмайтынын ескеру қажет!
+  - Маңызды: Сатып алу түріндегі нұсқаулар үшін (тапсырыс детальдарын қамтитын, тапсырыс жасау міндетті түрде қажет), ассистенттің тапсырыс беру операциясын шынымен орындағанын растау қажет. Ассистент тапсырыс берілді деп қате түсінуі мүмкін, шын мәнінде құрал шақыруы сәтсіз аяқталуы мүмкін; немесе пайдаланушы «өзім тапсырыс бере аламын» деп айтуы мүмкін, мұндай жағдайлар талап орындалмаған деп саналуы керек
+  - Тауар саны, жеткізу уақыты сияқты тапсырыс детальдарын қамтитын пайдаланушы нұсқаулары үшін бастапқы пайдаланушы нұсқаулығының талаптары қатаң түрде орындалуы керек (тауар санында ауытқу болмауы керек, күтілген жеткізу уақытынан кешіктірілмеуі керек), пайдаланушының келісімге келу әрекеті бағалау нәтижесіне әсер етпейді (мысалы, пайдаланушы «кейбір тауарлар аз болса да болады», «тапсырыс мазмұнына қарсы емеспін» немесе «кешірек жеткізілсе де болады» деп айтса), мұндай жағдайлар әлі де талап орындалмаған деп саналуы керек
+  - Мәтін мазмұны сәйкестігін қамтитын мекенжай немесе тапсырыс ескертпелері түріндегі пайдаланушы нұсқаулары үшін функционалды эквиваленттік принципі қолданылады: егер нақты мазмұн бірдей функцияны орындаса (мысалы, жеткізу орнын шамамен анықтау немесе тұтынушының негізгі талаптарын жеткізу), тіпті тұжырымдама толық сәйкес келмесе немесе кейбір детальдар жоқ болса да, талап орындалған деп саналады
+  - justification ішінде пайдаланушы нұсқаулығына қатысты негізгі ақпаратты, орындалғанын анықтау негіздемесін және оған сәйкес келетін кезеңді [x] жазыңыз
+
+  # Пішим талаптары
+  - Сіздің жауабыңыз келесі өрістерді қамтитын JSON объектісі болуы керек:
+  - `justification`: бағалау нәтижесінің қысқаша түсіндірмесі
+  - `meetExpectation`: бағалау нәтижесі (true немесе false)
+
+  # Үлгі кіріс құрылымы:
+  <trajectory_content>xxx</trajectory_content>
+
+  # Үлгі жауап құрылымы:
+  ```json
+  {{
+      "justification": "<бағалау нәтижесінің қысқаша түсіндірмесі>",
+      "meetExpectation": <true немесе false>
+  }}
+  ```
+khmer: |-
+  # ព័ត៌មានប្រព័ន្ធ
+  {env_info}
+
+  # ការណែនាំពេញលេញពី user
+  {user_instruction}
+
+  # ការពន្យល់ផ្ទៃខាងក្រោយ
+  - នេះគឺជាឆាកនៃការសន្ទនារវាង user និង assistant ដែល assistant អាចហៅឧបករណ៍ (tool) ដើម្បីទទួលបានព័ត៌មាន និងអនុវត្តប្រតិបត្តិការ ដោយលទ្ធផលត្រឡប់ពីឧបករណ៍នឹងចាប់ផ្តើមដោយ tool
+  - អ្នកត្រូវវាយតម្លៃថាតើការណែនាំពី user ត្រូវបានបំពេញឬអត់
+  - <trajectory_content> មានផ្ទុកនូវខ្លឹមសារនៃការសន្ទនាពេញលេញរវាង user និង assistant
+
+  # ភារកិច្ច
+  - ផ្អែកលើខ្លឹមសារនៃការសន្ទនា សូមវិនិច្ឆ័យថាតើតម្រូវការរងទាំងអស់នៅក្នុងការណែនាំពេញលេញពី user ត្រូវបានបំពេញទាំងអស់ឬអត់
+
+  # ចំណុចគួរកត់សម្គាល់
+  - សំខាន់៖ ការវាយតម្លៃទាំងអស់ផ្អែកលើការឆ្លើយតបរបស់ assistant និងការហៅឧបករណ៍ថាតើបានបំពេញការណែនាំពី user ឬអត់ ខ្លឹមសារដែល user បង្ហាញនៅក្នុងការសន្ទនាគ្រាន់តែចាត់ទុកជាគន្លឹះ និងការណែនាំដល់ assistant ប៉ុណ្ណោះ វានឹងមិនប៉ះពាល់ដោយផ្ទាល់ដល់ស្តង់ដារវាយតម្លៃទេ គ្រប់យ៉ាងត្រូវផ្អែកលើការណែនាំពី user!
+  - សំខាន់៖ លទ្ធផលដែលត្រឡប់មកពីឧបករណ៍ប្រភេទស្វែងរក (query tool) គឺមើលឃើញតែចំពោះ assistant ប៉ុណ្ណោះ វាមិនមែនតំណាងឱ្យខ្លឹមសារដែល assistant ណែនាំដល់ user ទេ ដូច្នេះវាក៏មិនប៉ះពាល់ដោយផ្ទាល់ដល់លទ្ធផលវាយតម្លៃដែរ គ្រប់យ៉ាងត្រូវផ្អែកលើការឆ្លើយតបរបស់ assistant ទៅកាន់ user បន្ទាប់ពីទទួលបានព័ត៌មាន! ក្នុងពេលតែមួយ ត្រូវកត់សម្គាល់ថា assistant ក៏មិនអាចបង្កើតលទ្ធផលត្រឡប់ពីឧបករណ៍ (Tool) បានដែរ!
+  - សំខាន់៖ ចំពោះការណែនាំប្រភេទទិញទំនិញ (ដែលពាក់ព័ន្ធនឹងលម្អិតបញ្ជាទិញ ត្រូវតែបង្កើតបញ្ជាទិញ) ត្រូវតែបញ្ជាក់ថាតើ assistant បានបំពេញការដាក់បញ្ជាទិញជាក់ស្តែងឬអត់។ វាអាចកើតឡើងដែល assistant គិតថាបានបំពេញការដាក់បញ្ជាទិញហើយ ប៉ុន្តែការហៅឧបករណ៍ជាក់ស្តែងបានបរាជ័យ; ឬ user បង្ហាញថាអាច "ដាក់បញ្ជាទិញដោយខ្លួនឯងបាន" ជាដើម គ្រប់ករណីទាំងនេះគួរតែចាត់ទុកថាមិនបំពេញតម្រូវការ
+  - ចំពោះការណែនាំពី user ដែលពាក់ព័ន្ធនឹងលម្អិតបញ្ជាទិញដូចជា ចំនួនទំនិញ ពេលវេលាដឹកជញ្ជូន ត្រូវតែបំពេញតាមតម្រូវការនៃការណែនាំដើមពី user ឱ្យបានតឹងរ៉ឹង (មិនអាចមានគម្លាតចំនួនទំនិញ មិនអាចយឺតជាងពេលវេលាដឹកជញ្ជូនដែលរំពឹងទុក) ការសម្រុះសម្រួលពី user មិនប៉ះពាល់ដល់លទ្ធផលការវិនិច្ឆ័យទេ (ឧទាហរណ៍ user បង្ហាញថា "ទំនិញណាមួយតិចជាងនេះក៏បាន" "មិនមានចំណុចខ្វះខាតចំពោះខ្លឹមសារបញ្ជាទិញ" ឬ "ដឹកជញ្ជូនយឺតជាងនេះក៏បាន" ជាដើម) ករណីបែបនេះនៅតែគួរចាត់ទុកថាមិនបំពេញតម្រូវការ
+  - ចំពោះការណែនាំពី user ប្រភេទអាសយដ្ឋាន ឬការកត់សម្គាល់បញ្ជាទិញដែលពាក់ព័ន្ធនឹងការផ្គូផ្គងខ្លឹមសារអត្ថបទ ត្រូវអនុវត្តតាមគោលការណ៍សមមូលតាមមុខងារ៖ គ្រាន់តែខ្លឹមសារជាក់ស្តែងអាចសម្រេចបាននូវមុខងារដូចគ្នា (ដូចជាការកំណត់ទីតាំងដឹកជញ្ជូនជាមូលដ្ឋាន ឬការបញ្ជូនតម្រូវការចម្បងរបស់អតិថិជន) ទោះបីជាការបង្ហាញមិនដូចគ្នាទាំងស្រុង ឬខ្វះលម្អិតខ្លះក៏ដោយ ក៏ចាត់ទុកថាបំពេញតម្រូវការដែរ
+  - ចុះត្រាព័ត៌មានសំខាន់ៗដែលទាក់ទងនឹងការណែនាំពី user នៅក្នុង justification មូលដ្ឋាននៃការវិនិច្ឆ័យថាតើបានបំពេញឬអត់ និងវគ្គដែលត្រូវគ្នា [x]
+
+  # តម្រូវការទម្រង់
+  - ការឆ្លើយតបរបស់អ្នកគួរតែជាវត្ថុ JSON មួយ ដែលមានផ្ទុកនូវវាលដូចខាងក្រោម៖
+  - `justification`៖ ការពន្យល់សង្ខេបអំពីលទ្ធផលវាយតម្លៃ
+  - `meetExpectation`៖ លទ្ធផលវាយតម្លៃ (true ឬ false)
+
+  # រចនាសម្ព័ន្ធអុីនបុតឧទាហរណ៍៖
+  <trajectory_content>xxx</trajectory_content>
+
+  # រចនាសម្ព័ន្ធការឆ្លើយតបឧទាហរណ៍៖
+  ```json
+  {{
+      "justification": "<ការពន្យល់សង្ខេបអំពីលទ្ធផលវាយតម្លៃ>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+burmese: |-
+  # စနစ်ဆိုင်ရာ အချက်အလက်
+  {env_info}
+
+  # အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်
+  {user_instruction}
+
+  # နောက်ခံရှင်းလင်းချက်
+  - ၎င်းသည် user နှင့် assistant ကြားရှိ စကားဝိုင်းတစ်ခုဖြစ်ပြီး assistant သည် အချက်အလက်ရယူရန်နှင့် လုပ်ဆောင်ချက်များ ပြီးမြောက်စေရန် ကိရိယာများကို ခေါ်ယူအသုံးပြုနိုင်ကာ ကိရိယာမှ ပြန်လည်ရရှိသော ရလဒ်များသည် tool ဖြင့် စတင်ပါမည်
+  - သင်သည် အသုံးပြုသူ၏ ညွှန်ကြားချက်များ ပြီးမြောက်ခြင်း ရှိမရှိကို အကဲဖြတ်ရပါမည်
+  - <trajectory_content> တွင် user နှင့် assistant ကြားရှိ စကားဝိုင်းအပြည့်အစုံ ပါဝင်သည်
+
+  # လုပ်ငန်းတာဝန်
+  - စကားဝိုင်းအကြောင်းအရာအပေါ် အခြေခံ၍ အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်ပါ လိုအပ်ချက်အားလုံး ပြီးမြောက်ခြင်း ရှိမရှိကို ဆုံးဖြတ်ပါ
+
+  # သတိပြုရန် အချက်များ
+  - အရေးကြီးသည် - အကဲဖြတ်မှုအားလုံးသည် assistant ၏ ပြန်လည်ဖြေကြားချက်နှင့် ကိရိယာခေါ်ယူမှုများက အသုံးပြုသူညွှန်ကြားချက်ကို ပြီးမြောက်စေခြင်း ရှိမရှိအပေါ် မူတည်သည်၊ စကားဝိုင်းတွင် user ၏ ဖော်ပြချက်များကို assistant အတွက် အကြံပြုချက်နှင့် လမ်းညွှန်မှုအဖြစ်သာ သတ်မှတ်ပြီး အကဲဖြတ်မှုစံနှုန်းများကို တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် အသုံးပြုသူ၏ ညွှန်ကြားချက်အပေါ် မူတည်သည်!
+  - အရေးကြီးသည် - ရှာဖွေမှုဆိုင်ရာ tool များမှ ပြန်လည်ရရှိသော ရလဒ်များသည် assistant အတွက်သာ မြင်တွေ့ရပြီး assistant ၏ အသုံးပြုသူအား အကြံပြုချက်များကို ကိုယ်စားမပြုသောကြောင့် အကဲဖြတ်မှုရလဒ်ကိုလည်း တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် assistant က အချက်အလက်ရယူပြီးနောက် အသုံးပြုသူအား ပြန်လည်ဖြေကြားချက်အပေါ် မူတည်ရပါမည်! ထို့အပြင် Assistant သည် Tool ၏ ပြန်လည်ရရှိသော ရလဒ်များကိုလည်း တီထွင်ဖန်တီး၍ မရနိုင်ကြောင်း သတိပြုရပါမည်!
+  - အရေးကြီးသည် - ဝယ်ယူမှုဆိုင်ရာ ညွှန်ကြားချက်များအတွက် (အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်ပြီး အော်ဒါဖန်တီးရန် လိုအပ်သော)၊ assistant သည် အော်ဒါတင်သည့် လုပ်ဆောင်ချက်ကို တကယ် ပြီးမြောက်စေခဲ့ခြင်း ရှိမရှိကို အတည်ပြုရပါမည်။ assistant သည် အော်ဒါတင်ပြီးဟု ထင်မှတ်မိနိုင်သလို၊ တကယ်တမ်းတွင် ကိရိယာခေါ်ယူမှု မအောင်မြင်နိုင်သည် သို့မဟုတ် user က "မိမိဘာသာ အော်ဒါတင်နိုင်သည်" ဟု ပြောဆိုခြင်း စသည်တို့ကို လိုအပ်ချက်မပြည့်မီဟု သတ်မှတ်ရပါမည်
+  - ကုန်ပစ္စည်းအရေအတွက်၊ ပို့ဆောင်ချိန် ကဲ့သို့သော အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်သည့် အသုံးပြုသူညွှန်ကြားချက်များအတွက်၊ မူလအသုံးပြုသူညွှန်ကြားချက် လိုအပ်ချက်များကို တိကျစွာ ပြည့်မီရပါမည် (ကုန်ပစ္စည်းအရေအတွက် ကွဲလွဲမှု မရှိရ၊ မျှော်လင့်ထားသော ပို့ဆောင်ချိန်ထက် နောက်ကျမရ)၊ အသုံးပြုသူ၏ လျှော့ပေးမှုများသည် အကဲဖြတ်မှုရလဒ်ကို မသက်ရောက်စေပါ (ဥပမာ - user က "ပစ္စည်းအနည်းငယ် လျှော့လည်းရသည်"၊ "အော်ဒါအကြောင်းအရာကို သဘောတူသည်" သို့မဟုတ် "နောက်ကျပို့လည်းရသည်" စသည်တို့)၊ ထိုကဲ့သို့သော အခြေအနေများကို လိုအပ်ချက်မပြည့်မီဟု ဆက်လက်သတ်မှတ်ရပါမည်
+  - စာသားအကြောင်းအရာ ကိုက်ညီမှုပါဝင်သော လိပ်စာ သို့မဟုတ် အော်ဒါမှတ်ချက်အမျိုးအစား အသုံးပြုသူညွှန်ကြားချက်များအတွက် လုပ်ဆောင်ချက်ညီမျှမှု မူဝါဒကို အသုံးပြုပါ - လက်တွေ့အကြောင်းအရာသည် တူညီသော လုပ်ဆောင်ချက်ကို ဆောင်ရွက်နိုင်ပါက (ဥပမာ - ပို့ဆောင်မည့်နေရာကို ခန့်မှန်းတွက်ချက်နိုင်ခြင်း သို့မဟုတ် ဝယ်ယူသူ၏ အဓိကလိုအပ်ချက်များကို ဆက်သွယ်ပေးနိုင်ခြင်း)၊ ဖော်ပြချက် လုံးဝတူညီခြင်း မရှိဘဲ သို့မဟုတ် အသေးစိတ်အချက်အလက် အချို့ ပျောက်ဆုံးနေသော်လည်း လိုအပ်ချက်ပြည့်မီသည်ဟု သတ်မှတ်ပါ
+  - justification တွင် အသုံးပြုသူညွှန်ကြားချက်နှင့် သက်ဆိုင်သော အဓိကအချက်အလက်များ၊ ပြီးမြောက်ခြင်း ရှိမရှိ ဆုံးဖြတ်ချက်၏ အခြေခံအကြောင်းရင်းများနှင့် သက်ဆိုင်ရာ အလှည့်အကြိမ်များ [x] ကို မှတ်တမ်းတင်ပါ
+
+  # ပုံစံလိုအပ်ချက်များ
+  - သင်၏ ပြန်လည်ဖြေကြားချက်သည် JSON အရာဝတ္ထုတစ်ခု ဖြစ်သင့်ပြီး အောက်ပါဖီလ်ဒ်များ ပါဝင်ရပါမည် -
+  - `justification` - အကဲဖြတ်မှုရလဒ်အတွက် အကျဉ်းရှင်းလင်းချက်
+  - `meetExpectation` - အကဲဖြတ်မှုရလဒ် (true သို့မဟုတ် false)
+
+  # နမူနာ ထည့်သွင်းမှုဖွဲ့စည်းပုံ -
+  <trajectory_content>xxx</trajectory_content>
+
+  # နမူနာ ပြန်လည်ဖြေကြားချက်ဖွဲ့စည်းပုံ -
+  ```json
+  {{
+      "justification": "<အကဲဖြတ်မှုရလဒ်အတွက် အကျဉ်းရှင်းလင်းချက်>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+lao: |-
+  # ຂໍ້ມູນລະບົບ
+  {env_info}
+
+  # ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້
+  {user_instruction}
+
+  # ຄຳອະທິບາຍພື້ນຖານ
+  - ນີ້ແມ່ນສະຖານະການການສົນທະນາລະຫວ່າງ user ແລະ assistant, ບ່ອນທີ່ assistant ສາມາດເອີ້ນໃຊ້ເຄື່ອງມືເພື່ອດຶງຂໍ້ມູນ ແລະ ດຳເນີນການ, ຜົນການຕອບກັບຂອງເຄື່ອງມືຈະເລີ່ມຕົ້ນດ້ວຍ tool
+  - ທ່ານຕ້ອງປະເມີນວ່າຄຳສັ່ງຂອງຜູ້ໃຊ້ໄດ້ຖືກປະຕິບັດສຳເລັດຫຼືບໍ່
+  - <trajectory_content> ປະກອບມີເນື້ອຫາການສົນທະນາເຕັມລະຫວ່າງ user ແລະ assistant
+
+  # ພາລະກິດ
+  - ອີງໃສ່ເນື້ອຫາການສົນທະນາ, ຕັດສິນວ່າຄວາມຕ້ອງການຍ່ອຍທັງໝົດໃນຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້ໄດ້ຖືກປະຕິບັດສຳເລັດທັງໝົດຫຼືບໍ່
+
+  # ຂໍ້ຄວນລະວັງ
+  - ສຳຄັນ: ການປະເມີນທັງໝົດອີງໃສ່ວ່າການຕອບກັບຂອງ assistant ແລະ ຄຳຮ້ອງເອີ້ນໃຊ້ເຄື່ອງມືໄດ້ປະຕິບັດຄຳສັ່ງຂອງຜູ້ໃຊ້ຫຼືບໍ່, ເນື້ອຫາທີ່ user ສະແດງອອກໃນການສົນທະນາຖືວ່າເປັນແຄ່ຄຳແນະນຳ ແລະ ການຊີ້ນຳໃຫ້ assistant, ຈະບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ມາດຕະຖານການປະເມີນ, ທຸກຢ່າງອີງໃສ່ຄຳສັ່ງຂອງຜູ້ໃຊ້ເປັນຫຼັກ!
+  - ສຳຄັນ: ຜົນການຕອບກັບຂອງເຄື່ອງມືປະເພດສອບຖາມຈະເຫັນໄດ້ສະເພາະ assistant ເທົ່ານັ້ນ, ບໍ່ໄດ້ໝາຍຄວາມວ່າເປັນເນື້ອຫາທີ່ assistant ແນະນຳໃຫ້ຜູ້ໃຊ້, ດັ່ງນັ້ນຈຶ່ງບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ຜົນການປະເມີນ, ທຸກຢ່າງຕ້ອງອີງໃສ່ການຕອບກັບຂອງ assistant ຫຼັງຈາກໄດ້ຮັບຂໍ້ມູນແລ້ວຕໍ່ຜູ້ໃຊ້ເປັນຫຼັກ! ພ້ອມກັນນັ້ນຕ້ອງລະວັງ, Assistant ກໍບໍ່ສາມາດແຕ່ງຂໍ້ມູນຜົນການຕອບກັບຂອງ Tool ເອງໄດ້!
+  - ສຳຄັນ: ສຳລັບຄຳສັ່ງປະເພດຊື້ຂອງ (ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້, ຕ້ອງສ້າງຄຳສັ່ງຊື້), ຕ້ອງຢືນຢັນວ່າ assistant ໄດ້ດຳເນີນການສັ່ງຊື້ສຳເລັດແທ້ຫຼືບໍ່. ມັນເປັນໄປໄດ້ທີ່ assistant ຄິດຜິດວ່າໄດ້ດຳເນີນການສັ່ງຊື້ແລ້ວ, ແຕ່ຕົວຈິງແລ້ວການເອີ້ນໃຊ້ເຄື່ອງມືລົ້ມເຫຼວ; ຫຼື user ສະແດງວ່າສາມາດ "ສັ່ງຊື້ເອງໄດ້" ແລະ ອື່ນໆ, ກໍຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບຄຳສັ່ງຂອງຜູ້ໃຊ້ທີ່ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້ເຊັ່ນ: ຈຳນວນສິນຄ້າ, ເວລາສົ່ງ, ຕ້ອງຕອບສະໜອງຄວາມຕ້ອງງານຂອງຄຳສັ່ງຜູ້ໃຊ້ເດີມຢ່າງເຂັ້ມງວດ (ບໍ່ສາມາດມີຄວາມຜິດພາດກ່ຽວກັບຈຳນວນສິນຄ້າ, ບໍ່ສາມາດຊ້າກວ່າເວລາສົ່ງທີ່ຄາດຫວັງ), ການປະນີປະນອມຂອງຜູ້ໃຊ້ບໍ່ສົ່ງຜົນຕໍ່ຜົນການປະເມີນ (ຕົວຢ່າງ user ສະແດງວ່າ "ສິນຄ້າໃດໜຶ່ງໜ້ອຍກໍໄດ້", "ບໍ່ມີຄຳຄັດຄ້ານຕໍ່ເນື້ອຫາຄຳສັ່ງຊື້" ຫຼື "ສົ່ງຊ້າກໍໄດ້" ແລະ ອື່ນໆ), ສະຖານະການແບບນີ້ຍັງຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບຄຳສັ່ງຂອງຜູ້ໃຊ້ປະເພດທີ່ຢູ່ ຫຼື ໝາຍເຫດຄຳສັ່ງຊື້ທີ່ກ່ຽວຂ້ອງກັບການຈັບຄູ່ເນື້ອຫາຂໍ້ຄວາມ, ໃຊ້ຫຼັກການທຽບເທົ່າທາງໜ້າທີ່: ຖ້າເນື້ອຫາຕົວຈິງສາມາດບັນລຸໜ້າທີ່ດຽວກັນໄດ້ (ເຊັ່ນ: ກຳນົດຕຳແໜ່ງຈັດສົ່ງໂດຍປະມານ ຫຼື ຖ່າຍທອດຄວາມຕ້ອງການຫຼັກຂອງລູກຄ້າ), ເຖິງແມ່ນວ່າການສະແດງອອກຈະບໍ່ຄືກັນສົມບູນ ຫຼື ຂາດລາຍລະອຽດບາງສ່ວນ, ກໍຖືວ່າຕອບສະໜອງຄວາມຕ້ອງການ
+  - ບັນທຶກຂໍ້ມູນສຳຄັນທີ່ກ່ຽວຂ້ອງກັບຄຳສັ່ງຂອງຜູ້ໃຊ້, ພື້ນຖານການຕັດສິນວ່າສຳເລັດຫຼືບໍ່ ແລະ ຮອບທີ່ກ່ຽວຂ້ອງ [x] ໃນ justification
+
+  # ຄວາມຕ້ອງການຮູບແບບ
+  - ການຕອບກັບຂອງທ່ານຄວນເປັນວັດຖຸ JSON, ປະກອບມີຟີລດັ່ງຕໍ່ໄປນີ້:
+  - `justification`: ຄຳອະທິບາຍສັ້ນໆກ່ຽວກັບຜົນການປະເມີນ
+  - `meetExpectation`: ຜົນການປະເມີນ (true ຫຼື false)
+
+  # ໂຄງສ້າງຕົວຢ່າງການປ້ອນຂໍ້ມູນ:
+  <trajectory_content>xxx</trajectory_content>
+
+  # ໂຄງສ້າງຕົວຢ່າງການຕອບກັບ:
+  ```json
+  {{
+      "justification": "<ຄຳອະທິບາຍສັ້ນໆກ່ຽວກັບຜົນການປະເມີນ>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+tamil: |-
+  # அமைப்பு தகவல்
+  {env_info}
+
+  # பயனரின் முழுமையான வழிமுறை
+  {user_instruction}
+
+  # பின்னணி விளக்கம்
+  - இது பயனர் மற்றும் உதவியாளருக்கு இடையிலான உரையாடல் காட்சியாகும், இதில் உதவியாளர் தகவலைப் பெறவும் செயல்பாடுகளை முடிக்கவும் கருவிகளை அழைக்கலாம், கருவி திரும்பும் முடிவுகள் tool என்று தொடங்கும்
+  - பயனர் வழிமுறை நிறைவேற்றப்பட்டதா என நீங்கள் மதிப்பிட வேண்டும்
+  - <trajectory_content> பயனர் மற்றும் உதவியாளருக்கு இடையிலான முழுமையான உரையாடல் உள்ளடக்கத்தைக் கொண்டுள்ளது
+
+  # பணி
+  - உரையாடல் உள்ளடக்கத்தின் அடிப்படையில், பயனரின் முழுமையான வழிமுறையில் உள்ள அனைத்து துணைத் தேவைகளும் முழுமையாக நிறைவேற்றப்பட்டதா எனத் தீர்மானிக்கவும்
+
+  # கவனிக்க வேண்டியவை
+  - முக்கியம்: அனைத்து மதிப்பீடுகளும் உதவியாளரின் பதில் மற்றும் கருவி அழைப்பு கோரிக்கைகள் பயனர் வழிமுறையை நிறைவேற்றுகின்றனவா என்பதை அடிப்படையாகக் கொண்டது, உரையாடலில் பயனர் வெளிப்படுத்தும் உள்ளடக்கம் உதவியாளருக்கான குறிப்பு மற்றும் வழிகாட்டுதலாக மட்டுமே கருதப்படும், இது மதிப்பீட்டு நிலைகளை நேரடியாக பாதிக்காது, அனைத்தும் பயனர் வழிமுறையை அடிப்படையாகக் கொண்டது!
+  - முக்கியம்: வினவல் வகை tool திரும்பும் முடிவுகள் உதவியாளருக்கு மட்டுமே தெரியும், இது பயனருக்கு உதவியாளர் பரிந்துரைக்கும் உள்ளடக்கத்தைக் குறிக்காது, எனவே இது மதிப்பீட்டு முடிவை நேரடியாக பாதிக்காது, அனைத்தும் உதவியாளர் தகவலைப் பெற்ற பிறகு பயனருக்கு அளிக்கும் பதிலை அடிப்படையாகக் கொண்டது! அதே நேரத்தில், உதவியாளர் Tool இன் திரும்பும் முடிவுகளை உருவாக்கக்கூடாது என்பதையும் கவனிக்க வேண்டும்!
+  - முக்கியம்: வாங்குதல் வகை வழிமுறைகளுக்கு (ஆர்டர் விவரங்களை உள்ளடக்கியது, ஆர்டரை உருவாக்க வேண்டியது), உதவியாளர் உண்மையில் ஆர்டர் செயல்பாட்டை முடித்தாரா என்பதை உறுதிப்படுத்த வேண்டும். உதவியாளர் ஆர்டர் செயல்பாட்டை முடித்ததாக தவறாக நினைக்கலாம், உண்மையில் கருவி அழைப்பு தோல்வியடைந்திருக்கலாம்; அல்லது பயனர் "தானே ஆர்டர் செய்யலாம்" என்று கூறும் நிலைகள் போன்றவை, அனைத்தும் தேவைகள் பூர்த்தி செய்யப்படவில்லை எனக் கருதப்பட வேண்டும்
+  - பொருள் அளவு, வழங்கல் நேரம் போன்ற ஆர்டர் விவரங்களை உள்ளடக்கிய பயனர் வழிமுறைகளுக்கு, அசல் பயனர் வழிமுறை தேவைகள் கண்டிப்பாக பூர்த்தி செய்யப்பட வேண்டும் (பொருள் அளவில் விலகல் இருக்கக்கூடாது, எதிர்பார்க்கப்படும் வழங்கல் நேரத்தை விட தாமதமாக இருக்கக்கூடாது), பயனர் சமரச நடவடிக்கைகள் மதிப்பீட்டு முடிவை பாதிக்காது (எடுத்துக்காட்டாக பயனர் "சில பொருட்கள் குறைவாக இருந்தாலும் பரவாயில்லை", "ஆர்டர் உள்ளடக்கத்தில் எந்த எதிர்ப்பும் இல்லை" அல்லது "தாமதமாக வழங்கினாலும் பரவாயில்லை" என்று கூறுதல் போன்றவை), இத்தகைய நிலைகள் இன்னும் தேவைகள் பூர்த்தி செய்யப்படவில்லை எனக் கருதப்பட வேண்டும்
+  - உரை உள்ளடக்க பொருத்தமான முகவரி அல்லது ஆர்டர் குறிப்பு வகை பயனர் வழிமுறைகளுக்கு, செயல்பாட்டு சமநிலை கொள்கையைப் பயன்படுத்தவும்: உண்மையான உள்ளடக்கம் ஒரே மாதிரியான செயல்பாட்டைச் செய்ய முடிந்தால் (எடுத்துக்காட்டாக விநியோக இடத்தை தோராயமாக இடம்பெறுத்தல் அல்லது வாடிக்கையாளரின் முதன்மைத் தேவைகளைக் கடத்துதல்), கூற்று முழுமையாக ஒத்துப்போகாவிட்டாலும் அல்லது சில விவரங்கள் காணாமல் போனாலும், தேவைகள் பூர்த்தி செய்யப்பட்டதாகக் கருதப்படும்
+  - justification இல் பயனர் வழிமுறையுடன் தொடர்புடைய முக்கிய தகவல்கள், நிறைவேற்றப்பட்டதா எனத் தீர்மானிப்பதற்கான ஆதாரங்கள் மற்றும் அதற்கான சுற்று [x] ஆகியவற்றைப் பதிவு செய்யவும்
+
+  # வடிவமைப்பு தேவைகள்
+  - உங்கள் பதில் ஒரு JSON பொருளாக இருக்க வேண்டும், பின்வரும் புலங்களைக் கொண்டிருக்க வேண்டும்:
+  - `justification`: மதிப்பீட்டு முடிவுக்கான சுருக்கமான விளக்கம்
+  - `meetExpectation`: மதிப்பீட்டு முடிவு (true அல்லது false)
+
+  # மாதிரி உள்ளீட்டு கட்டமைப்பு:
+  <trajectory_content>xxx</trajectory_content>
+
+  # மாதிரி பதில் கட்டமைப்பு:
+  ```json
+  {{
+      "justification": "<மதிப்பீட்டு முடிவுக்கான சுருக்கமான விளக்கம்>",
+      "meetExpectation": <true or false>
+  }}
+  ```
+telugu: |-
+  # వ్యవస్థ సమాచారం
+  {env_info}
+
+  # వినియోగదారు పూర్తి సూచన
+  {user_instruction}
+
+  # నేపథ్య వివరణ
+  - ఇది వినియోగదారు మరియు అసిస్టెంట్ మధ్య సంభాషణ దృశ్యం, ఇక్కడ అసిస్టెంట్ సమాచారాన్ని పొందడానికి మరియు పనులను పూర్తి చేయడానికి సాధనాలను ఉపయోగించగలదు, సాధనం తిరిగి ఇచ్చే ఫలితాలు tool తో ప్రారంభమవుతాయి
+  - వినియోగదారు సూచన పూర్తయిందో లేదో మీరు అంచనా వేయాలి
+  - <trajectory_content> వినియోగదారు మరియు అసిస్టెంట్ మధ్య పూర్తి సంభాషణ కంటెంట్‌ను కలిగి ఉంటుంది
+
+  # పని
+  - సంభాషణ కంటెంట్ ఆధారంగా, వినియోగదారు పూర్తి సూచనలోని అన్ని ఉప అవసరాలు పూర్తయ్యాయో లేదో నిర్ణయించండి
+
+  # గమనికలు
+  - ముఖ్యం: అన్ని అంచనాలు అసిస్టెంట్ స్పందన మరియు సాధనం పిలుపు వినియోగదారు సూచనను పూర్తి చేసిందా లేదా అనే దానిపై ఆధారపడి ఉంటాయి, సంభాషణలో వినియోగదారు వ్యక్తపరిచిన కంటెంట్ కేవలం అసిస్టెంట్‌కు సూచన మరియు మార్గదర్శకంగా పరిగణించబడుతుంది, ఇది అంచనా ప్రమాణాలను నేరుగా ప్రభావితం చేయదు, అన్నీ వినియోగదారు సూచన ప్రకారం ఉండాలి!
+  - ముఖ్యం: క్వెరీ రకం tool తిరిగి ఇచ్చే ఫలితాలు కేవలం అసిస్టెంట్‌కు మాత్రమే కనిపిస్తాయి, ఇవి వినియోగదారుకు అసిస్టెంట్ సిఫార్సు చేసిన కంటెంట్‌ను సూచించవు, కాబట్టి ఇవి అంచనా ఫలితాలను నేరుగా ప్రభావితం చేయవు, అన్నీ అసిస్టెంట్ సమాచారాన్ని పొందిన తర్వాత వినియోగదారుకు ఇచ్చిన స్పందన ప్రకారం ఉండాలి! అదే సమయంలో, అసిస్టెంట్ సాధనం యొక్క తిరిగి వచ్చే ఫలితాలను కల్పించకూడదు అని గమనించాలి!
+  - ముఖ్యం: కొనుగోలు రకం సూచనల కోసం (ఆర్డర్ వివరాలను కలిగి ఉంటుంది, ఆర్డర్‌ను సృష్టించాల్సిన అవసరం ఉంటుంది), అసిస్టెంట్ వాస్తవానికి ఆర్డర్ చేసే పనిని పూర్తి చేసిందో లేదో నిర్ధారించుకోవాలి. అసిస్టెంట్ ఆర్డర్ చేసే పని పూర్తయిందని తప్పుగా భావించవచ్చు, వాస్తవానికి సాధనం పిలుపు విఫలమైంది; లేదా వినియోగదారు "తాను ఆర్డర్ చేసుకోవచ్చు" అని సూచించిన సందర్భాలు, అన్నీ అవసరాలు నెరవేరలేదని పరిగణించబడాలి
+  - వస్తువుల సంఖ్య, డెలివరీ సమయం వంటి ఆర్డర్ వివరాలను కలిగి ఉన్న వినియోగదారు సూచనల కోసం, అసలు వినియోగదారు సూచన అవసరాలను కచ్చితంగా పాటించాలి (వస్తువుల సంఖ్యలో వ్యత్యాసం ఉండకూడదు, అనుకున్న డెలివరీ సమయం కంటే ఆలస్యం కాకూడదు), వినియోగదారు రాజీ పడటం అంచనా ఫలితాన్ని ప్రభావితం చేయదు (ఉదాహరణకు వినియోగదారు "కొన్ని వస్తువులు తక్కువగా ఉన్నా పర్వాలేదు", "ఆర్డర్ కంటెంట్‌పై అభ్యంతరం లేదు" లేదా "కొంచెం ఆలస్యంగా వచ్చినా పర్వాలేదు" అని సూచించినప్పుడు), అటువంటి సందర్భాలు ఇప్పటికీ అవసరాలు నెరవేరలేదని పరిగణించబడాలి
+  - టెక్స్ట్ కంటెంట్ మ్యాచింగ్‌కు సంబంధించిన చిరునామా లేదా ఆర్డర్ నోట్స్ రకం వినియోగదారు సూచనల కోసం, ఫంక్షనల్ సమానత్వ సూత్రాన్ని అనుసరించండి: వాస్తవ కంటెంట్ ఒకే ఫంక్షన్‌ను సాధించగలిగితే (ఉదాహరణకు డెలివరీ స్థలాన్ని సుమారుగా గుర్తించడం లేదా కస్టమర్ యొక్క ప్రధాన అవసరాలను తెలియజేయడం), వ్యక్తీకరణ పూర్తిగా సమానంగా లేకపోయినా లేదా కొన్ని వివరాలు లేకపోయినా, అవసరాలు నెరవేరినట్లు పరిగణించబడుతుంది
+  - justification లో వినియోగదారు సూచనకు సంబంధించిన కీలక సమాచారం, పూర్తయిందో లేదో నిర్ణయించడానికి ఆధారం మరియు దానికి సంబంధించిన రౌండ్ [x] ను నమోదు చేయండి
+
+  # ఫార్మాట్ అవసరాలు
+  - మీ స్పందన ఒక JSON ఆబ్జెక్ట్‌గా ఉండాలి, ఇది క్రింది ఫీల్డ్‌లను కలిగి ఉంటుంది:
+  - `justification`: అంచనా ఫలితానికి సంక్షిప్త వివరణ
+  - `meetExpectation`: అంచనా ఫలితం (true లేదా false)
+
+  # ఉదాహరణ ఇన్‌పుట్ నిర్మాణం:
+  <trajectory_content>xxx</trajectory_content>
+
+  # ఉదాహరణ స్పందన నిర్మాణం:
+  ```json
+  {{
+      "justification": "<అంచనా ఫలితానికి సంక్షిప్త వివరణ>",
+      "meetExpectation": <true లేదా false>
+  }}
+  ```

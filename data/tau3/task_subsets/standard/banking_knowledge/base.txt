@@ -1,0 +1,52 @@
+# tau2 task subset: standard
+# task_set=banking_knowledge split=base
+# population=97 sampled=48 fraction=0.5 seed=42
+# regenerate: python tools/build_task_subsets.py --apply
+task_001
+task_003
+task_004
+task_005
+task_006
+task_007
+task_015
+task_017
+task_018
+task_020
+task_021
+task_023
+task_024
+task_025
+task_026
+task_028
+task_029
+task_032
+task_033
+task_034
+task_036
+task_040
+task_044
+task_049
+task_052
+task_054
+task_059
+task_060
+task_063
+task_064
+task_067
+task_070
+task_072
+task_075
+task_077
+task_079
+task_081
+task_083
+task_087
+task_088
+task_090
+task_092
+task_093
+task_094
+task_095
+task_097
+task_099
+task_100

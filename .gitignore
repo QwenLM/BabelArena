@@ -1,0 +1,54 @@
+# Secrets and rendered configs -------------------------------------------------
+configs/models.yaml
+.runtime/
+.env
+*.env
+
+# Environments ------------------------------------------------------------------
+.venvs/
+# Prepared tokenizers (bench setup writes these; they are machine-local)
+.cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Run output --------------------------------------------------------------------
+results/
+benchmarks/deepplanning/aggregated_results/
+benchmarks/deepplanning/travelplanning/results/
+benchmarks/deepplanning/shoppingplanning/database/
+benchmarks/deepplanning/shoppingplanning/result_report/
+benchmarks/deepplanning/shoppingplanning/results/
+benchmarks/deepplanning/shoppingplanning/database_infered/
+benchmarks/deepplanning/shoppingplanning/database_run_*/
+
+# Benchmark data ------------------------------------------------------------------
+# ~11 GB, fetched by `bench fetch-data` rather than committed -- far past what
+# GitHub accepts. Note this ignores data/'s *contents*, not the directory: an
+# ignored directory is never descended into, so the re-inclusions below would
+# not fire. `!/data/**/` re-admits directories so git can reach the frozen
+# task_subsets/ lists, which are tiny and are what defines `standard`, so a
+# fresh clone must carry them.
+/data/**
+!/data/**/
+!/data/*/task_subsets/**
+!/data/README.md
+/data/*/simulations/**
+
+# Misc --------------------------------------------------------------------------
+.DS_Store
+.nfs*
+*.log
+*.bak
+*.orig
+
+# claw ----------------------------------------------------------------------------
+# Task data (3.1 GB, PDFs and videos among the fixtures), filled in place by
+# `bench fetch-data`. It stays inside claw's tree because claw resolves mock
+# services and peer graders relative to its own checkout; see _BULK_DEST in bench.
+benchmarks/claw/tasks/
+# `bench run --num-tasks` generates these; the frozen subsets stay tracked.
+benchmarks/claw/task_subsets/smoke-*/
+# claw's own default trace dir, used only when it is run outside `bench`.
+benchmarks/claw/traces/

@@ -1,0 +1,1105 @@
+name: full_trajectory_eval_template
+chinese: |-
+  # 系统信息
+  {env_info}
+
+  # 用户完整指令
+  {user_instruction}
+
+  # 背景说明
+  - 这是一个user与assistant之间的对话场景，其中assistant可以调用工具获取信息和完成操作，工具返回结果将以tool开头
+  - 你需要评估用户指令是否被完成，用户的完整指令已被拆分为若干个得分点rubric，你只需要判断每个得分点是否满足
+  - <trajectory_content>包含了user与assistant之间的完整对话内容
+  - <current_rubrics>包含了当前所有得分点的状态（true表示已满足，false表示未满足，所有得分点的初始状态均为false）
+
+  # 任务
+  - 基于对话内容，更新得分点rubric的状态
+  - 你可以将状态由false更新为true，当且仅当assistant在对话中完成了该目标
+
+  # 注意事项
+  - 重要：所有的评估以assistant的回复及工具调用请求是否完成rubric中的目标为准，user在对话中表达的内容仅视为对assistant的提示和引导，不会直接影响评估标准，一切以rubric字段为准！
+  - 重要：查询类tool返回的结果仅对assistant可见，并不代表assistant对用户推荐的内容，因此也不直接影响评估结果，一切都要以assistant获取信息后对用户的回复为准！同时需要注意，Assistant 也不能编造 Tool 的返回结果！
+  - 重要：对于订单类rubric（涉及到订单细节，必须生成订单的），必须确认assistant是否真的完成了下单操作。有可能assistant误以为完成了下单操作，实际上工具调用失败；或user表示可以“可以自己下单”等情况，都应视为未满足要求
+  - 对于涉及到订单细节如商品数量、送达时间的rubric，必须严格满足原始rubric要求（不能有商品数量偏差，不得晚于期望送达时间），用户妥协行为不影响评判结果（例如user表示“某商品少点也行”、“对订单内容没有异议”或“晚点送达也行”等），这类情况仍应视为未满足要求
+  - 对于涉及到文本内容匹配的地址或订单备注类rubric，采用功能等效原则：只要实际内容能实现相同功能（如大致定位配送地点或传达顾客的主要需求），即使表述不完全一致或缺少部分细节，也视为满足要求
+  - 在justification中以追加的形式记录与当前rubric有关的关键信息及其对应的轮次[x]，如果发生状态修改也需要记录原因，使用简练的语言
+
+  # 格式要求
+  - 你的回复应为一个JSON对象，包含以下字段：
+  - `rubric_idx`：规则的唯一标识符
+  - `rubric`：对规则的复述
+  - `justification`：对状态变化的解释
+  - `meetExpectation`：更新后的状态（true或false）
+
+  # 示例输入结构：
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # 示例回复结构：
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<复述规则>",
+        "justification": "<状态变化的简要解释，以追加的形式记录>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+english: |-
+  # System Information
+  {env_info}
+
+  # User Complete Instruction
+  {user_instruction}
+
+  # Background
+  - This is a conversation scenario between a user and an assistant, where the assistant can call tools to retrieve information and complete operations. Tool return results will start with "tool"
+  - You need to evaluate whether the user instruction has been completed. The user's complete instruction has been broken down into several scoring points (rubrics), and you only need to judge whether each scoring point is satisfied
+  - <trajectory_content> contains the complete conversation content between the user and assistant
+  - <current_rubrics> contains the current status of all scoring points (true means satisfied, false means not satisfied, all scoring points have an initial status of false)
+
+  # Task
+  - Based on the conversation content, update the scoring point rubric status
+  - You can update the status from false to true, if and only if the assistant completed the goal in the conversation
+
+  # Important Notes
+  - Important: All evaluations are based on whether the assistant's responses and tool call requests complete the goals in the rubrics. User expressions in the conversation are only considered as guidance for the assistant and do not directly affect evaluation standards. Everything is based on the rubric fields!
+  - Important: Query tool return results are only visible to the assistant and do not represent content recommended by the assistant to users, so they do not directly affect evaluation results either. Everything must be based on the assistant's responses to users after obtaining information! Also note that the Assistant cannot fabricate Tool return results!
+  - Important: For order-related rubrics (involving order details that must generate orders), you must confirm whether the assistant actually completed the ordering operation. The assistant may mistakenly believe they completed the ordering operation when in fact the tool call failed; or situations where the user states they "can place the order themselves," etc., should all be considered as not meeting the requirements
+  - For rubrics involving order details such as product quantity or delivery time, the original rubric requirements must be strictly met (no deviation in product quantities, delivery must not be later than the expected time). User compromise behavior does not affect evaluation results (for example, when a user states "fewer items is okay", "I have no objections to the order content" or "later delivery is fine" etc.). These situations should still be considered as not meeting the requirements
+  - For rubrics involving text content matching of addresses or order notes, apply the functional equivalence principle: as long as the actual content can achieve the same function (such as roughly locating the delivery location or conveying the customer's main needs), it is considered to meet the requirements even if the expression is not completely consistent or lacks some details
+  - In the justification, record key information related to the current rubric and its corresponding round [x] in an appending manner. If status modifications occur, record the reason using concise language
+
+  # Format Requirements
+  - Your response should be a JSON object containing the following fields:
+  - `rubric_idx`: Unique identifier for the rubric
+  - `rubric`: Restatement of the rubric
+  - `justification`: Explanation of status changes
+  - `meetExpectation`: Updated status (true or false)
+
+  # Example Input Structure:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Example Response Structure:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<restate the rubric>",
+        "justification": "<brief explanation of status change, recorded in appended format>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+japanese: |-
+  # システム情報
+  {env_info}
+
+  # ユーザーの完全な指示
+  {user_instruction}
+
+  # 背景説明
+  - これは user と assistant の間の対話シーンであり、assistant はツールを呼び出して情報を取得し、操作を完了できます。ツールの返却結果は tool で始まります
+  - ユーザーの指示が完了されたかどうかを評価する必要があります。ユーザーの完全な指示はいくつかの採点項目（rubric）に分割されており、あなたは各採点項目が満たされているかどうかを判断するだけです
+  - <trajectory_content> には user と assistant の間の完全な対話内容が含まれています
+  - <current_rubrics> には現在のすべての採点項目の状態が含まれています（true は満たされていることを示し、false は満たされていないことを示します。すべての採点項目の初期状態は false です）
+
+  # タスク
+  - 対話内容に基づいて、採点項目 rubric の状態を更新します
+  - assistant が対話内でその目標を完了した場合に限り、状態を false から true に更新できます
+
+  # 注意事項
+  - 重要：すべての評価は、assistant の返信およびツール呼び出し請求が rubric 内の目標を完了したかどうかを基準とします。user が対話中で表現した内容は、assistant へのヒントやガイダンスとみなされるのみであり、評価基準に直接影響することはありません。すべて rubric フィールドを基準とします！
+  - 重要：検索系 tool の返却結果は assistant にのみ表示され、assistant がユーザーに推奨した内容を表すわけではないため、評価結果に直接影響することはありません。すべて assistant が情報を取得した後のユーザーへの返信を基準とします！同時に、Assistant が Tool の返却結果を捏造することもできないことに注意してください！
+  - 重要：注文系 rubric（注文の詳細に関わり、注文を生成する必要があるもの）については、assistant が実際に注文操作を完了したかどうかを確認する必要があります。assistant が注文操作を完了したと誤解しているが、実際にはツール呼び出しが失敗している場合や、user が「自分で注文できる」などと表示する場合などは、すべて要求を満たしていないとみなすべきです
+  - 商品数量や配達時間などの注文の詳細に関わる rubric については、元の rubric 要件を厳密に満たす必要があります（商品数量の偏差があってはならず、希望配達時間より遅れてはなりません）。ユーザーの妥協行為は評価結果に影響しません（例えば、user が「ある商品が少なくても良い」、「注文内容に異議はない」、「遅れて配達されても良い」などと表示する場合など）。こうした状況でも、要求を満たしていないとみなすべきです
+  - テキスト内容のマッチングに関わる住所や注文備考類の rubric については、機能等価の原則を採用します：実際の内容が同じ機能を実現できる限り（例えば、配送場所を大まかに特定したり、顧客の主要なニーズを伝えたりするなど）、表現が完全に一致していなかったり、一部の詳細が欠けていたりしても、要求を満たしているとみなします
+  - justification には、現在の rubric に関連する重要な情報及其び対応するラウンド [x] を追加形式で記録します。状態変更が発生した場合も理由を記録し、簡潔な言語を使用してください
+
+  # 形式要件
+  - あなたの返信は JSON オブジェクトであり、以下のフィールドを含む必要があります：
+  - `rubric_idx`：ルールの一意の識別子
+  - `rubric`：ルールの繰り返し
+  - `justification`：状態変化の説明
+  - `meetExpectation`：更新後の状態（true または false）
+
+  # 入力構造の例：
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # 返信構造の例：
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ルールの繰り返し>",
+        "justification": "<状態変化の簡要な説明、追加形式で記録>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+french: |-
+  # Informations système
+  {env_info}
+
+  # Instructions complètes de l'utilisateur
+  {user_instruction}
+
+  # Contexte
+  - Il s'agit d'un scénario de conversation entre un user et un assistant, où l'assistant peut appeler des outils pour obtenir des informations et effectuer des opérations ; les résultats renvoyés par les outils commenceront par tool
+  - Vous devez évaluer si les instructions de l'utilisateur ont été accomplies ; les instructions complètes de l'utilisateur ont été décomposées en plusieurs points de scoring rubric, vous devez seulement juger si chaque point est satisfait
+  - <trajectory_content> contient le contenu complet de la conversation entre le user et l'assistant
+  - <current_rubrics> contient l'état de tous les points de scoring actuels (true signifie satisfait, false signifie non satisfait, l'état initial de tous les points de scoring est false)
+
+  # Tâche
+  - Basé sur le contenu de la conversation, mettez à jour l'état des points de scoring rubric
+  - Vous pouvez mettre à jour l'état de false à true, si et seulement si l'assistant a accompli cet objectif dans la conversation
+
+  # Remarques
+  - Important : toutes les évaluations se basent sur si la réponse de l'assistant et les demandes d'appel d'outil accomplissent les objectifs dans le rubric ; le contenu exprimé par le user dans la conversation est considéré uniquement comme des indices et des guides pour l'assistant, n'affectant pas directement les critères d'évaluation, tout se base sur le champ rubric !
+  - Important : les résultats renvoyés par les tool de type requête sont visibles uniquement par l'assistant, ne représentent pas le contenu recommandé par l'assistant à l'utilisateur, et n'affectent donc pas directement les résultats de l'évaluation ; tout doit se baser sur la réponse de l'assistant à l'utilisateur après avoir obtenu les informations ! Il faut également noter que l'Assistant ne doit pas non plus fabriquer les résultats renvoyés par le Tool !
+  - Important : pour les rubric de type commande (impliquant des détails de commande, nécessitant la génération d'une commande), il faut confirmer si l'assistant a réellement accompli l'opération de passation de commande. Il est possible que l'assistant pense à tort avoir accompli la passation de commande, alors que l'appel d'outil a échoué ; ou que le user indique qu'il peut « passer la commande lui-même », etc., ces cas doivent tous être considérés comme non satisfaits
+  - Pour les rubric impliquant des détails de commande tels que la quantité de produits, l'heure de livraison, etc., les exigences du rubric original doivent être strictement satisfaites (pas d'écart sur la quantité de produits, pas de retard par rapport à l'heure de livraison souhaitée) ; les comportements de compromis de l'utilisateur n'affectent pas le résultat de l'évaluation (par exemple, le user indique « un peu moins de tel produit ça va », « pas d'objection sur le contenu de la commande » ou « une livraison plus tardive ça va », etc.), ces cas doivent toujours être considérés comme non satisfaits
+  - Pour les rubric de type adresse ou note de commande impliquant une correspondance de contenu textuel, le principe d'équivalence fonctionnelle est adopté : tant que le contenu réel peut réaliser la même fonction (comme localiser approximativement le lieu de livraison ou transmettre les besoins principaux du client), même si l'expression n'est pas entièrement cohérente ou manque certains détails, cela est considéré comme satisfaisant les exigences
+  - Dans justification, enregistrez sous forme d'ajout les informations clés liées au rubric actuel et leur tour correspondant [x] ; si une modification d'état se produit, la raison doit également être enregistrée, en utilisant un langage concis
+
+  # Exigences de format
+  - Votre réponse doit être un objet JSON, contenant les champs suivants :
+  - `rubric_idx` : identifiant unique de la règle
+  - `rubric` : reformulation de la règle
+  - `justification` : explication du changement d'état
+  - `meetExpectation` : état mis à jour (true ou false)
+
+  # Structure d'entrée exemple :
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Structure de réponse exemple :
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Reformulation de la règle>",
+        "justification": "<Explication concise du changement d'état, enregistrée sous forme d'ajout>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+russian: |-
+  # Системная информация
+  {env_info}
+
+  # Полная инструкция пользователя
+  {user_instruction}
+
+  # Описание контекста
+  - Это сценарий диалога между user и assistant, где assistant может вызывать инструменты для получения информации и выполнения операций; результаты возврата инструментов начинаются с tool
+  - Вам необходимо оценить, выполнена ли инструкция пользователя. Полная инструкция пользователя была разбита на несколько критериев оценки (rubric); вам нужно только определить, выполнен ли каждый критерий
+  - <trajectory_content> содержит полное содержание диалога между user и assistant
+  - <current_rubrics> содержит состояние всех текущих критериев оценки (true означает выполнено, false означает не выполнено; начальное состояние всех критериев — false)
+
+  # Задача
+  - На основе содержания диалога обновите состояние критериев оценки (rubric)
+  - Вы можете изменить состояние с false на true только тогда, когда assistant выполнил эту цель в диалоге
+
+  # Примечания
+  - Важно: Все оценки основываются на том, выполнили ли ответ assistant и запросы на вызов инструментов цели в rubric. Содержание, выраженное user в диалоге, считается только подсказкой и руководством для assistant и не влияет напрямую на критерии оценки; все основывается на поле rubric!
+  - Важно: Результаты, возвращаемые инструментами типа запроса (tool), видны только assistant и не представляют собой контент, рекомендованный assistant пользователю, поэтому они также не влияют напрямую на результат оценки; все должно основываться на ответе assistant пользователю после получения информации! Также следует отметить, что Assistant не должен фабриковать результаты возврата Tool!
+  - Важно: Для rubric типа заказа (касающихся деталей заказа, где необходимо создать заказ) необходимо подтвердить, действительно ли assistant выполнил операцию размещения заказа. Возможно, assistant ошибочно полагает, что завершил операцию размещения заказа, но на самом деле вызов инструмента не удался; или user указывает, что может «разместить заказ самостоятельно» и т. д. — все такие случаи следует считать невыполненными требованиями
+  - Для rubric, касающихся деталей заказа, таких как количество товаров, время доставки, необходимо строго соблюдать исходные требования rubric (не должно быть отклонений в количестве товаров, нельзя доставлять позже ожидаемого времени доставки). Компромиссное поведение пользователя не влияет на результат оценки (например, если user говорит «немного меньше товара тоже подойдет», «нет возражений против содержания заказа» или «можно доставить позже» и т. д.); такие случаи все равно следует считать невыполненными требованиями
+  - Для rubric, касающихся адреса или примечаний к заказу, где требуется сопоставление текстового содержания, применяется принцип функциональной эквивалентности: если фактическое содержание может реализовать ту же функцию (например, примерно определить место доставки или передать основные потребности клиента), даже если формулировка не полностью совпадает или отсутствуют некоторые детали, это также считается выполнением требования
+  - В поле justification запишите в виде дополнения ключевую информацию, относящуюся к текущему rubric, и соответствующий раунд [x]. Если произошло изменение состояния, также необходимо записать причину, используя лаконичный язык
+
+  # Требования к формату
+  - Ваш ответ должен быть объектом JSON, содержащим следующие поля:
+  - `rubric_idx`: уникальный идентификатор правила
+  - `rubric`: пересказ правила
+  - `justification`: объяснение изменения состояния
+  - `meetExpectation`: обновленное состояние (true или false)
+
+  # Пример структуры ввода:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Пример структуры ответа:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<пересказ правила>",
+        "justification": "<краткое объяснение изменения состояния, записанное в виде дополнения>",
+        "meetExpectation": <true или false>
+    }},
+    ...
+  ]
+  ```
+arabic: |-
+  # معلومات النظام
+  {env_info}
+
+  # تعليمات المستخدم الكاملة
+  {user_instruction}
+
+  # خلفية توضيحية
+  - هذا سيناريو محادثة بين user و assistant، حيث يمكن لـ assistant استدعاء أدوات للحصول على المعلومات وإكمال العمليات، وستبدأ نتائج عودة الأداة بـ tool
+  - تحتاج إلى تقييم ما إذا تم إكمال تعليمات المستخدم، فقد تم تقسيم تعليمات المستخدم الكاملة إلى عدة نقاط تقييم rubric، وعليك فقط تحديد ما إذا كانت كل نقطة تقييم مستوفاة
+  - يحتوي <trajectory_content> على محتوى المحادثة الكامل بين user و assistant
+  - يحتوي <current_rubrics> على حالة جميع نقاط التقييم الحالية (true تعني مستوفاة، false تعني غير مستوفاة، والحالة الأولية لجميع نقاط التقييم هي false)
+
+  # المهمة
+  - بناءً على محتوى المحادثة، قم بتحديث حالة نقاط التقييم rubric
+  - يمكنك تحديث الحالة من false إلى true، فقط عندما يكمل assistant هذا الهدف في المحادثة
+
+  # ملاحظات هامة
+  - مهم: جميع التقييمات تعتمد على ما إذا كانت ردود assistant وطلبات استدعاء الأداة قد أكملت الأهداف في rubric، بينما يعتبر محتوى user المعبر عنه في المحادثة مجرد تلميحات وتوجيهات لـ assistant، ولا يؤثر مباشرة على معايير التقييم، كل شيء يعتمد على حقل rubric!
+  - مهم: نتائج العودة لأدوات الاستعلام مرئية فقط لـ assistant، ولا تمثل المحتوى الذي يوصي به assistant للمستخدم، وبالتالي لا تؤثر مباشرة على نتائج التقييم، كل شيء يجب أن يعتمد على رد assistant للمستخدم بعد الحصول على المعلومات! وفي الوقت نفسه، يجب ملاحظة أن Assistant لا يمكنه أيضًا تلفيق نتائج عودة Tool!
+  - مهم: بالنسبة لنقاط التقييم من نوع الطلبات rubric (تتضمن تفاصيل الطلب، يجب إنشاء الطلب)، يجب تأكيد ما إذا كان assistant قد أكمل فعليًا عملية تقديم الطلب. من الممكن أن يعتقد assistant خطأً أنه أكمل عملية تقديم الطلب، بينما فشل استدعاء الأداة فعليًا؛ أو حالات مماثلة حيث يشير user إلى أنه يمكنه "تقديم الطلب بنفسه"، يجب اعتبار كل هذه الحالات غير مستوفاة للمتطلبات
+  - بالنسبة لنقاط التقييم التي تتضمن تفاصيل الطلب مثل كمية البضائع ووقت التسليم، يجب تلبية متطلبات rubric الأصلية بدقة (لا يمكن أن يكون هناك انحراف في كمية البضائع، لا يمكن أن يكون لاحقًا لوقت التسليم المتوقع)، سلوك تنازل المستخدم لا يؤثر على نتيجة التقييم (على سبيل المثال، إذا أشار user إلى أن "قليلًا من سلعة معينة مقبول"، أو "لا اعتراض على محتوى الطلب"، أو "التسليم لاحقًا مقبول"، إلخ)، لا تزال هذه الحالات تعتبر غير مستوفاة للمتطلبات
+  - بالنسبة لنقاط التقييم من نوع العناوين أو ملاحظات الطلب التي تتضمن مطابقة محتوى النص، يتم اعتماد مبدأ التكافؤ الوظيفي: طالما أن المحتوى الفعلي يمكنه تحقيق نفس الوظيفة (مثل تحديد موقع التسليم تقريبًا أو نقل الاحتياجات الرئيسية للعميل)، حتى لو لم يكن التعبير متطابقًا تمامًا أو افتقر إلى بعض التفاصيل، يعتبر ذلك مستوفيًا للمتطلبات
+  - سجل في justification المعلومات الرئيسية المتعلقة بـ rubric الحالي والجولة المقابلة لها [x] بشكل إضافي، وإذا حدث تعديل في الحالة، يجب أيضًا تسجيل السبب، باستخدام لغة موجزة
+
+  # متطلبات التنسيق
+  - يجب أن يكون ردك كائن JSON، يحتوي على الحقول التالية:
+  - `rubric_idx`: المعرف الفريد للقاعدة
+  - `rubric`: إعادة صياغة للقاعدة
+  - `justification`: شرح لتغيير الحالة
+  - `meetExpectation`: الحالة المحدثة (true أو false)
+
+  # هيكل مثال الإدخال:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # هيكل مثال الرد:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<إعادة صياغة القاعدة>",
+        "justification": "<شرح موجز لتغيير الحالة، يسجل بشكل إضافي>",
+        "meetExpectation": <true أو false>
+    }},
+    ...
+  ]
+  ```
+hindi: |-
+  # सिस्टम जानकारी
+  {env_info}
+
+  # उपयोगकर्ता का पूर्ण निर्देश
+  {user_instruction}
+
+  # पृष्ठभूमि विवरण
+  - यह उपयोगकर्ता और सहायक के बीच की बातचीत का दृश्य है, जहाँ सहायक जानकारी प्राप्त करने और कार्य पूरे करने के लिए टूल का उपयोग कर सकता है, टूल द्वारा लौटाए गए परिणाम tool से शुरू होंगे
+  - आपको यह मूल्यांकन करना है कि उपयोगकर्ता का निर्देश पूरा हुआ है या नहीं, उपयोगकर्ता के पूर्ण निर्देश को कई स्कोरिंग बिंदुओं (rubric) में विभाजित किया गया है, आपको केवल यह निर्णय लेना है कि प्रत्येक बिंदु पूरा हुआ है या नहीं
+  - <trajectory_content> में उपयोगकर्ता और सहायक के बीच की पूर्ण बातचीत सामग्री शामिल है
+  - <current_rubrics> में वर्तमान सभी स्कोरिंग बिंदुओं की स्थिति शामिल है (true का अर्थ है पूरा हुआ, false का अर्थ है पूरा नहीं हुआ, सभी स्कोरिंग बिंदुओं की प्रारंभिक स्थिति false है)
+
+  # कार्य
+  - बातचीत की सामग्री के आधार पर, स्कोरिंग बिंदु rubric की स्थिति अपडेट करें
+  - आप स्थिति को false से true में अपडेट कर सकते हैं, केवल और केवल तभी जब सहायक ने बातचीत में उस लक्ष्य को पूरा किया हो
+
+  # ध्यान देने योग्य बातें
+  - महत्वपूर्ण: सभी मूल्यांकन इस आधार पर होंगे कि सहायक के उत्तर और टूल कॉल अनुरोध ने rubric में लक्ष्यों को पूरा किया है या नहीं, बातचीत में उपयोगकर्ता द्वारा व्यक्त की गई सामग्री को केवल सहायक के लिए संकेत और मार्गदर्शन माना जाता है, यह मूल्यांकन मानकों को सीधे प्रभावित नहीं करेगा, सब कुछ rubric फ़ील्ड के आधार पर होगा!
+  - महत्वपूर्ण: क्वेरी प्रकार के tool द्वारा लौटाए गए परिणाम केवल सहायक के लिए दृश्यमान हैं, यह उपयोगकर्ता के लिए सहायक की सिफारिश की गई सामग्री का प्रतिनिधित्व नहीं करता है, इसलिए यह मूल्यांकन परिणाम को सीधे प्रभावित नहीं करता है, सब कुछ सहायक द्वारा जानकारी प्राप्त करने के बाद उपयोगकर्ता को दिए गए उत्तर के आधार पर होना चाहिए! साथ ही ध्यान दें, सहायक Tool के परिणाम गढ़ नहीं सकता है!
+  - महत्वपूर्ण: ऑर्डर से संबंधित rubric के लिए (ऑर्डर विवरण शामिल हैं, ऑर्डर जनरेट करना आवश्यक है), यह पुष्टि करनी होगी कि सहायक ने वास्तव में ऑर्डर प्लेस करने की कार्रवाई पूरी की है या नहीं। हो सकता है कि सहायक को गलतफहमी हो कि ऑर्डर प्लेस हो गया है, वास्तव में टूल कॉल विफल रहा हो; या उपयोगकर्ता ने कहा हो कि "मैं स्वयं ऑर्डर कर सकता हूँ" ऐसी स्थितियों को भी आवश्यकता पूरी न होने के रूप में माना जाना चाहिए
+  - उन rubric के लिए जो ऑर्डर विवरण जैसे उत्पाद मात्रा, डिलीवरी समय से संबंधित हैं, मूल rubric आवश्यकताओं को कड़ाई से पूरा करना होगा (उत्पाद मात्रा में कोई विचलन नहीं हो सकता, अपेक्षित डिलीवरी समय से देर नहीं होनी चाहिए), उपयोगकर्ता की समझौता व्यवहार मूल्यांकन परिणाम को प्रभावित नहीं करता है (उदाहरण के लिए उपयोगकर्ता ने कहा "कुछ उत्पाद कम भी चलेंगे", "ऑर्डर सामग्री से कोई आपत्ति नहीं" या "थोड़ी देर से डिलीवरी भी चलेंगी" आदि), ऐसी स्थितियों को अभी भी आवश्यकता पूरी न होने के रूप में माना जाना चाहिए
+  - उन rubric के लिए जो पाठ सामग्री मिलान पते या ऑर्डर नोट्स से संबंधित हैं, कार्यात्मक समानता सिद्धांत अपनाएं: जब तक वास्तविक सामग्री समान कार्य प्राप्त कर सकती है (जैसे डिलीवरी स्थान का मोटा अनुमान लगाना या ग्राहक की मुख्य आवश्यकताओं को संप्रेषित करना), भले ही अभिव्यक्ति पूरी तरह से सुसंगत न हो या कुछ विवरण गायब हों, इसे आवश्यकता पूरी होने के रूप में माना जाएगा
+  - justification में वर्तमान rubric से संबंधित मुख्य जानकारी और संबंधित राउंड [x] को जोड़ें, यदि स्थिति संशोधित होती है तो कारण भी रिकॉर्ड करें, संक्षिप्त भाषा का उपयोग करें
+
+  # प्रारूप आवश्यकताएं
+  - आपका उत्तर एक JSON ऑब्जेक्ट होना चाहिए, जिसमें निम्नलिखित फ़ील्ड शामिल हैं:
+  - `rubric_idx`：नियम का अद्वितीय पहचानकर्ता
+  - `rubric`：नियम का पुनरुच्चारण
+  - `justification`：स्थिति परिवर्तन का स्पष्टीकरण
+  - `meetExpectation`：अपडेट की गई स्थिति (true या false)
+
+  # उदाहरण इनपुट संरचना：
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # उदाहरण उत्तर संरचना：
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<नियम का पुनरुच्चारण>",
+        "justification": "<स्थिति परिवर्तन का संक्षिप्त स्पष्टीकरण, जोड़ने के रूप में रिकॉर्ड करें>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+thai: |-
+  # ข้อมูลระบบ
+  {env_info}
+
+  # คำสั่งเต็มของผู้ใช้
+  {user_instruction}
+
+  # คำชี้แจงพื้นหลัง
+  - นี่คือสถานการณ์การสนทนาระหว่าง user และ assistant โดยที่ assistant สามารถเรียกใช้เครื่องมือเพื่อรับข้อมูลและดำเนินการได้ ผลลัพธ์ที่ส่งกลับจากเครื่องมือจะขึ้นต้นด้วย tool
+  - คุณต้องประเมินว่าคำสั่งของผู้ใช้ได้รับการดำเนินการเสร็จสิ้นหรือไม่ คำสั่งเต็มของผู้ใช้ถูกแบ่งออกเป็นเกณฑ์การให้คะแนน (rubric) หลายข้อ คุณเพียงแค่ต้องตัดสินว่าแต่ละเกณฑ์ได้รับการตอบสนองหรือไม่
+  - <trajectory_content> ประกอบด้วยเนื้อหาการสนทนาเต็มระหว่าง user และ assistant
+  - <current_rubrics> ประกอบด้วยสถานะของเกณฑ์การให้คะแนนทั้งหมดในปัจจุบัน (true หมายถึงได้รับการตอบสนองแล้ว, false หมายถึงยังไม่ได้รับการตอบสนอง, สถานะเริ่มต้นของทุกเกณฑ์คือ false)
+
+  # ภารกิจ
+  - อัปเดตสถานะของเกณฑ์การให้คะแนน (rubric) โดยอิงจากเนื้อหาการสนทนา
+  - คุณสามารถเปลี่ยนสถานะจาก false เป็น true ได้ ก็ต่อเมื่อ assistant ได้ดำเนินการเป้าหมายนั้นเสร็จสิ้นในการสนทนาแล้ว
+
+  # ข้อควรระวัง
+  - สำคัญ: การประเมินทั้งหมดยึดถือจากการตอบกลับของ assistant และการเรียกใช้เครื่องมือว่าสามารถบรรลุเป้าหมายใน rubric ได้หรือไม่ เนื้อหาที่ user แสดงออกในการสนทนาถือเป็นเพียงคำแนะนำและแนวทางสำหรับ assistant ไม่ส่งผลโดยตรงต่อเกณฑ์การประเมิน ทุกอย่างยึดถือตามฟิลด์ rubric เป็นหลัก!
+  - สำคัญ: ผลลัพธ์ที่ส่งกลับจาก tool ประเภทการค้นหาจะมองเห็นได้เฉพาะ assistant เท่านั้น ไม่ได้หมายถึงเนื้อหาที่ assistant แนะนำให้ผู้ใช้ ดังนั้นจึงไม่ส่งผลโดยตรงต่อผลการประเมิน ทุกอย่างต้องยึดถือจากการตอบกลับของ assistant ที่มีต่อผู้ใช้หลังจากได้รับข้อมูลแล้ว! ในขณะเดียวกันต้องระวังว่า Assistant ห้ามแต่งผลลัพธ์ที่ส่งกลับจาก Tool!
+  - สำคัญ: สำหรับ rubric ประเภทคำสั่งซื้อ (เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ ต้องมีการสร้างคำสั่งซื้อ) ต้องยืนยันว่า assistant ได้ดำเนินการสั่งซื้อเสร็จสิ้นจริงหรือไม่ เป็นไปได้ที่ assistant อาจเข้าใจผิดว่าดำเนินการสั่งซื้อเสร็จสิ้นแล้ว แต่ фактическиการเรียกใช้เครื่องมือล้มเหลว; หรือ user ระบุว่าสามารถ "สั่งซื้อเองได้" ฯลฯ กรณีเหล่านี้ควรถือว่าไม่ตรงตามข้อกำหนด
+  - สำหรับ rubric ที่เกี่ยวข้องกับรายละเอียดคำสั่งซื้อ เช่น จำนวนสินค้า เวลาจัดส่ง ต้องปฏิบัติตามข้อกำหนดเดิมของ rubric อย่างเคร่งครัด (ไม่มีความคลาดเคลื่อนของจำนวนสินค้า ไม่ช้ากว่าเวลาจัดส่งที่ต้องการ) การประนีประนอมของผู้ใช้ไม่ส่งผลต่อผลการตัดสิน (เช่น user ระบุว่า "สินค้าบางอย่างน้อยหน่อยก็ได้", "ไม่มีข้อโต้แย้งต่อเนื้อหาคำสั่งซื้อ" หรือ "จัดส่งช้าหน่อยก็ได้" ฯลฯ) กรณีเหล่านี้ยังคงควรถือว่าไม่ตรงตามข้อกำหนด
+  - สำหรับ rubric ประเภทที่อยู่หรือหมายเหตุคำสั่งซื้อที่เกี่ยวข้องกับการจับคู่เนื้อหาข้อความ ใช้หลักการเทียบเท่าเชิงฟังก์ชัน: ตราบใดที่เนื้อหาจริงสามารถทำหน้าที่เดียวกันได้ (เช่น ระบุตำแหน่งจัดส่งโดยประมาณหรือสื่อสารความต้องการหลักของลูกค้า) แม้ถ้อยคำจะไม่ตรงกันทั้งหมดหรือขาดรายละเอียดบางส่วน ก็ถือว่าตรงตามข้อกำหนด
+  - ใน justification ให้บันทึกข้อมูลสำคัญที่เกี่ยวข้องกับ rubric ปัจจุบันและรอบการสนทนาที่สอดคล้อง [x] ในรูปแบบการเพิ่มเติม หากมีการเปลี่ยนแปลงสถานะต้องบันทึกเหตุผลด้วย ใช้ภาษาที่กระชับ
+
+  # ข้อกำหนดรูปแบบ
+  - การตอบกลับของคุณควรเป็นออบเจกต์ JSON ซึ่งมีฟิลด์ดังนี้:
+  - `rubric_idx`: ตัวระบุเฉพาะของกฎ
+  - `rubric`: การกล่าวซ้ำกฎ
+  - `justification`: คำอธิบายการเปลี่ยนแปลงสถานะ
+  - `meetExpectation`: สถานะหลังอัปเดต (true หรือ false)
+
+  # โครงสร้างตัวอย่างอินพุต:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # โครงสร้างตัวอย่างการตอบกลับ:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<กล่าวซ้ำกฎ>",
+        "justification": "<คำอธิบายโดยย่อของการเปลี่ยนแปลงสถานะ บันทึกในรูปแบบการเพิ่มเติม>",
+        "meetExpectation": <true หรือ false>
+    }},
+    ...
+  ]
+  ```
+spanish: |-
+  # Información del sistema
+  {env_info}
+
+  # Instrucción completa del usuario
+  {user_instruction}
+
+  # Descripción del contexto
+  - Este es un escenario de conversación entre un usuario y un asistente, donde el asistente puede llamar a herramientas para obtener información y completar operaciones; los resultados devueltos por las herramientas comenzarán con tool
+  - Debes evaluar si la instrucción del usuario ha sido completada; la instrucción completa del usuario se ha dividido en varios puntos de evaluación rubric, solo necesitas juzgar si cada punto de evaluación se cumple
+  - <trajectory_content> contiene el contenido completo de la conversación entre el usuario y el asistente
+  - <current_rubrics> contiene el estado de todos los puntos de evaluación actuales (true indica cumplido, false indica no cumplido, el estado inicial de todos los puntos de evaluación es false)
+
+  # Tarea
+  - Basado en el contenido de la conversación, actualiza el estado de los puntos de evaluación rubric
+  - Puedes actualizar el estado de false a true, si y solo si el asistente ha completado ese objetivo en la conversación
+
+  # Notas importantes
+  - Importante: Todas las evaluaciones se basan en si la respuesta del asistente y las solicitudes de llamada a herramientas completan los objetivos en el rubric; el contenido expresado por el usuario en la conversación se considera solo como sugerencia y guía para el asistente, no afecta directamente los criterios de evaluación, ¡todo se basa en el campo rubric!
+  - Importante: Los resultados devueltos por las herramientas de tipo consulta son visibles solo para el asistente, no representan el contenido recomendado por el asistente al usuario, por lo tanto, tampoco afectan directamente el resultado de la evaluación; ¡todo debe basarse en la respuesta del asistente al usuario después de obtener la información! ¡Al mismo tiempo, ten en cuenta que el asistente tampoco puede fabricar los resultados devueltos por la herramienta!
+  - Importante: Para los rubric de tipo pedido (que involucran detalles del pedido, donde se debe generar un pedido), se debe confirmar si el asistente realmente completó la operación de realizar el pedido. Es posible que el asistente crea erróneamente que completó la operación de pedido, pero en realidad la llamada a la herramienta falló; o si el usuario indica que puede "hacer el pedido por sí mismo", etc., todo esto debe considerarse como no cumplido
+  - Para los rubric que involucran detalles del pedido como la cantidad de productos, el tiempo de entrega, etc., se deben cumplir estrictamente los requisitos del rubric original (no puede haber desviación en la cantidad de productos, no debe ser más tarde que el tiempo de entrega esperado); el comportamiento de compromiso del usuario no afecta el resultado de la evaluación (por ejemplo, si el usuario indica "está bien menos cantidad de cierto producto", "no hay objeción al contenido del pedido" o "está bien si llega más tarde", etc.), estos casos aún deben considerarse como no cumplidos
+  - Para los rubric de tipo dirección o notas de pedido que involucran coincidencia de contenido de texto, se adopta el principio de equivalencia funcional: siempre que el contenido real pueda lograr la misma función (como ubicar aproximadamente el punto de entrega o transmitir la necesidad principal del cliente), incluso si la expresión no es completamente consistente o faltan algunos detalles, también se considera cumplido
+  - En justification, registra en forma de append la información clave relacionada con el rubric actual y su turno correspondiente [x]; si ocurre una modificación de estado, también se debe registrar la razón, usando un lenguaje conciso
+
+  # Requisitos de formato
+  - Tu respuesta debe ser un objeto JSON, que contiene los siguientes campos:
+  - `rubric_idx`: El identificador único de la regla
+  - `rubric`: Una reiteración de la regla
+  - `justification`: Una explicación del cambio de estado
+  - `meetExpectation`: El estado actualizado (true o false)
+
+  # Estructura de entrada de ejemplo:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Estructura de respuesta de ejemplo:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Reiterar la regla>",
+        "justification": "<Explicación breve del cambio de estado, registrada en forma de append>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+korean: |-
+  # 시스템 정보
+  {env_info}
+
+  # 사용자 전체 지침
+  {user_instruction}
+
+  # 배경 설명
+  - 이는 user 와 assistant 간의 대화 시나리오이며, assistant 는 도구를 호출하여 정보를 얻고 작업을 완료할 수 있습니다. 도구 반환 결과는 tool 로 시작합니다.
+  - 사용자 지침이 완료되었는지 평가해야 하며, 사용자의 전체 지침은 여러 평가 기준 (rubric) 으로 분할되었습니다. 각 평가 기준이 충족되었는지 판단하면 됩니다.
+  - <trajectory_content>에는 user 와 assistant 간의 전체 대화 내용이 포함되어 있습니다.
+  - <current_rubrics>에는 현재 모든 평가 기준의 상태가 포함되어 있습니다 (true 는 충족됨을, false 는 충족되지 않음을 나타내며, 모든 평가 기준의 초기 상태는 false 입니다).
+
+  # 작업
+  - 대화 내용을 기반으로 평가 기준 (rubric) 의 상태를 업데이트합니다.
+  - assistant 가 대화에서 해당 목표를 완료한 경우에만 상태를 false 에서 true 로 업데이트할 수 있습니다.
+
+  # 주의 사항
+  - 중요: 모든 평가는 assistant 의 응답 및 도구 호출 요청이 rubric 의 목표를 완료했는지 여부를 기준으로 합니다. user 가 대화에서 표현한 내용은 assistant 에 대한 힌트 및 가이드로만 간주되며 평가 기준에 직접적인 영향을 미치지 않습니다. 모든 것은 rubric 필드를 기준으로 합니다!
+  - 중요: 조회류 tool 의 반환 결과는 assistant 에게만 보이며, assistant 가 사용자에게 추천한 내용을 나타내는 것이 아니므로 평가 결과에 직접적인 영향을 미치지 않습니다. 모든 것은 assistant 가 정보를 얻은 후 사용자에게 한 응답을 기준으로 합니다! 또한 Assistant 는 Tool 의 반환 결과를 조작해서는 안 됩니다!
+  - 중요: 주문류 rubric(주문 세부 사항 포함, 주문 생성 필수) 의 경우, assistant 가 실제로 주문 작업을 완료했는지 확인해야 합니다. assistant 가 주문 작업을 완료했다고 잘못 생각했지만 실제로 도구 호출이 실패했거나, user 가 "스스로 주문할 수 있음"이라고 표시한 경우 등은 모두 요구 사항 미충족으로 간주됩니다.
+  - 상품 수량, 배송 시간 등 주문 세부 사항과 관련된 rubric 의 경우, 원래 rubric 요구 사항을 엄격히 충족해야 합니다 (상품 수량 편차 불가, 예상 배송 시간보다 늦어지면 안 됨). 사용자의 양보 행동은 평가 결과에 영향을 미치지 않습니다 (예: user 가 "어떤 상품은 적어도 됨", "주문 내용에 이의 없음" 또는 "늦게 배송되어도 됨"이라고 표시한 경우 등). 이러한 경우에도 요구 사항 미충족으로 간주됩니다.
+  - 텍스트 내용 매칭과 관련된 주소 또는 주문 비고류 rubric 의 경우 기능적 동등성 원칙을 적용합니다: 실제 내용이 동일한 기능을 수행할 수 있다면 (예: 배송 위치 대략적 특정 또는 고객의 주요 요구 사항 전달), 표현이 완전히 일치하지 않거나 일부 세부 사항이 누락되었더라도 요구 사항 충족으로 간주됩니다.
+  - justification 에 현재 rubric 과 관련된 주요 정보 및 해당 차례 [x] 를 추가 형태로 기록합니다. 상태 변경이 발생한 경우 이유도 기록해야 하며, 간결한 언어를 사용하십시오.
+
+  # 형식 요구 사항
+  - 응답은 다음 필드를 포함하는 JSON 객체여야 합니다:
+  - `rubric_idx`: 규칙의 고유 식별자
+  - `rubric`: 규칙에 대한 재진술
+  - `justification`: 상태 변경에 대한 설명
+  - `meetExpectation`: 업데이트된 상태 (true 또는 false)
+
+  # 예시 입력 구조:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # 예시 응답 구조:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<규칙 재진술>",
+        "justification": "<상태 변경에 대한 간략한 설명, 추가 형태로 기록>",
+        "meetExpectation": <true 또는 false>
+    }},
+    ...
+  ]
+  ```
+indonesian: |-
+  # Informasi Sistem
+  {env_info}
+
+  # Instruksi Lengkap Pengguna
+  {user_instruction}
+
+  # Penjelasan Latar Belakang
+  - Ini adalah skenario percakapan antara user dan assistant, di mana assistant dapat memanggil alat untuk mendapatkan informasi dan menyelesaikan operasi, hasil yang dikembalikan oleh alat akan diawali dengan tool
+  - Anda perlu mengevaluasi apakah instruksi pengguna telah selesai, instruksi lengkap pengguna telah dipecah menjadi beberapa poin penilaian rubric, Anda hanya perlu menentukan apakah setiap poin penilaian terpenuhi
+  - <trajectory_content> berisi konten percakapan lengkap antara user dan assistant
+  - <current_rubrics> berisi status semua poin penilaian saat ini (true menunjukkan telah terpenuhi, false menunjukkan belum terpenuhi, status awal semua poin penilaian adalah false)
+
+  # Tugas
+  - Berdasarkan konten percakapan, perbarui status poin penilaian rubric
+  - Anda dapat mengubah status dari false menjadi true, jika dan hanya jika assistant telah menyelesaikan tujuan tersebut dalam percakapan
+
+  # Perhatian
+  - Penting: Semua evaluasi didasarkan pada apakah respons assistant dan permintaan pemanggilan alat menyelesaikan tujuan dalam rubric, konten yang dinyatakan oleh user dalam percakapan hanya dianggap sebagai petunjuk dan panduan untuk assistant, tidak akan secara langsung mempengaruhi standar evaluasi, semuanya berdasarkan bidang rubric!
+  - Penting: Hasil yang dikembalikan oleh tool jenis kueri hanya terlihat oleh assistant, tidak mewakili konten yang direkomendasikan assistant kepada user, oleh karena itu juga tidak secara langsung mempengaruhi hasil evaluasi, semuanya harus berdasarkan respons assistant kepada user setelah mendapatkan informasi! Pada saat yang sama perlu diperhatikan, Assistant juga tidak boleh mengarang hasil pengembalian Tool!
+  - Penting: Untuk rubric jenis pesanan (melibatkan detail pesanan, harus menghasilkan pesanan), harus dikonfirmasi apakah assistant benar-benar menyelesaikan operasi pemesanan. Mungkin assistant salah mengira telah menyelesaikan operasi pemesanan, sebenarnya pemanggilan alat gagal; atau user menyatakan dapat "memesan sendiri" dll, situasi seperti itu harus dianggap sebagai belum memenuhi persyaratan
+  - Untuk rubric yang melibatkan detail pesanan seperti jumlah barang, waktu pengiriman, harus secara ketat memenuhi persyaratan rubric asli (tidak boleh ada penyimpangan jumlah barang, tidak boleh lebih lambat dari waktu pengiriman yang diharapkan), perilaku kompromi user tidak mempengaruhi hasil penilaian (misalnya user menyatakan "beberapa barang lebih sedikit juga boleh", "tidak ada keberatan terhadap konten pesanan" atau "pengiriman lebih lambat juga boleh" dll), situasi seperti itu masih harus dianggap sebagai belum memenuhi persyaratan
+  - Untuk rubric jenis alamat atau catatan pesanan yang melibatkan pencocokan konten teks, adopsi prinsip equivalensi fungsional: selama konten aktual dapat mewujudkan fungsi yang sama (seperti memlokasikan tempat pengiriman secara kasar atau menyampaikan kebutuhan utama pelanggan), meskipun ekspresinya tidak sepenuhnya konsisten atau kekurangan beberapa detail, juga dianggap memenuhi persyaratan
+  - Dalam justification, catat informasi kunci yang terkait dengan rubric saat ini dan putaran yang sesuai [x] dalam bentuk tambahan, jika terjadi perubahan status juga perlu mencatat alasan, gunakan bahasa yang ringkas
+
+  # Persyaratan Format
+  - Respons Anda harus berupa objek JSON, berisi bidang berikut:
+  - `rubric_idx`: Pengenal unik untuk aturan
+  - `rubric`: Pernyataan ulang aturan
+  - `justification`: Penjelasan untuk perubahan status
+  - `meetExpectation`: Status setelah diperbarui (true atau false)
+
+  # Struktur Input Contoh:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Struktur Respons Contoh:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Pernyataan Ulang Aturan>",
+        "justification": "<Penjelasan singkat perubahan status, dicatat dalam bentuk tambahan>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+hebrew: |-
+  # מידע מערכת
+  {env_info}
+
+  # הוראה מלאה של המשתמש
+  {user_instruction}
+
+  # הסבר רקע
+  - זהו תרחיש שיחה בין משתמש ל-assistant, כאשר ה-assistant יכול להשתמש בכלים כדי להשיג מידע ולהשלים פעולות, ותוצאות החזרה של הכלים יתחילו ב-tool
+  - עליך להעריך האם הוראת המשתמש הושלמה, ההוראה המלאה של המשתמש פוצלה למספר נקודות ציון (rubric), עליך רק לקבוע האם כל נקודת ציון מסופקת
+  - <trajectory_content> מכיל את תוכן השיחה המלא בין המשתמש ל-assistant
+  - <current_rubrics> מכיל את הסטטוס של כל נקודות הציון הנוכחיות (true מציין מסופק, false מציין לא מסופק, הסטטוס ההתחלתי של כל נקודות הציון הוא false)
+
+  # משימה
+  - בהתבסס על תוכן השיחה, עדכן את הסטטוס של נקודות הציון (rubric)
+  - באפשרותך לשנות את הסטטוס מ-false ל-true, אך ורק כאשר ה-assistant השלים את המטרה הזו בשיחה
+
+  # הערות חשובות
+  - חשוב: כל ההערכות מתבססות על האם התשובות של ה-assistant ובקשות הפעלת הכלים השלימו את המטרות ב-rubric, התוכן שהמשתמש הביע בשיחה נחשב רק כהנחיה והכוונה ל-assistant, ולא משפיע ישירות על סטנדרט ההערכה, הכל לפי שדה ה-rubric!
+  - חשוב: תוצאות שהוחזרו על ידי כלי חיפוש (query tool) נראות רק ל-assistant, ואינן מייצגות את התוכן שהומלץ על ידי ה-assistant למשתמש, ולכן גם לא משפיעות ישירות על תוצאת ההערכה, הכל חייב להיות לפי התשובה של ה-assistant למשתמש לאחר השגת המידע! במקביל יש לשים לב, ה-Assistant גם לא יכול לזייף תוצאות החזרה של Tool!
+  - חשוב: עבור rubric מסוג הזמנה (הכולל פרטי הזמנה, חייב ליצור הזמנה), חייבים לאשר האם ה-assistant באמת השלים את פעולת ביצוע ההזמנה. ייתכן שה-assistant חשב בטעות שהשלים את פעולת ביצוע ההזמנה, למעשה הפעלת הכלי נכשלה; או שהמשתמש ציין ש"אפשר לבצע הזמנה בעצמו" וכדומה, כל אלו ייחשבו כלא מספקים את הדרישה
+  - עבור rubric הכולל פרטי הזמנה כמו כמות מוצרים, זמן אספקה, חייבים לספק בדיוק את דרישת ה-rubric המקורית (לא יכולה להיות סטייה בכמות המוצרים, לא יכול להיות מאוחר מזמן האספקה הצפוי), התנהגות פשרה של המשתמש לא משפיעה על תוצאת השיפוט (למשל המשתמש מציין "קצת פחות ממוצר מסוים זה בסדר", "אין התנגדות לתוכן ההזמנה" או "אספקה מאוחרת יותר זה בסדר" וכדומה), מצבים כאלו עדיין ייחשבו כלא מספקים את הדרישה
+  - עבור rubric מסוג כתובת או הערת הזמנה הכוללת התאמת תוכן טקסט, משתמשים בעקרון שוויון פונקציונלי: כל עוד התוכן בפועל יכול לממש את אותה פונקציה (כגון מיקום נקודת משלוח בקירוב או העברת הדרישה העיקרית של הלקוח), גם אם הניסוח לא זהה לחלוטין או חסר חלק מהפרטים, גם זה נחשב כמספק את הדרישה
+  - ב-justification יש לתעד בצורת תוספת את המידע הקריטי הקשור ל-rubric הנוכחי ואת הסיבוב המתאים [x], אם מתרחש שינוי סטטוס יש גם לתעד את הסיבה, להשתמש בשפה תמציתית
+
+  # דרישות פורמט
+  - התשובה שלך צריכה להיות אובייקט JSON, הכולל את השדות הבאים:
+  - `rubric_idx`: המזהה הייחודי של הכלל
+  - `rubric`: ניסוח חוזר של הכלל
+  - `justification`: הסבר לשינוי הסטטוס
+  - `meetExpectation`: הסטטוס המעודכן (true או false)
+
+  # דוגמה למבנה קלט:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # דוגמה למבנה תשובה:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ניסוח חוזר של הכלל>",
+        "justification": "<הסבר קצר לשינוי הסטטוס, מתועד בצורת תוספת>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+turkish: |-
+  # Sistem Bilgisi
+  {env_info}
+
+  # Kullanıcı Tam Talimatı
+  {user_instruction}
+
+  # Arka Plan Açıklaması
+  - Bu, bir user ile assistant arasında bir diyalog senaryosudur; assistant bilgi almak ve işlemleri tamamlamak için araçları çağırabilir, araç dönüş sonuçları tool ile başlayacaktır
+  - Kullanıcı talimatının tamamlanıp tamamlanmadığını değerlendirmeniz gerekiyor, kullanıcının tam talimatı birkaç puanlama noktası rubric'e ayrılmıştır, sadece her puanlama noktasının karşılanıp karşılanmadığını belirlemeniz yeterlidir
+  - <trajectory_content>, user ile assistant arasındaki tam diyalog içeriğini içerir
+  - <current_rubrics>, mevcut tüm puanlama noktalarının durumunu içerir (true karşılandığını, false karşılanmadığını gösterir, tüm puanlama noktalarının başlangıç durumu false'dır)
+
+  # Görev
+  - Diyalog içeriğine dayanarak, puanlama noktası rubric durumlarını güncelleyin
+  - Durumu false'dan true'ya yalnızca assistant diyalogda hedefi tamamladığında güncelleyebilirsiniz
+
+  # Dikkat Edilmesi Gerekenler
+  - Önemli: Tüm değerlendirmeler, assistant'ın yanıtı ve araç çağrı isteğinin rubric'teki hedefleri tamamlayıp tamamlamadığına dayanır; user'ın diyalogda ifade ettiği içerik yalnızca assistant için ipucu ve rehber olarak kabul edilir, değerlendirme standartlarını doğrudan etkilemez, her şey rubric alanına dayanır!
+  - Önemli: Sorgu tipi tool'ların dönüş sonuçları yalnızca assistant tarafından görülebilir, assistant'ın kullanıcıya önerdiği içeriği temsil etmez, bu nedenle değerlendirme sonucunu doğrudan etkilemez, her şey assistant'ın bilgiyi aldıktan sonra kullanıcıya verdiği yanıtı esas almalıdır! Aynı zamanda, Assistant'ın Tool dönüş sonuçlarını uyduramayacağına da dikkat edilmelidir!
+  - Önemli: Sipariş tipi rubric'ler için (sipariş detaylarını içeren, sipariş oluşturulması gereken), assistant'ın gerçekten sipariş verme işlemini tamamlayıp tamamlamadığı doğrulanmalıdır. Assistant'ın sipariş verme işlemini tamamladığını yanlışlıkla düşünmesi, ancak araç çağrısının başarısız olması mümkündür; veya user'ın "kendim sipariş verebilirim" demesi gibi durumlar, karşılanmamış gereksinim olarak kabul edilmelidir
+  - Ürün miktarı, teslimat zamanı gibi sipariş detaylarını içeren rubric'ler için, orijinal rubric gereksinimleri kesinlikle karşılanmalıdır (ürün miktarında sapma olmamalıdır, beklenen teslimat zamanından geç olmamalıdır), kullanıcının uzlaşma davranışı değerlendirme sonucunu etkilemez (örneğin user'ın "bir ürün daha az olsa da olur", "sipariş içeriğinde itirazım yok" veya "daha geç teslimat da olur" demesi gibi), bu tür durumlar hala karşılanmamış gereksinim olarak kabul edilmelidir
+  - Metin içeriği eşleşmesini içeren adres veya sipariş notu tipi rubric'ler için, işlevsel eşdeğerlik ilkesi benimsenir: Fiili içerik aynı işlevi gerçekleştirebiliyorsa (örneğin teslimat yerini kabaca konumlandırma veya müşterinin ana ihtiyaçlarını iletme), ifade tamamen tutarlı olmasa veya bazı detaylar eksik olsa bile, gereksinim karşılanmış olarak kabul edilir
+  - justification alanında, mevcut rubric ile ilgili anahtar bilgileri ve ilgili turu [x] ekleyerek kaydedin, durum değişikliği oluşursa nedenini de kaydedin, öz bir dil kullanın
+
+  # Format Gereksinimleri
+  - Yanıtınız aşağıdaki alanları içeren bir JSON nesnesi olmalıdır:
+  - `rubric_idx`: Kuralın benzersiz tanımlayıcısı
+  - `rubric`: Kuralın yeniden ifade edilmesi
+  - `justification`: Durum değişikliğinin açıklaması
+  - `meetExpectation`: Güncellenmiş durum (true veya false)
+
+  # Örnek Giriş Yapısı:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Örnek Yanıt Yapısı:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Kuralın Yeniden İfadesi>",
+        "justification": "<Durum değişikliğinin kısa açıklaması, ekleyerek kaydedilir>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+vietnamese: |-
+  # Thông tin hệ thống
+  {env_info}
+
+  # Hướng dẫn đầy đủ của người dùng
+  {user_instruction}
+
+  # Mô tả bối cảnh
+  - Đây là kịch bản hội thoại giữa user và assistant, trong đó assistant có thể gọi công cụ để lấy thông tin và hoàn thành thao tác, kết quả trả về của công cụ sẽ bắt đầu bằng tool
+  - Bạn cần đánh giá xem hướng dẫn của người dùng đã được hoàn thành chưa, hướng dẫn đầy đủ của người dùng đã được chia nhỏ thành các điểm chấm rubric, bạn chỉ cần xác định xem mỗi điểm chấm có được đáp ứng không
+  - <trajectory_content> chứa nội dung hội thoại đầy đủ giữa user và assistant
+  - <current_rubrics> chứa trạng thái của tất cả các điểm chấm hiện tại (true biểu thị đã đáp ứng, false biểu thị chưa đáp ứng, trạng thái ban đầu của tất cả các điểm chấm đều là false)
+
+  # Nhiệm vụ
+  - Dựa trên nội dung hội thoại, cập nhật trạng thái của điểm chấm rubric
+  - Bạn có thể cập nhật trạng thái từ false sang true, khi và chỉ khi assistant đã hoàn thành mục tiêu đó trong hội thoại
+
+  # Lưu ý
+  - Quan trọng: Tất cả các đánh giá dựa trên việc phản hồi của assistant và yêu cầu gọi công cụ có hoàn thành mục tiêu trong rubric hay không, nội dung mà user biểu đạt trong hội thoại chỉ được coi là gợi ý và hướng dẫn cho assistant, không trực tiếp ảnh hưởng đến tiêu chuẩn đánh giá, mọi thứ đều dựa trên trường rubric!
+  - Quan trọng: Kết quả trả về của tool loại truy vấn chỉ hiển thị với assistant, không đại diện cho nội dung mà assistant khuyến nghị cho người dùng, do đó cũng không trực tiếp ảnh hưởng đến kết quả đánh giá, mọi thứ đều phải dựa trên phản hồi của assistant đối với người dùng sau khi lấy thông tin! Đồng thời cần lưu ý, Assistant cũng không được bịa đặt kết quả trả về của Tool!
+  - Quan trọng: Đối với rubric loại đơn hàng (liên quan đến chi tiết đơn hàng, bắt buộc phải tạo đơn hàng), phải xác nhận xem assistant có thực sự hoàn thành thao tác đặt hàng hay không. Có thể assistant nhầm tưởng đã hoàn thành thao tác đặt hàng, thực tế gọi công cụ thất bại; hoặc các trường hợp user biểu thị có thể "tự đặt hàng" đều nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các rubric liên quan đến chi tiết đơn hàng như số lượng hàng hóa, thời gian giao hàng, phải đáp ứng nghiêm ngặt yêu cầu rubric gốc (không được có sai lệch về số lượng hàng hóa, không được muộn hơn thời gian giao hàng mong đợi), hành vi thỏa hiệp của người dùng không ảnh hưởng đến kết quả đánh giá (ví dụ user biểu thị "ít món nào đó cũng được", "không có ý kiến gì về nội dung đơn hàng" hoặc "giao muộn chút cũng được" v.v.), những trường hợp này vẫn nên được coi là chưa đáp ứng yêu cầu
+  - Đối với các rubric loại địa chỉ hoặc ghi chú đơn hàng liên quan đến khớp nội dung văn bản, áp dụng nguyên tắc tương đương chức năng: Chỉ cần nội dung thực tế có thể thực hiện chức năng tương tự (ví dụ định vị sơ bộ địa điểm giao hàng hoặc truyền tải nhu cầu chính của khách hàng), ngay cả khi diễn đạt không hoàn toàn nhất quán hoặc thiếu một số chi tiết, cũng được coi là đáp ứng yêu cầu
+  - Trong justification, ghi lại thông tin quan trọng liên quan đến rubric hiện tại và vòng tương ứng [x] của nó dưới dạng bổ sung, nếu xảy ra sửa đổi trạng thái cũng cần ghi lại lý do, sử dụng ngôn ngữ ngắn gọn
+
+  # Yêu cầu định dạng
+  - Phản hồi của bạn phải là một đối tượng JSON, bao gồm các trường sau:
+  - `rubric_idx`: Định danh duy nhất của quy tắc
+  - `rubric`: Lời nhắc lại của quy tắc
+  - `justification`: Giải thích về sự thay đổi trạng thái
+  - `meetExpectation`: Trạng thái sau khi cập nhật (true hoặc false)
+
+  # Cấu trúc đầu vào mẫu:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Cấu trúc phản hồi mẫu:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Nhắc lại quy tắc>",
+        "justification": "<Giải thích ngắn gọn về sự thay đổi trạng thái, ghi lại dưới dạng bổ sung>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+malay: |-
+  # Maklumat Sistem
+  {env_info}
+
+  # Arahan Lengkap Pengguna
+  {user_instruction}
+
+  # Penerangan Latar Belakang
+  - Ini adalah senario perbualan antara user dan assistant, di mana assistant boleh memanggil alat untuk mendapatkan maklumat dan menyelesaikan operasi, hasil yang dikembalikan oleh alat akan bermula dengan tool
+  - Anda perlu menilai sama ada arahan pengguna telah diselesaikan, arahan lengkap pengguna telah dipecahkan kepada beberapa titik penilaian rubric, anda hanya perlu menentukan sama ada setiap titik penilaian dipenuhi
+  - <trajectory_content> mengandungi kandungan perbualan lengkap antara user dan assistant
+  - <current_rubrics> mengandungi status semua titik penilaian semasa (true bermaksud dipenuhi, false bermaksud tidak dipenuhi, status awal semua titik penilaian adalah false)
+
+  # Tugas
+  - Berdasarkan kandungan perbualan, kemaskini status titik penilaian rubric
+  - Anda boleh mengemaskini status daripada false kepada true, jika dan hanya jika assistant telah menyelesaikan tujuan tersebut dalam perbualan
+
+  # Perkara Perlu Diperhatikan
+  - Penting: Semua penilaian berdasarkan sama ada respons assistant dan permintaan panggilan alat telah menyelesaikan tujuan dalam rubric, kandungan yang dinyatakan oleh user dalam perbualan hanya dianggap sebagai petunjuk dan panduan untuk assistant, tidak akan mempengaruhi standard penilaian secara langsung, semuanya berdasarkan medan rubric!
+  - Penting: Hasil yang dikembalikan oleh alat jenis pertanyaan hanya boleh dilihat oleh assistant, tidak mewakili kandungan yang disyorkan oleh assistant kepada user, oleh itu juga tidak mempengaruhi hasil penilaian secara langsung, semuanya harus berdasarkan respons assistant kepada user setelah mendapatkan maklumat! Pada masa yang sama perlu diperhatikan, Assistant juga tidak boleh merekan hasil yang dikembalikan oleh Tool!
+  - Penting: Untuk rubric jenis pesanan (melibatkan butiran pesanan, mesti menjana pesanan), mesti mengesahkan sama ada assistant benar-benar telah menyelesaikan operasi penempahan. Ada kemungkinan assistant silap menganggap operasi penempahan telah selesai, sebenarnya panggilan alat gagal; atau user menyatakan boleh "tempah sendiri" dan sebagainya, semua keadaan ini harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk rubric yang melibatkan butiran pesanan seperti kuantiti barang, masa penghantaran, mesti memenuhi keperluan rubric asal secara ketat (tidak boleh ada penyimpangan kuantiti barang, tidak boleh lewat daripada masa penghantaran yang diharapkan), tindakan kompromi user tidak mempengaruhi hasil penilaian (contohnya user menyatakan "kurangkan sedikit barang tertentu juga boleh", "tiada bantahan terhadap kandungan pesanan" atau "hantar lewat juga boleh" dan sebagainya), keadaan jenis ini masih harus dianggap sebagai tidak memenuhi keperluan
+  - Untuk rubric jenis alamat atau nota pesanan yang melibatkan padanan kandungan teks, gunakan prinsip kesetaraan fungsi: selagi kandungan sebenar boleh melaksanakan fungsi yang sama (seperti menentukan lokasi penghantaran secara kasar atau menyampaikan keperluan utama pelanggan), walaupun ungkapan tidak sepenuhnya konsisten atau kekurangan beberapa butiran, juga dianggap memenuhi keperluan
+  - Dalam justification, rekod maklumat penting yang berkaitan dengan rubric semasa dan pusingan sepadannya [x] dalam bentuk tambahan, jika berlaku pengubahan status juga perlu merekodkan sebab, gunakan bahasa yang ringkas
+
+  # Keperluan Format
+  - Respons anda hendaklah menjadi objek JSON, mengandungi medan berikut:
+  - `rubric_idx`: Pengenal pasti unik untuk peraturan
+  - `rubric`: Penyataan semula peraturan
+  - `justification`: Penjelasan mengenai perubahan status
+  - `meetExpectation`: Status selepas dikemaskini (true atau false)
+
+  # Struktur Input Contoh:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Struktur Respons Contoh:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Nyatakan semula peraturan>",
+        "justification": "<Penjelasan ringkas perubahan status, direkodkan dalam bentuk tambahan>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+belarusian: |-
+  # Сістэмная інфармацыя
+  {env_info}
+
+  # Поўная інструкцыя карыстальніка
+  {user_instruction}
+
+  # Апісанне кантэксту
+  - Гэта сцэнарый дыялогу паміж user і assistant, дзе assistant можа выклікаць інструменты для атрымання інфармацыі і выканання аперацый; вынікі вяртання інструментаў будуць пачынацца з tool
+  - Вам неабходна ацаніць, ці была выканана інструкцыя карыстальніка; поўная інструкцыя карыстальніка была разбіта на некалькі крытэрыяў ацэнкі rubric, вам трэба толькі вызначыць, ці выкананы кожны крытэрый
+  - <trajectory_content> змяшчае поўны змест дыялогу паміж user і assistant
+  - <current_rubrics> змяшчае статус усіх бягучых крытэрыяў ацэнкі (true азначае выканана, false азначае не выканана, пачатковы статус усіх крытэрыяў - false)
+
+  # Задача
+  - На аснове зместу дыялогу абнавіце статус крытэрыяў ацэнкі rubric
+  - Вы можаце змяніць статус з false на true толькі тады, калі assistant выканаў гэтую мэту ў дыялогу
+
+  # Заўвагі
+  - Важна: Уся ацэнка грунтуецца на тым, ці адказы assistant і запыты выкліку інструментаў выконваюць мэты ў rubric; змест, выказаны user у дыялогу, разглядаецца толькі як падказка і кіраўніцтва для assistant і не ўплывае непасрэдна на крытэрыі ацэнкі; усё вызначаецца полем rubric!
+  - Важна: Вынікі, вернутыя інструментамі запыту (query tool), бачныя толькі assistant і не ўяўляюць сабой рэкамендаваны кантэнт ад assistant карыстальніку, таму яны таксама не ўплываюць непасрэдна на вынікі ацэнкі; усё павінна грунтавацца на адказе assistant карыстальніку пасля атрымання інфармацыі! Адносна гэтага таксама варта заўважыць, што assistant не павінен выдумляць вынікі вяртання інструментаў!
+  - Важна: Для rubric тыпу заказу (якія закранаюць дэталі заказу і патрабуюць стварэння заказу) неабходна пацвердзіць, ці сапраўды assistant выканаў аперацыю размяшчэння заказу. Магчыма, assistant памылкова лічыць, што заказ размешчаны, але на самой справе выклік інструмента не ўдаўся; або user заяўляе, што можа "зрабіць заказ самастойна" і г.д.; у такіх выпадках гэта павінна разглядацца як невыкананне патрабаванняў
+  - Для rubric, якія закранаюць дэталі заказу, такія як колькасць тавараў, час дастаўкі і г.д., неабходна строга выконваць першапачатковыя патрабаванні rubric (не павінна быць адхіленняў у колькасці тавараў, нельга спазняцца адносна чакаемага часу дастаўкі); паводзіны user, звязаныя з кампрамісам, не ўплываюць на вынікі ацэнкі (напрыклад, калі user кажа "менш тавару таксама падойдзе", " няма пярэчанняў да зместу заказу" або "можна даставіць пазней" і г.д.); у такіх выпадках гэта ўсё роўна павінна разглядацца як невыкананне патрабаванняў
+  - Для rubric тыпу адрасу або заўваг да заказу, якія закранаюць супадзенне тэкставага зместу, прымяняецца прынцып функцыянальнай эквівалентнасці: калі фактычны змест можа выконваць тую ж функцыю (напрыклад, прыблізнае вызначэнне месца дастаўкі або перадача асноўных патрабаванняў кліента), нават калі фармулёўка не цалкам супадае або адсутнічаюць некаторыя дэталі, гэта таксама разглядаецца як выкананне патрабаванняў
+  - У полі justification запішыце ў дадатковым парадку ключавую інфармацыю, звязаную з бягучым rubric, і адпаведны нумар ходу [x]; калі адбылася змена статусу, неабходна таксама запісаць прычыну, выкарыстоўваючы сціслую мову
+
+  # Патрабаванні да фармату
+  - Ваш адказ павінен быць аб'ектам JSON, які змяшчае наступныя палі:
+  - `rubric_idx`: унікальны ідэнтыфікатар правіла
+  - `rubric`: пераказ правіла
+  - `justification`: тлумачэнне змены статусу
+  - `meetExpectation`: абноўлены статус (true або false)
+
+  # Прыклад структуры ўводу:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Прыклад структуры адказу:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Пераказ правіла>",
+        "justification": "<Сціслае тлумачэнне змены статусу, запісанае ў дадатковым парадку>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+punjabi: |-
+  # ਸਿਸਟਮ ਜਾਣਕਾਰੀ
+  {env_info}
+
+  # ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼
+  {user_instruction}
+
+  # ਪਿਛੋਕੜ ਵੇਰਵਾ
+  - ਇਹ ਉਪਭੋਗਤਾ ਅਤੇ ਸਹਾਇਕ ਵਿਚਕਾਰ ਇੱਕ ਗੱਲਬਾਤ ਦਾ ਦ੍ਰਿਸ਼ ਹੈ, ਜਿੱਥੇ ਸਹਾਇਕ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਕਾਰਵਾਈਆਂ ਪੂਰੀਆਂ ਕਰਨ ਲਈ ਟੂਲਾਂ ਨੂੰ ਕਾਲ ਕਰ ਸਕਦਾ ਹੈ, ਟੂਲ ਦੇ ਨਤੀਜੇ tool ਨਾਲ ਸ਼ੁਰੂ ਹੋਣਗੇ
+  - ਤੁਹਾਨੂੰ ਇਹ ਮੁਲਾਂਕਣ ਕਰਨ ਦੀ ਲੋੜ ਹੈ ਕਿ ਕੀ ਉਪਭੋਗਤਾ ਦੇ ਨਿਰਦੇਸ਼ ਪੂਰੇ ਕੀਤੇ ਗਏ ਹਨ, ਉਪਭੋਗਤਾ ਦੇ ਪੂਰੇ ਨਿਰਦੇਸ਼ਾਂ ਨੂੰ ਕਈ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟਾਂ (rubric) ਵਿੱਚ ਵੰਡਿਆ ਗਿਆ ਹੈ, ਤੁਹਾਨੂੰ ਸਿਰਫ ਇਹ ਫੈਸਲਾ ਕਰਨ ਦੀ ਲੋੜ ਹੈ ਕਿ ਹਰੇਕ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟ ਪੂਰਾ ਹੋਇਆ ਹੈ ਜਾਂ ਨਹੀਂ
+  - <trajectory_content> ਵਿੱਚ ਉਪਭੋਗਤਾ ਅਤੇ ਸਹਾਇਕ ਵਿਚਕਾਰ ਪੂਰੀ ਗੱਲਬਾਤ ਸਮੱਗਰੀ ਸ਼ਾਮਲ ਹੈ
+  - <current_rubrics> ਵਿੱਚ ਵਰਤਮਾਨ ਸਾਰੇ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟਾਂ ਦੀ ਸਥਿਤੀ ਸ਼ਾਮਲ ਹੈ (true ਦਾ ਮਤਲਬ ਹੈ ਪੂਰਾ ਹੋਇਆ, false ਦਾ ਮਤਲਬ ਹੈ ਪੂਰਾ ਨਹੀਂ ਹੋਇਆ, ਸਾਰੇ ਸਕੋਰਿੰਗ ਪੁਆਇੰਟਾਂ ਦੀ ਸ਼ੁਰੂਆਤੀ ਸਥਿਤੀ false ਹੈ)
+
+  # ਕਾਰਜ
+  - ਗੱਲਬਾਤ ਸਮੱਗਰੀ ਦੇ ਆਧਾਰ 'ਤੇ, ਸਕੋਰਿੰਗ ਪੁਆਇੰਟ rubric ਦੀ ਸਥਿਤੀ ਨੂੰ ਅਪਡੇਟ ਕਰੋ
+  - ਤੁਸੀਂ ਸਥਿਤੀ ਨੂੰ false ਤੋਂ true ਵਿੱਚ ਅਪਡੇਟ ਕਰ ਸਕਦੇ ਹੋ, ਸਿਰਫ਼ ਅਤੇ ਸਿਰਫ਼ ਤਦ ਜਦੋਂ ਸਹਾਇਕ ਨੇ ਗੱਲਬਾਤ ਵਿੱਚ ਉਹ ਟੀਚਾ ਪੂਰਾ ਕੀਤਾ ਹੋਵੇ
+
+  # ਧਿਆਨ ਦੇਣ ਯੋਗ ਗੱਲਾਂ
+  - ਮਹੱਤਵਪੂਰਨ: ਸਾਰੇ ਮੁਲਾਂਕਣ ਇਸ ਗੱਲ 'ਤੇ ਨਿਰਭਰ ਕਰਦੇ ਹਨ ਕਿ ਕੀ ਸਹਾਇਕ ਦੇ ਜਵਾਬ ਅਤੇ ਟੂਲ ਕਾਲ ਬੇਨਤੀਆਂ ਨੇ rubric ਵਿੱਚ ਟੀਚਿਆਂ ਨੂੰ ਪੂਰਾ ਕੀਤਾ ਹੈ, ਗੱਲਬਾਤ ਵਿੱਚ ਉਪਭੋਗਤਾ ਦੁਆਰਾ ਪ੍ਰਗਟ ਕੀਤੀ ਗਈ ਸਮੱਗਰੀ ਨੂੰ ਸਿਰਫ ਸਹਾਇਕ ਲਈ ਸੰਕੇਤ ਅਤੇ ਮਾਰਗਦਰਸ਼ਨ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ, ਇਹ ਮੁਲਾਂਕਣ ਮਾਪਦੰਡਾਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦਾ, ਸਭ ਕੁਝ rubric ਫੀਲਡ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ!
+  - ਮਹੱਤਵਪੂਰਨ: ਖੋਜ ਵਰਗੇ tool ਦੇ ਨਤੀਜੇ ਸਿਰਫ ਸਹਾਇਕ ਲਈ ਦਿਖਾਈ ਦਿੰਦੇ ਹਨ, ਇਹ ਉਪਭੋਗਤਾ ਲਈ ਸਹਾਇਕ ਦੀਆਂ ਸਿਫਾਰਸ਼ਾਂ ਦੀ ਨੁਮਾਇੰਦਗੀ ਨਹੀਂ ਕਰਦੇ, ਇਸ ਲਈ ਇਹ ਮੁਲਾਂਕਣ ਨਤੀਜਿਆਂ ਨੂੰ ਸਿੱਧੇ ਤੌਰ 'ਤੇ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦੇ, ਸਭ ਕੁਝ ਸਹਾਇਕ ਦੁਆਰਾ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਤੋਂ ਬਾਅਦ ਉਪਭੋਗਤਾ ਨੂੰ ਦਿੱਤੇ ਗਏ ਜਵਾਬ 'ਤੇ ਨਿਰਭਰ ਕਰਦਾ ਹੈ! ਇਸ ਦੇ ਨਾਲ ਹੀ ਧਿਆਨ ਦੇਣਾ ਚਾਹੀਦਾ ਹੈ ਕਿ ਸਹਾਇਕ Tool ਦੇ ਨਤੀਜੇ ਗੜ੍ਹਨ ਵੀ ਨਹੀਂ ਸਕਦਾ!
+  - ਮਹੱਤਵਪੂਰਨ: ਆਰਡਰ ਵਰਗੇ rubric ਲਈ (ਜੋ ਆਰਡਰ ਦੇ ਵੇਰਵਿਆਂ ਨੂੰ ਸ਼ਾਮਲ ਕਰਦੇ ਹਨ, ਆਰਡਰ ਜਨਰੇਟ ਕਰਨਾ ਜ਼ਰੂਰੀ ਹੈ), ਇਹ ਪੁਸ਼ਟੀ ਕਰਨਾ ਜ਼ਰੂਰੀ ਹੈ ਕਿ ਕੀ ਸਹਾਇਕ ਨੇ ਵਾਸਤਵ ਵਿੱਚ ਆਰਡਰ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਪੂਰੀ ਕੀਤੀ ਹੈ। ਇਹ ਸੰਭਵ ਹੈ ਕਿ ਸਹਾਇਕ ਨੇ ਗਲਤੀ ਨਾਲ ਸੋਚਿਆ ਕਿ ਆਰਡਰ ਕਰਨ ਦੀ ਕਾਰਵਾਈ ਪੂਰੀ ਹੋ ਗਈ ਹੈ, ਅਸਲ ਵਿੱਚ ਟੂਲ ਕਾਲ ਅਸਫਲ ਰਹੀ; ਜਾਂ ਉਪਭੋਗਤਾ ਨੇ ਕਿਹਾ ਕਿ "ਖੁਦ ਆਰਡਰ ਕਰ ਸਕਦਾ ਹੈ" ਆਦਿ ਸਥਿਤੀਆਂ, ਇਹਨੂੰ ਸਾਰੀਆਂ ਨੂੰ ਲੋੜਾਂ ਪੂਰੀਆਂ ਨਾ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਆਰਡਰ ਦੇ ਵੇਰਵਿਆਂ ਜਿਵੇਂ ਕਿ ਉਤਪਾਦ ਦੀ ਮਾਤਰਾ, ਡਿਲੀਵਰੀ ਦੇ ਸਮੇਂ ਨਾਲ ਸਬੰਧਤ rubric ਲਈ, ਮੂਲ rubric ਲੋੜਾਂ ਨੂੰ ਸਖਤੀ ਨਾਲ ਪੂਰਾ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ (ਉਤਪਾਦ ਦੀ ਮਾਤਰਾ ਵਿੱਚ ਕੋਈ ਫਰਕ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ, ਉਮੀਦ ਕੀਤੇ ਡਿਲੀਵਰੀ ਸਮੇਂ ਤੋਂ ਬਾਅਦ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ), ਉਪਭੋਗਤਾ ਦੀ ਸਮਝੌਤੇ ਵਾਲੀ ਵਿਵਹਾਰ ਮੁਲਾਂਕਣ ਨਤੀਜਿਆਂ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਨਹੀਂ ਕਰਦਾ (ਉਦਾਹਰਣ ਵਜੋਂ ਉਪਭੋਗਤਾ ਨੇ ਕਿਹਾ "ਕੁਝ ਉਤਪਾਦ ਘੱਟ ਵੀ ਚੱਲੇਗਾ", "ਆਰਡਰ ਸਮੱਗਰੀ 'ਤੇ ਕੋਈ ਇਤਰਾਜ਼ ਨਹੀਂ" ਜਾਂ "ਬਾਅਦ ਵਿੱਚ ਡਿਲੀਵਰੀ ਚੱਲੇਗੀ" ਆਦਿ), ਅਜਿਹੀਆਂ ਸਥਿਤੀਆਂ ਨੂੰ ਅਜੇ ਵੀ ਲੋੜਾਂ ਪੂਰੀਆਂ ਨਾ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਣਾ ਚਾਹੀਦਾ ਹੈ
+  - ਟੈਕਸਟ ਸਮੱਗਰੀ ਮੈਚਿੰਗ ਪਤੇ ਜਾਂ ਆਰਡਰ ਨੋਟਸ ਵਰਗੇ rubric ਲਈ, ਕਾਰਜਾਤਮਕ ਬਰਾਬਰਤਾ ਦੇ ਸਿਧਾਂਤ ਦੀ ਵਰਤੋਂ ਕਰੋ: ਜੇਕਰ ਅਸਲ ਸਮੱਗਰੀ ਇੱਕੋ ਜਿਹਾ ਕਾਰਜ ਪ੍ਰਾਪਤ ਕਰ ਸਕਦੀ ਹੈ (ਜਿਵੇਂ ਕਿ ਡਿਲੀਵਰੀ ਸਥਾਨ ਦਾ ਮੋਟੇ ਤੌਰ 'ਤੇ ਪਤਾ ਲਗਾਉਣਾ ਜਾਂ ਗਾਹਕ ਦੀਆਂ ਮੁੱਖ ਲੋੜਾਂ ਨੂੰ ਸੰਚਾਰਿਤ ਕਰਨਾ), ਭਾਵੇਂ ਬਿਆਨ ਪੂਰੀ ਤਰ੍ਹਾਂ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ ਜਾਂ ਕੁਝ ਵੇਰਵੇ ਗੁੰਮ ਹਨ, ਇਸਨੂੰ ਲੋੜਾਂ ਪੂਰੀਆਂ ਹੋਣ ਵਜੋਂ ਮੰਨਿਆ ਜਾਂਦਾ ਹੈ
+  - justification ਵਿੱਚ ਵਰਤਮਾਨ rubric ਨਾਲ ਸਬੰਧਤ ਮੁੱਖ ਜਾਣਕਾਰੀ ਅਤੇ ਇਸਦੇ ਅਨੁਰੂਪ ਰਾਉਂਡ [x] ਨੂੰ ਜੋੜਨ ਦੇ ਰੂਪ ਵਿੱਚ ਦਰਜ ਕਰੋ, ਜੇਕਰ ਸਥਿਤੀ ਵਿੱਚ ਬਦਲਾਵ ਹੁੰਦਾ ਹੈ ਤਾਂ ਕਾਰਨ ਵੀ ਦਰਜ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ, ਸੰਖੇਪ ਭਾਸ਼ਾ ਦੀ ਵਰਤੋਂ ਕਰੋ
+
+  # ਫਾਰਮੈਟ ਲੋੜਾਂ
+  - ਤੁਹਾਡਾ ਜਵਾਬ ਇੱਕ JSON ਆਬਜੈਕਟ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ, ਜਿਸ ਵਿੱਚ ਹੇਠ ਲਿਖੇ ਫੀਲਡ ਸ਼ਾਮਲ ਹਨ:
+  - `rubric_idx`: ਨਿਯਮ ਦਾ ਅਨੋਖਾ ਪਛਾਣਕਰਤਾ
+  - `rubric`: ਨਿਯਮ ਦਾ ਦੁਹਰਾਓ
+  - `justification`: ਸਥਿਤੀ ਵਿੱਚ ਬਦਲਾਵ ਦੀ ਵਿਆਖਿਆ
+  - `meetExpectation`: ਅਪਡੇਟ ਕੀਤੀ ਗਈ ਸਥਿਤੀ (true ਜਾਂ false)
+
+  # ਉਦਾਹਰਣ ਇਨਪੁਟ ਬਣਤਰ:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # ਉਦਾਹਰਣ ਜਵਾਬ ਬਣਤਰ:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ਨਿਯਮ ਦਾ ਦੁਹਰਾਓ>",
+        "justification": "<ਸਥਿਤੀ ਬਦਲਾਵ ਦੀ ਸੰਖੇਪ ਵਿਆਖਿਆ, ਜੋੜਨ ਦੇ ਰੂਪ ਵਿੱਚ ਦਰਜ ਕੀਤੀ ਗਈ>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+kazakh: |-
+  # Жүйе ақпараты
+  {env_info}
+
+  # Пайдаланушының толық нұсқаулығы
+  {user_instruction}
+
+  # Аялық ақпарат
+  - Бұл пайдаланушы мен ассистент арасындағы сұхбат сценарийі, мұнда ассистент ақпарат алу және әрекеттерді орындау үшін құралдарды шақыра алады, құралдың қайтару нәтижесі tool сөзімен басталады
+  - Сіз пайдаланушы нұсқаулығының орындалғанын бағалауыңыз керек, пайдаланушының толық нұсқаулығы бірнеше бағалау критерийлеріне (rubric) бөлінген, сіз тек әрбір критерийдің орындалғанын анықтауыңыз керек
+  - <trajectory_content> пайдаланушы мен ассистент арасындағы толық сұхбат мазмұнын қамтиды
+  - <current_rubrics> барлық ағымдағы критерийлердің күйін қамтиды (true орындалғанын білдіреді, false орындалмағанын білдіреді, барлық критерийлердің бастапқы күйі false)
+
+  # Тапсырма
+  - Сұхбат мазмұнына сүйене отырып, бағалау критерийлерінің (rubric) күйін жаңартыңыз
+  - Сіз күйді false-тан true-ға өзгерте аласыз, тек қана ассистент сұхбат барысында сол мақсатты орындаған жағдайда ғана
+
+  # Назар аудару қажет
+  - Маңызды: Барлық бағалаулар ассистенттің жауаптары мен құрал шақыру сұраныстарының критерийдегі (rubric) мақсаттарды орындағанына негізделеді, пайдаланушының сұхбатта айтқандары тек ассистентке кеңес пен бағыт беру ретінде қарастырылады, бағалау стандарттарына тікелей әсер етпейді, бәрі критерий (rubric) өрісіне негізделеді!
+  - Маңызды: Іздеу түріндегі құралдардың (tool) қайтарған нәтижелері тек ассистентке көрінеді, бұл ассистенттің пайдаланушыға ұсынған мазмұнын білдірмейді, сондықтан ол бағалау нәтижесіне тікелей әсер етпейді, бәрі ассистенттің ақпарат алғаннан кейін пайдаланушыға берген жауабына негізделеді! Сонымен қатар, Ассистент Құралдың (Tool) қайтару нәтижелерін ойлап табуы мүмкін емес екенін есте сақтаңыз!
+  - Маңызды: Тапсырыс түріндегі критерийлер үшін (тапсырыс детальдарын қамтитын, тапсырыс жасау міндетті түрде қажет), ассистенттің тапсырыс жасау әрекетін шынымен орындағанын растау қажет. Ассистент тапсырыс жасалды деп қате түсінуі мүмкін, шын мәнінде құрал шақыруы сәтсіз аяқталуы мүмкін; немесе пайдаланушы «өзім тапсырыс бере аламын» деп айтуы мүмкін; мұндай жағдайлардың барлығы талап орындалмаған деп саналады
+  - Тауар саны, жеткізу уақыты сияқты тапсырыс детальдарын қамтитын критерийлер үшін бастапқы критерий (rubric) талаптары қатаң орындалуы керек (тауар санында ауытқу болмауы керек, күтілген жеткізу уақытынан кешіктірілмеуі керек), пайдаланушының келісімге келу әрекеті бағалау нәтижесіне әсер етпейді (мысалы, пайдаланушы «кейбір тауарлар аз болса да болады», «тапсырыс мазмұнына қарсы емеспін» немесе «кешірек жеткізілсе де болады» деп айтса), мұндай жағдайлар әлі де талап орындалмаған деп саналуы керек
+  - Мәтін мазмұны сәйкестігін қамтитын мекенжай немесе тапсырыс ескертпелері түріндегі критерийлер үшін функционалды балама принципі қолданылады: егер нақты мазмұн бірдей функцияны орындаса (мысалы, жеткізу орнын шамамен анықтау немесе тұтынушының негізгі қажеттіліктерін жеткізу), тіпті тұжырымдама толық сәйкес келмесе немесе кейбір детальдар жоқ болса да, талап орындалған деп саналады
+  - justification өрісінде ағымдағы критерийге (rubric) қатысты негізгі ақпарат пен оған сәйкес келетін кезеңді [x] қосу түрінде жазыңыз, егер күй өзгерсе, себепті де жазу қажет, қысқа әрі нұсқа тілді қолданыңыз
+
+  # Пішім талаптары
+  - Сіздің жауабыңыз JSON объектісі болуы керек, келесі өрістерді қамтиды:
+  - `rubric_idx`: Ереженің бірегей идентификаторы
+  - `rubric`: Ереженің қайталануы
+  - `justification`: Күй өзгерісінің түсіндірмесі
+  - `meetExpectation`: Жаңартылған күй (true немесе false)
+
+  # Үлгі кіріс құрылымы:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # Үлгі жауап құрылымы:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<Ережені қайталау>",
+        "justification": "<Күй өзгерісінің қысқаша түсіндірмесі, қосу түрінде жазылады>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+khmer: |-
+  # ព័ត៌មានប្រព័ន្ធ
+  {env_info}
+
+  # ការណែនាំពេញលេញពីអ្នកប្រើប្រាស់
+  {user_instruction}
+
+  # ការពន្យល់ផ្ទៃខាងក្រោយ
+  - នេះគឺជាឆាកនៃការសន្ទនារវាងអ្នកប្រើប្រាស់ (user) និងជំនួយការ (assistant) ដែលជំនួយការអាចហៅឧបករណ៍ (tool) ដើម្បីទទួលបានព័ត៌មាន និងអនុវត្តប្រតិបត្តិការ លទ្ធផលដែលត្រឡប់មកពីឧបករណ៍នឹងចាប់ផ្តើមដោយ tool
+  - អ្នកត្រូវវាយតម្លៃថាតើការណែនាំពីអ្នកប្រើប្រាស់ត្រូវបានបំពេញឬអត់ ការណែនាំពេញលេញពីអ្នកប្រើប្រាស់ត្រូវបានបំបែកជាចំណុចផ្តល់ពិន្ទុ (rubric) ជាច្រើន អ្នកគ្រាន់តែត្រូវវិនិច្ឆ័យថាតើចំណុចផ្តល់ពិន្ទុនីមួយៗត្រូវបានបំពេញឬអត់
+  - <trajectory_content> មានផ្ទុកនូវខ្លឹមសារនៃការសន្ទនាពេញលេញរវាងអ្នកប្រើប្រាស់ និងជំនួយការ
+  - <current_rubrics> មានផ្ទុកនូវស្ថានភាពនៃចំណុចផ្តល់ពិន្ទុទាំងអស់នៅបច្ចុប្បន្ន (true មានន័យថាបានបំពេញ, false មានន័យថាមិនបានបំពេញ, ស្ថានភាពដើមនៃចំណុចផ្តល់ពិន្ទុទាំងអស់គឺ false)
+
+  # ភារកិច្ច
+  - ផ្អែកលើខ្លឹមសារនៃការសន្ទនា ធ្វើបច្ចុប្បន្នភាពស្ថានភាពនៃចំណុចផ្តល់ពិន្ទុ (rubric)
+  - អ្នកអាចផ្លាស់ប្តូរស្ថានភាពពី false ទៅ true លុះត្រាតែជំនួយការបានបំពេញគោលដៅនោះក្នុងការសន្ទនា
+
+  # ចំណុចគួរកត់សម្គាល់
+  - សំខាន់៖ ការវាយតម្លៃទាំងអស់ផ្អែកលើការឆ្លើយតបរបស់ជំនួយការ និងការហៅឧបករណ៍ថាតើបានបំពេញគោលដៅក្នុង rubric ឬអត់ ខ្លឹមសារដែលអ្នកប្រើប្រាស់បង្ហាញក្នុងការសន្ទនាគ្រាន់តែចាត់ទុកជាគន្លឹះ និងការណែនាំដល់ជំនួយការ វានឹងមិនប៉ះពាល់ដោយផ្ទាល់ដល់ស្តង់ដារវាយតម្លៃឡើយ អ្វីៗទាំងអស់ត្រូវផ្អែកលើវាល rubric!
+  - សំខាន់៖ លទ្ធផលដែលត្រឡប់មកពីឧបករណ៍ប្រភេទស្វែងរក (query tool) គឺមើលឃើញតែចំពោះជំនួយការប៉ុណ្ណោះ វាមិនមែនតំណាងឱ្យខ្លឹមសារដែលជំនួយការណែនាំដល់អ្នកប្រើប្រាស់នោះទេ ដូច្នេះវាក៏មិនប៉ះពាល់ដោយផ្ទាល់ដល់លទ្ធផលវាយតម្លៃដែរ អ្វីៗទាំងអស់ត្រូវផ្អែកលើការឆ្លើយតបរបស់ជំនួយការចំពោះអ្នកប្រើប្រាស់បន្ទាប់ពីទទួលបានព័ត៌មាន! ក្នុងពេលតែមួយ ត្រូវកត់សម្គាល់ថា ជំនួយការក៏មិនអាចបង្កើតលទ្ធផលត្រឡប់មកពីឧបករណ៍ (Tool) បានដែរ!
+  - សំខាន់៖ ចំពោះ rubric ប្រភេទកុម្ម៉ង់ (ពាក់ព័ន្ធនឹងលម្អិតកុម្ម៉ង់ ត្រូវតែបង្កើតកុម្ម៉ង់) ត្រូវតែបញ្ជាក់ថាតើជំនួយការបានបំពេញការដាក់កុម្ម៉ង់ជាក់ស្តែងឬអត់។ វាអាចកើតឡើងដែលជំនួយការយល់ច្រឡំថាបានបំពេញការដាក់កុម្ម៉ង់ហើយ តែការហៅឧបករណ៍ជាក់ស្តែងបានបរាជ័យ; ឬអ្នកប្រើប្រាស់បង្ហាញថាអាច "ដាក់កុម្ម៉ង់ដោយខ្លួនឯងបាន" ជាដើម ក្រណីទាំងនេះគួរតែចាត់ទុកថាមិនបានបំពេញតម្រូវការ
+  - ចំពោះ rubric ដែលពាក់ព័ន្ធនឹងលម្អិតកុម្ម៉ង់ដូចជា ចំនួនទំនិញ ពេលវេលាដឹកជញ្ជូន ត្រូវតែបំពេញតាមតម្រូវការ rubric ដើមឱ្យបានតឹងរ៉ឹង (មិនអាចមានគម្លាតចំនួនទំនិញ មិនអាចយឺតជាងពេលវេលាដឹកជញ្ជូនដែលរំពឹងទុក) ការសម្របសម្រួលរបស់អ្នកប្រើប្រាស់មិនប៉ះពាល់ដល់លទ្ធផលវិនិច្ឆ័យឡើយ (ឧទាហរណ៍ អ្នកប្រើប្រាស់បង្ហាញថា "ទំនិញមួយចំនួនតិចតួចក៏បាន", "មិនមានជំទាស់នឹងខ្លឹមសារកុម្ម៉ង់" ឬ "ដឹកជញ្ជូនយឺតបន្តិចក៏បាន" ជាដើម) ក្រណីបែបនេះនៅតែគួរចាត់ទុកថាមិនបានបំពេញតម្រូវការ
+  - ចំពោះ rubric ប្រភេទអាសយដ្ឋាន ឬកំណត់សម្គាល់កុម្ម៉ង់ដែលពាក់ព័ន្ធនឹងការផ្គូផ្គងខ្លឹមសារអត្ថបទ ត្រូវអនុវត្តតាមគោលការណ៍សមមូលតាមមុខងារ៖ ត្រឹមតែខ្លឹមសារជាក់ស្តែងអាចសម្រេចបាននូវមុខងារដូចគ្នា (ដូចជាការកំណត់ទីតាំងដឹកជញ្ជូនជាទូទៅ ឬការបញ្ជូនតម្រូវការចម្បងរបស់អតិថិជន) ទោះបីជាការបង្ហាញមិនដូចគ្នាទាំងស្រុង ឬខ្វះលម្អិតខ្លះក៏ដោយ ក៏ចាត់ទុកថាបានបំពេញតម្រូវការដែរ
+  - ក្នុង justification ត្រូវកត់ត្រាព័ត៌មានសំខាន់ៗដែលពាក់ព័ន្ធនឹង rubric បច្ចុប្បន្ន និងវគ្គដែលត្រូវគ្នា [x] ជាទម្រង់បន្ថែម ប្រសិនបើមានការផ្លាស់ប្តូរស្ថានភាព ក៏ត្រូវកត់ត្រាមូលហេតុផងដែរ ដោយប្រើភាសាខ្លីៗ
+
+  # តម្រូវការទម្រង់
+  - ការឆ្លើយតបរបស់អ្នកគួរតែជាវត្ថុ JSON មួយ ដែលមានវាលដូចខាងក្រោម៖
+  - `rubric_idx`៖ ឧបករណ៍សម្គាល់តែមួយគត់នៃវិធាន
+  - `rubric`៖ ការរៀបរាប់ឡើងវិញនៃវិធាន
+  - `justification`៖ ការពន្យល់អំពីការផ្លាស់ប្តូរស្ថានភាព
+  - `meetExpectation`៖ ស្ថានភាពបន្ទាប់ពីធ្វើបច្ចុប្បន្នភាព (true ឬ false)
+
+  # រចនាសម្ព័ន្ធអ៊ីនបុតឧទាហរណ៍៖
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # រចនាសម្ព័ន្ធការឆ្លើយតបឧទាហរណ៍៖
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ការរៀបរាប់ឡើងវិញនៃវិធាន>",
+        "justification": "<ការពន្យល់សង្ខេបអំពីការផ្លាស់ប្តូរស្ថានភាព កត់ត្រាជាទម្រង់បន្ថែម>",
+        "meetExpectation": <true ឬ false>
+    }},
+    ...
+  ]
+  ```
+burmese: |-
+  # စနစ်ဆိုင်ရာ အချက်အလက်
+  {env_info}
+
+  # အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်
+  {user_instruction}
+
+  # နောက်ခံရှင်းလင်းချက်
+  - ၎င်းသည် user နှင့် assistant အကြား ဆွေးနွေးမှုပုံစံဖြစ်ပြီး assistant သည် အချက်အလက်ရယူရန်နှင့် လုပ်ဆောင်ချက်များ ပြီးမြောက်စေရန် ကိရိယာများကို ခေါ်ယူအသုံးပြုနိုင်ကာ ကိရိယာမှ ပြန်လည်ပေးပို့သော ရလဒ်များသည် tool ဖြင့် စတင်ပါမည်
+  - သင်သည် အသုံးပြုသူ၏ ညွှန်ကြားချက် ပြီးမြောက်မှုရှိမရှိ အကဲဖြတ်ရမည်ဖြစ်ပြီး အသုံးပြုသူ၏ လုံးဝညွှန်ကြားချက်ကို အမှတ်ရယူနိုင်သည့် အချက်များ (rubric) အဖြစ် ပိုင်းခြားထားသည်၊ သင်သည် အမှတ်ရယူနိုင်သည့် အချက်တစ်ခုချင်းစီ ပြည့်မီမှုရှိမရှိကိုသာ ဆုံးဖြတ်ရမည်
+  - <trajectory_content> တွင် user နှင့် assistant အကြား ဆွေးနွေးမှုအကြောင်းအရာ လုံးဝပါဝင်သည်
+  - <current_rubrics> တွင် လက်ရှိအမှတ်ရယူနိုင်သည့် အချက်အားလုံး၏ အခြေအနေများ ပါဝင်သည် (true သည် ပြည့်မီကြောင်း၊ false သည် မပြည့်မီကြောင်း ဖော်ပြပြီး အမှတ်ရယူနိုင်သည့် အချက်အားလုံး၏ ကနဦးအခြေအနေမှာ false ဖြစ်သည်)
+
+  # လုပ်ငန်းတာဝန်
+  - ဆွေးနွေးမှုအကြောင်းအရာအပေါ် အခြေခံ၍ အမှတ်ရယူနိုင်သည့် အချက် (rubric) ၏ အခြေအနေကို အပ်ဒိတ်လုပ်ပါ
+  - assistant သည် ဆွေးနွေးမှုတွင် ထိုရည်မှန်းချက်ကို ပြီးမြောက်စေခဲ့သည်ဆိုပါကသာ သင်သည် အခြေအနေကို false မှ true သို့ အပ်ဒိတ်လုပ်နိုင်သည်
+
+  # သတိပြုရန် အချက်များ
+  - အရေးကြီးသည် - အကဲဖြတ်မှုအားလုံးသည် assistant ၏ ပြန်လည်ဖြေကြားချက်နှင့် ကိရိယာခေါ်ယူမှုဆိုင်ရာ တောင်းဆိုချက်များက rubric ရှိ ရည်မှန်းချက်များကို ပြီးမြောက်စေခြင်းရှိမရှိအပေါ် အခြေခံသည်၊ user က ဆွေးနွေးမှုတွင် ဖော်ပြသော အကြောင်းအရာများကို assistant အတွက် အကြံပြုချက်နှင့် လမ်းညွှန်မှုများအဖြစ်သာ သတ်မှတ်ပြီး အကဲဖြတ်မှုစံနှုန်းများကို တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် rubric ဖီးလ်ဒ်အပေါ်တွင်သာ မူတည်သည်!
+  - အရေးကြီးသည် - မေးမြန်းခြင်းဆိုင်ရာ tool မှ ပြန်လည်ပေးပို့သော ရလဒ်များသည် assistant အတွက်သာ မြင်တွေ့နိုင်ပြီး assistant က user အား အကြံပြုသော အကြောင်းအရာကို ကိုယ်စားမပြုပါ၊ ထို့ကြောင့် အကဲဖြတ်မှုရလဒ်ကိုလည်း တိုက်ရိုက်မသက်ရောက်စေပါ၊ အားလုံးသည် assistant က အချက်အလက်ရယူပြီးနောက် user အား ပြန်လည်ဖြေကြားချက်အပေါ်တွင်သာ မူတည်သည်! ထို့အပြင် Assistant သည် Tool ၏ ပြန်လည်ပေးပို့သော ရလဒ်များကိုလည်း တီထွင်ဖန်တီး၍ မရနိုင်ကြောင်း သတိပြုရမည်!
+  - အရေးကြီးသည် - အော်ဒါအမျိုးအစား rubric များအတွက် (အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်ပြီး အော်ဒါတင်ရန် လိုအပ်သော)၊ assistant သည် အော်ဒါတင်ခြင်းလုပ်ဆောင်ချက်ကို တကယ်ပင် ပြီးမြောက်စေခဲ့ခြင်းရှိမရှိ အတည်ပြုရမည်။ assistant သည် အော်ဒါတင်ခြင်းလုပ်ဆောင်ချက် ပြီးမြောက်ခဲ့သည်ဟု အမှားယွင်းစွာ ယူဆနိုင်ပြီး တကယ်တမ်းတွင် ကိရိယာခေါ်ယူမှု ကျရှုံးနိုင်သည်؛ သို့မဟုတ် user က "မိမိဘာသာ အော်ဒါတင်နိုင်သည်" ဟု ညွှန်ပြသော အခြေအနေများကိုလည်း လိုအပ်ချက်မပြည့်မီဟု သတ်မှတ်ရမည်
+  - ကုန်ပစ္စည်းအရေအတွက်၊ ပို့ဆောင်ပေးမည့်အချိန်ကဲ့သို့သော အော်ဒါအသေးစိတ်အချက်အလက်များ ပါဝင်သည့် rubric များအတွက် မူလ rubric လိုအပ်ချက်များကို တိတိကျကျ ပြည့်မီစေရမည် (ကုန်ပစ္စည်းအရေအတွက် ကွဲလွဲမှုမရှိရ၊ မျှော်လင့်ထားသော ပို့ဆောင်ပေးမည့်အချိန်ထက် နောက်ကျမရ)၊ user ၏ လျှော့ပေးသော အပြုအမူများသည် အကဲဖြတ်မှုရလဒ်ကို မသက်ရောက်စေပါ (ဥပမာ - user က "ပစ္စည်းတစ်ခုခု နည်းနည်းလျှော့လည်းရသည်"၊ "အော်ဒါအကြောင်းအရာကို သဘောမတူညီချက်မရှိ" သို့မဟုတ် "နောက်ကျပို့ဆောင်လည်းရသည်" ဟု ပြောဆိုခြင်းများ)၊ ထိုကဲ့သို့သော အခြေအနေများကို လိုအပ်ချက်မပြည့်မီဟုသာ ဆက်လက်သတ်မှတ်ရမည်
+  - စာသားအကြောင်းအရာ ကိုက်ညီမှုပါဝင်သော လိပ်စာ သို့မဟုတ် အော်ဒါမှတ်ချက်အမျိုးအစား rubric များအတွက် လုပ်ဆောင်ချက်ညီမျှမှုမူဝါဒကို အသုံးပြုပါ - လက်တွေ့အကြောင်းအရာသည် တူညီသောလုပ်ဆောင်ချက်ကို ဆောင်ရွက်နိုင်ပါက (ဥပမာ - ပို့ဆောင်မည့်နေရာကို ခန့်မှန်းတွက်ချက်နိုင်ခြင်း သို့မဟုတ် ဝယ်ယူသူ၏ အဓိကလိုအပ်ချက်များကို ဆက်သွယ်ပေးနိုင်ခြင်း)၊ ဖော်ပြချက်သည် လုံးဝတူညီခြင်းမရှိဘဲ သို့မဟုတ် အသေးစိတ်အချက်အလက်များ လိုအပ်နေပါကလည်း လိုအပ်ချက်ပြည့်မီသည်ဟု သတ်မှတ်ပါ
+  - justification တွင် လက်ရှိ rubric နှင့် သက်ဆိုင်သော အဓိကအချက်အလက်များနှင့် ၎င်းတို့၏ သက်ဆိုင်ရာအလှည့် [x] ကို ဖြည့်စွက်မှတ်တမ်းတင်ပါ၊ အကယ်၍ အခြေအနေပြောင်းလဲမှုဖြစ်ပေါ်ပါက အကြောင်းရင်းကိုလည်း မှတ်တမ်းတင်ရမည်ဖြစ်ပြီး တိုတိုနှင့်ရှင်းလင်းသော ဘာသာစကားကို အသုံးပြုပါ
+
+  # ပုံစံလိုအပ်ချက်များ
+  - သင်၏ ပြန်လည်ဖြေကြားချက်သည် အောက်ပါဖီးလ်ဒ်များ ပါဝင်သော JSON အရာဝတ္ထုတစ်ခု ဖြစ်သင့်သည် -
+  - `rubric_idx` - စည်းမျဉ်း၏ ထူးခြားသော အမှတ်အသား
+  - `rubric` - စည်းမျဉ်းကို ပြန်လည်ဖော်ပြချက်
+  - `justification` - အခြေအနေပြောင်းလဲမှုအတွက် ရှင်းလင်းချက်
+  - `meetExpectation` - အပ်ဒိတ်လုပ်ပြီးနောက် အခြေအနေ (true သို့မဟုတ် false)
+
+  # နမူနာ အင်ပုတ်ပုံစံ -
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # နမူနာ ပြန်လည်ဖြေကြားချက်ပုံစံ -
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<စည်းမျဉ်းကို ပြန်လည်ဖော်ပြချက်>",
+        "justification": "<အခြေအနေပြောင်းလဲမှုအတွက် အကျဉ်းချုပ်ရှင်းလင်းချက်၊ ဖြည့်စွက်မှတ်တမ်းတင်သောပုံစံဖြင့်>",
+        "meetExpectation": <true သို့မဟုတ် false>
+    }},
+    ...
+  ]
+  ```
+lao: |-
+  # ຂໍ້ມູນລະບົບ
+  {env_info}
+
+  # ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້
+  {user_instruction}
+
+  # ຄຳອະທິບາຍພື້ນຖານ
+  - ນີ້ແມ່ນສະຖານະການການສົນທະນາລະຫວ່າງ user ແລະ assistant, ບ່ອນທີ່ assistant ສາມາດເອີ້ນໃຊ້ເຄື່ອງມືເພື່ອດຶງຂໍ້ມູນ ແລະ ດຳເນີນການ, ຜົນທີ່ໄດ້ຮັບຈາກເຄື່ອງມືຈະເລີ່ມຕົ້ນດ້ວຍ tool
+  - ທ່ານຕ້ອງປະເມີນວ່າຄຳສັ່ງຂອງຜູ້ໃຊ້ໄດ້ຖືກປະຕິບັດສຳເລັດຫຼືບໍ່, ຄຳສັ່ງເຕັມຂອງຜູ້ໃຊ້ໄດ້ຖືກແຍກອອກເປັນຈຸດໃຫ້ຄະແນນ rubric ຈຳນວນໜຶ່ງ, ທ່ານພຽງແຕ່ຕ້ອງຕັດສິນວ່າແຕ່ລະຈຸດໃຫ້ຄະແນນໄດ້ຖືກຕອບສະໜອງຫຼືບໍ່
+  - <trajectory_content> ປະກອບມີເນື້ອຫາການສົນທະນາເຕັມລະຫວ່າງ user ແລະ assistant
+  - <current_rubrics> ປະກອບມີສະຖານະຂອງຈຸດໃຫ້ຄະແນນທັງໝົດໃນປະຈຸບັນ (true ໝາຍຄວາມວ່າໄດ້ຖືກຕອບສະໜອງແລ້ວ, false ໝາຍຄວາມວ່າຍັງບໍ່ທັນໄດ້ຖືກຕອບສະໜອງ, ສະຖານະເບື້ອງຕົ້ນຂອງຈຸດໃຫ້ຄະແນນທັງໝົດແມ່ນ false)
+
+  # ພາລະກິດ
+  - ອີງໃສ່ເນື້ອຫາການສົນທະນາ, ອັບເດດສະຖານະຂອງຈຸດໃຫ້ຄະແນນ rubric
+  - ທ່ານສາມາດປ່ຽນສະຖານະຈາກ false ເປັນ true, ກໍຕໍ່ເມື່ອ assistant ໄດ້ດຳເນີນການຕາມເປົ້າໝາຍນັ້ນໃນການສົນທະນາແລ້ວເທົ່ານັ້ນ
+
+  # ຂໍ້ຄວນລະວັງ
+  - ສຳຄັນ: ການປະເມີນທັງໝົດອີງໃສ່ວ່າຄຳຕອບຂອງ assistant ແລະ ການເອີ້ນໃຊ້ເຄື່ອງມືໄດ້ບັນລຸເປົ້າໝາຍໃນ rubric ຫຼືບໍ່, ເນື້ອຫາທີ່ user ສະແດງອອກໃນການສົນທະນາຖືເປັນພຽງຄຳແນະນຳ ແລະ ການຊີ້ນຳໃຫ້ assistant, ຈະບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ມາດຕະຖານການປະເມີນ, ທຸກຢ່າງອີງໃສ່ຖານຂໍ້ມູນ rubric ເປັນຫຼັກ!
+  - ສຳຄັນ: ຜົນທີ່ໄດ້ຮັບຈາກເຄື່ອງມືປະເພດຄົ້ນຫາ ຈະເຫັນໄດ້ສະເພາະ assistant ເທົ່ານັ້ນ, ບໍ່ໄດ້ໝາຍຄວາມວ່າເປັນເນື້ອຫາທີ່ assistant ແນະນຳໃຫ້ຜູ້ໃຊ້, ດັ່ງນັ້ນຈຶ່ງບໍ່ສົ່ງຜົນກະທົບໂດຍກົງຕໍ່ຜົນການປະເມີນ, ທຸກຢ່າງຕ້ອງອີງໃສ່ຄຳຕອບຂອງ assistant ຕໍ່ຜູ້ໃຊ້ຫຼັງຈາກໄດ້ຮັບຂໍ້ມູນແລ້ວ! ພ້ອມກັນນັ້ນຕ້ອງລະວັງ, Assistant ກໍບໍ່ສາມາດແຕ່ງຂໍ້ມູນຜົນທີ່ໄດ້ຮັບຈາກ Tool ເອງໄດ້!
+  - ສຳຄັນ: ສຳລັບ rubric ປະເພດຄຳສັ່ງຊື້ (ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້, ຕ້ອງສ້າງຄຳສັ່ງຊື້), ຕ້ອງຢືນຢັນວ່າ assistant ໄດ້ດຳເນີນການສັ່ງຊື້ຈິງໆຫຼືບໍ່. ມັນອາດຈະເກີດຂຶ້ນໄດ້ທີ່ assistant ຄິດວ່າໄດ້ສັ່ງຊື້ແລ້ວ, ແຕ່ຕົວຈິງແລ້ວການເອີ້ນໃຊ້ເຄື່ອງມືລົ້ມເຫຼວ; ຫຼື user ບອກວ່າ "ສາມາດສັ່ງຊື້ເອງໄດ້" ແລະອື່ນໆ, ກໍຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບ rubric ທີ່ກ່ຽວຂ້ອງກັບລາຍລະອຽດຄຳສັ່ງຊື້ ເຊັ່ນ: ຈຳນວນສິນຄ້າ, ເວລາສົ່ງ, ຕ້ອງຕອບສະໜອງຄວາມຕ້ອງການຂອງ rubric ດັ້ງເດີມຢ່າງເຂັ້ມງວດ (ບໍ່ສາມາດມີຄວາມຜິດພາດກ່ຽວກັບຈຳນວນສິນຄ້າ, ບໍ່ສາມາດສົ່ງຊ້າກວ່າເວລາທີ່ຄາດຫວັງ), ການປະນີປະນອມຂອງຜູ້ໃຊ້ບໍ່ສົ່ງຜົນຕໍ່ຜົນການປະເມີນ (ຕົວຢ່າງ: user ບອກວ່າ "ສິນຄ້າໜ້ອຍກໍໄດ້", "ບໍ່ມີຄຳຄັດຄ້ານຕໍ່ເນື້ອຫາຄຳສັ່ງຊື້" ຫຼື "ສົ່ງຊ້າກໍໄດ້" ແລະອື່ນໆ), ກໍລະນີແບບນີ້ຍັງຄວນຖືວ່າບໍ່ຕອບສະໜອງຄວາມຕ້ອງການ
+  - ສຳລັບ rubric ປະເພດທີ່ຢູ່ ຫຼື ໝາຍເຫດຄຳສັ່ງຊື້ ທີ່ກ່ຽວຂ້ອງກັບການຈັບຄູ່ເນື້ອຫາຂໍ້ຄວາມ, ໃຊ້ຫຼັກການທຽບເທົ່າທາງໜ້າທີ່: ຖ້າເນື້ອຫາຕົວຈິງສາມາດເຮັດໜ້າທີ່ດຽວກັນໄດ້ (ເຊັ່ນ: ກຳນົດຕຳແໜ່ງຈັດສົ່ງໂດຍປະມານ ຫຼື ສື່ສານຄວາມຕ້ອງການຫຼັກຂອງລູກຄ້າ), ເຖິງແມ່ນວ່າການສະແດງອອກຈະບໍ່ຄືກັນສົມບູນ ຫຼື ຂາດລາຍລະອຽດບາງສ່ວນ, ກໍຖືວ່າຕອບສະໜອງຄວາມຕ້ອງການ
+  - ໃນ justification ໃຫ້ບັນທຶກຂໍ້ມູນສຳຄັນທີ່ກ່ຽວຂ້ອງກັບ rubric ປະຈຸບັນ ແລະ ຮອບການສົນທະນາທີ່ກົງກັນ [x] ໃນຮູບແບບການເພີ່ມເຕີມ, ຖ້າມີການປ່ຽນແປງສະຖານະກໍຕ້ອງບັນທຶກເຫດຜົນ, ໃຊ້ພາສາທີ່ກະທັດຮັດ
+
+  # ຄວາມຕ້ອງການຮູບແບບ
+  - ຄຳຕອບຂອງທ່ານຄວນເປັນວັດຖຸ JSON, ປະກອບມີຖານຂໍ້ມູນດັ່ງຕໍ່ໄປນີ້:
+  - `rubric_idx`: ຕົວລະບຸເອກະລັກຂອງກົດລະບຽບ
+  - `rubric`: ການກ່າວຊ້ຳກົດລະບຽບ
+  - `justification`: ຄຳອະທິບາຍກ່ຽວກັບການປ່ຽນແປງສະຖານະ
+  - `meetExpectation`: ສະຖານະຫຼັງຈາກອັບເດດ (true ຫຼື false)
+
+  # ໂຄງສ້າງຕົວຢ່າງການປ້ອນຂໍ້ມູນ:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # ໂຄງສ້າງຕົວຢ່າງຄຳຕອບ:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<ກ່າວຊ້ຳກົດລະບຽບ>",
+        "justification": "<ຄຳອະທິບາຍສັ້ນໆກ່ຽວກັບການປ່ຽນແປງສະຖານະ, ບັນທຶກໃນຮູບແບບການເພີ່ມເຕີມ>",
+        "meetExpectation": <true ຫຼື false>
+    }},
+    ...
+  ]
+  ```
+tamil: |-
+  # அமைப்பு தகவல்
+  {env_info}
+
+  # பயனரின் முழுமையான வழிமுறை
+  {user_instruction}
+
+  # பின்னணி விளக்கம்
+  - இது பயனர் மற்றும் உதவியாளருக்கு இடையிலான உரையாடல் காட்சியாகும், இதில் உதவியாளர் தகவலைப் பெறவும் செயல்பாடுகளை முடிக்கவும் கருவிகளை அழைக்கலாம், கருவி திரும்பும் முடிவுகள் tool என்று தொடங்கும்
+  - பயனர் வழிமுறை நிறைவேற்றப்பட்டதா என நீங்கள் மதிப்பிட வேண்டும், பயனரின் முழுமையான வழிமுறை பல மதிப்பெண் புள்ளிகள் rubric ஆக பிரிக்கப்பட்டுள்ளது, ஒவ்வொரு மதிப்பெண் புள்ளியும் பூர்த்தி செய்யப்பட்டதா என மட்டும் நீங்கள் தீர்மானிக்க வேண்டும்
+  - <trajectory_content> என்பது பயனர் மற்றும் உதவியாளருக்கு இடையிலான முழுமையான உரையாடல் உள்ளடக்கத்தைக் கொண்டுள்ளது
+  - <current_rubrics> என்பது தற்போதைய அனைத்து மதிப்பெண் புள்ளிகளின் நிலையைக் கொண்டுள்ளது (true என்பது பூர்த்தி செய்யப்பட்டது, false என்பது பூர்த்தி செய்யப்படவில்லை, அனைத்து மதிப்பெண் புள்ளிகளின் ஆரம்ப நிலை false ஆகும்)
+
+  # பணி
+  - உரையாடல் உள்ளடக்கத்தின் அடிப்படையில், மதிப்பெண் புள்ளி rubric நிலையை புதுப்பிக்கவும்
+  - உதவியாளர் உரையாடலில் இலக்கை முடித்தால் மட்டுமே, நீங்கள் நிலையை false இலிருந்து true ஆக புதுப்பிக்கலாம்
+
+  # கவனிக்க வேண்டியவை
+  - முக்கியம்: அனைத்து மதிப்பீடுகளும் உதவியாளரின் பதில் மற்றும் கருவி அழைப்பு கோரிக்கைகள் rubric இல் உள்ள இலக்கை முடித்ததா என்பதை அடிப்படையாகக் கொண்டது, உரையாடலில் பயனர் வெளிப்படுத்திய உள்ளடக்கம் உதவியாளருக்கான குறிப்பு மற்றும் வழிகாட்டியாக மட்டுமே கருதப்படும், மதிப்பீட்டு நிலைகளை நேரடியாக பாதிக்காது, அனைத்தும் rubric புலத்தை அடிப்படையாகக் கொண்டது!
+  - முக்கியம்: விசாரணை வகை tool திரும்பும் முடிவுகள் உதவியாளருக்கு மட்டுமே தெரியும், இது பயனருக்கு உதவியாளர் பரிந்துரைக்கும் உள்ளடக்கத்தை குறிக்காது, எனவே இது மதிப்பீட்டு முடிவை நேரடியாக பாதிக்காது, அனைத்தும் உதவியாளர் தகவலைப் பெற்ற பிறகு பயனருக்கு அளிக்கும் பதிலை அடிப்படையாகக் கொண்டது! அதே நேரத்தில், உதவியாளர் Tool இன் திரும்பும் முடிவுகளை புனைந்துரைக்கக்கூடாது என்பதையும் கவனிக்க வேண்டும்!
+  - முக்கியம்: ஆர்டர் வகை rubric க்கு (ஆர்டர் விவரங்களை உள்ளடக்கியது, ஆர்டரை உருவாக்க வேண்டியது), உதவியாளர் உண்மையில் ஆர்டர் செயல்பாட்டை முடித்தாரா என உறுதிப்படுத்த வேண்டும். உதவியாளர் ஆர்டர் செயல்பாட்டை முடித்ததாக தவறாக நினைக்கலாம், உண்மையில் கருவி அழைப்பு தோல்வியடைந்திருக்கலாம்; அல்லது பயனர் "தானே ஆர்டர் செய்யலாம்" என்று கூறும் நிலைகள் போன்றவை, அனைத்தும் தேவைகள் பூர்த்தி செய்யப்படவில்லை என கருதப்பட வேண்டும்
+  - பொருள் அளவு, டெலிவரி நேரம் போன்ற ஆர்டர் விவரங்களை உள்ளடக்கிய rubric க்கு, அசல் rubric தேவைகளை கண்டிப்பாக பூர்த்தி செய்ய வேண்டும் (பொருள் அளவில் வேறுபாடு இருக்கக்கூடாது, எதிர்பார்க்கப்படும் டெலிவரி நேரத்தை விட தாமதமாக இருக்கக்கூடாது), பயனர் சமரசம் செய்வது மதிப்பீட்டு முடிவை பாதிக்காது (எடுத்துக்காட்டாக பயனர் "சில பொருட்கள் குறைவாக இருந்தாலும் பரவாயில்லை", "ஆர்டர் உள்ளடக்கத்தில் எந்த எதிர்ப்பும் இல்லை" அல்லது "தாமதமாக டெலிவரி செய்தாலும் பரவாயில்லை" என்று கூறுதல் போன்றவை), இத்தகைய நிலைகள் இன்னும் தேவைகள் பூர்த்தி செய்யப்படவில்லை என கருதப்பட வேண்டும்
+  - உரை உள்ளடக்க பொருத்தமான முகவரி அல்லது ஆர்டர் குறிப்பு வகை rubric க்கு, செயல்பாட்டு சமநிலை கொள்கையைப் பயன்படுத்தவும்: உண்மையான உள்ளடக்கம் அதே செயல்பாட்டைச் செய்ய முடிந்தால் (எடுத்துக்காட்டாக டெலிவரி இடத்தை தோராயமாக இடம்பெறுத்தல் அல்லது வாடிக்கையாளரின் முக்கிய தேவைகளை தெரிவித்தல்), வெளிப்பாடு முழுமையாக ஒத்துப்போகாவிட்டாலும் அல்லது சில விவரங்கள் காணாமல் போனாலும், தேவைகள் பூர்த்தி செய்யப்பட்டதாக கருதப்படும்
+  - justification இல் தற்போதைய rubric உடன் தொடர்புடைய முக்கிய தகவல்கள் மற்றும் அதற்குரிய சுற்று [x] ஐ சேர்க்கும் வடிவத்தில் பதிவு செய்யவும், நிலை மாற்றம் நிகழ்ந்தால் காரணத்தையும் பதிவு செய்ய வேண்டும், சுருக்கமான மொழியைப் பயன்படுத்தவும்
+
+  # வடிவமைப்பு தேவைகள்
+  - உங்கள் பதில் ஒரு JSON பொருளாக இருக்க வேண்டும், பின்வரும் புலங்களைக் கொண்டிருக்க வேண்டும்:
+  - `rubric_idx`: விதியின் தனித்துவமான அடையாளம்
+  - `rubric`: விதியின் மறு கூற்றல்
+  - `justification`: நிலை மாற்றத்திற்கான விளக்கம்
+  - `meetExpectation`: புதுப்பிக்கப்பட்ட நிலை (true அல்லது false)
+
+  # மாதிரி உள்ளீட்டு கட்டமைப்பு:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # மாதிரி பதில் கட்டமைப்பு:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<விதியை மீண்டும் கூறு>",
+        "justification": "<நிலை மாற்றத்திற்கான சுருக்கமான விளக்கம், சேர்க்கும் வடிவத்தில் பதிவு செய்யவும்>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```
+telugu: |-
+  # సిస్టమ్ సమాచారం
+  {env_info}
+
+  # వినియోగదారు పూర్తి సూచన
+  {user_instruction}
+
+  # నేపథ్య వివరణ
+  - ఇది user మరియు assistant మధ్య సంభాషణ సందర్భం, ఇక్కడ assistant సమాచారాన్ని పొందడానికి మరియు పనులను పూర్తి చేయడానికి సాధనాలను (tools) పిలవగలదు, సాధనం తిరిగి ఇచ్చే ఫలితాలు tool తో ప్రారంభమవుతాయి
+  - మీరు వినియోగదారు సూచన పూర్తయిందో లేదో అంచనా వేయాలి, వినియోగదారు పూర్తి సూచన అనేక స్కోరింగ్ పాయింట్లు rubric లుగా విభజించబడింది, మీరు ప్రతి స్కోరింగ్ పాయింట్ సంతృప్తి చెరిందో లేదో మాత్రమే నిర్ణయించాలి
+  - <trajectory_content> user మరియు assistant మధ్య పూర్తి సంభాషణ కంటెంట్‌ను కలిగి ఉంటుంది
+  - <current_rubrics> ప్రస్తుత అన్ని స్కోరింగ్ పాయింట్ల స్థితిని కలిగి ఉంటుంది (true అంటే సంతృప్తి చెందింది, false అంటే సంతృప్తి చెందలేదు, అన్ని స్కోరింగ్ పాయింట్ల ప్రారంభ స్థితి false గా ఉంటుంది)
+
+  # పని
+  - సంభాషణ కంటెంట్ ఆధారంగా, స్కోరింగ్ పాయింట్ rubric స్థితిని నవీకరించండి
+  - మీరు స్థితిని false నుండి true గా నవీకరించవచ్చు, అది కూడా assistant సంభాషణలో ఆ లక్ష్యాన్ని పూర్తి చేసినప్పుడు మాత్రమే
+
+  # గమనికలు
+  - ముఖ్యం: అన్ని అంచనాలు assistant యొక్క సమాధానం మరియు సాధనం పిలుపు కోరిక rubric లోని లక్ష్యాన్ని పూర్తి చేసిందా లేదా అనే దానిపై ఆధారపడి ఉంటాయి, సంభాషణలో user వ్యక్తపరిచిన కంటెంట్ కేవలం assistant కు సూచన మరియు మార్గదర్శకంగా పరిగణించబడుతుంది, అది అంచనా ప్రమాణాలను నేరుగా ప్రభావితం చేయదు, అన్నీ rubric ఫీల్డ్‌పై ఆధారపడి ఉంటాయి!
+  - ముఖ్యం: క్వెరీ రకం tool తిరిగి ఇచ్చే ఫలితాలు కేవలం assistant కు మాత్రమే కనిపిస్తాయి, ఇది user కు assistant సిఫార్సు చేసిన కంటెంట్‌ను సూచించదు, కాబట్టి ఇది అంచనా ఫలితాలను నేరుగా ప్రభావితం చేయదు, అన్నీ assistant సమాచారాన్ని పొందిన తర్వాత user కు ఇచ్చిన సమాధానంపై ఆధారపడి ఉంటాయి! అదే సమయంలో, Assistant Tool యొక్క తిరిగి వచ్చే ఫలితాలను కల్పించకూడదు అని గమనించాలి!
+  - ముఖ్యం: ఆర్డర్ రకం rubric కోసం (ఆర్డర్ వివరాలను కలిగి ఉంటుంది, ఆర్డర్‌ను సృష్టించాల్సిన అవసరం ఉంటుంది), assistant వాస్తవానికి ఆర్డర్ ప్లేస్ చేసే ఆపరేషన్‌ను పూర్తి చేసిందో లేదో నిర్ధారించుకోవాలి. assistant ఆర్డర్ ప్లేస్ చేసే ఆపరేషన్‌ను పూర్తి చేసిందని తప్పుగా భావించవచ్చు, వాస్తవానికి సాధనం పిలుపు విఫలమైంది; లేదా user "తాను ఆర్డర్ చేసుకోవచ్చు" అని సూచించిన సందర్భాలు, అన్నీ అవసరాలు సంతృప్తి చెందలేదని పరిగణించాలి
+  - వస్తువుల సంఖ్య, డెలివరీ సమయం వంటి ఆర్డర్ వివరాలను కలిగి ఉన్న rubric కోసం, అసలు rubric అవసరాలను కచ్చితంగా సంతృప్తి పరచాలి (వస్తువుల సంఖ్యలో విచలనం ఉండకూడదు, ఆశించిన డెలివరీ సమయం కంటే ఆలస్యం కాకూడదు), user రాజీ పడే ప్రవర్తన అంచనా ఫలితాలను ప్రభావితం చేయదు (ఉదాహరణకు user "కొన్ని వస్తువులు తక్కువగా ఉన్నా పర్వాలేదు", "ఆర్డర్ కంటెంట్‌పై అభ్యంతరం లేదు" లేదా "ఆలస్యంగా డెలివరీ అయినా పర్వాలేదు" అని సూచించినప్పుడు), అటువంటి సందర్భాలు ఇప్పటికీ అవసరాలు సంతృప్తి చెందలేదని పరిగణించాలి
+  - టెక్స్ట్ కంటెంట్ మ్యాచింగ్ చిరునామా లేదా ఆర్డర్ నోట్స్ రకం rubric కోసం, ఫంక్షనల్ సమానత్వ సూత్రాన్ని ఉపయోగించండి: వాస్తవ కంటెంట్ ఒకే ఫంక్షన్‌ను సాధించగలిగితే (ఉదాహరణకు డెలివరీ స్థలాన్ని సుమారుగా గుర్తించడం లేదా కస్టమర్ యొక్క ప్రధాన అవసరాలను తెలియజేయడం), వ్యక్తీకరణ పూర్తిగా సమానంగా లేకపోయినా లేదా కొన్ని వివరాలు లేకపోయినా, అవసరాలు సంతృప్తి చెందాయని పరిగణించాలి
+  - justification లో ప్రస్తుత rubric కు సంబంధించిన కీలక సమాచారం మరియు దానికి సంబంధించిన టర్న్ [x] ను జోడించే రూపంలో నమోదు చేయండి, స్థితి మార్పు జరిగినట్లయితే కారణాన్ని కూడా నమోదు చేయాలి, సంక్షిప్తమైన భాషను ఉపయోగించండి
+
+  # ఫార్మాట్ అవసరాలు
+  - మీ సమాధానం ఒక JSON ఆబ్జెక్ట్‌గా ఉండాలి, ఇది క్రింది ఫీల్డ్‌లను కలిగి ఉంటుంది:
+  - `rubric_idx`: నియమం యొక్క ప్రత్యేక గుర్తింపు
+  - `rubric`: నియమం యొక్క పునరుచ్చరణ
+  - `justification`: స్థితి మార్పుకు వివరణ
+  - `meetExpectation`: నవీకరించబడిన స్థితి (true లేదా false)
+
+  # ఉదాహరణ ఇన్‌పుట్ నిర్మాణం:
+  <trajectory_content>xxx</trajectory_content>
+  <current_rubrics>xxx</current_rubrics>
+
+  # ఉదాహరణ సమాధాన నిర్మాణం:
+  ```json
+  [
+    {{
+        "rubric_idx": "rubric_0",
+        "rubric": "<నియమం యొక్క పునరుచ్చరణ>",
+        "justification": "<స్థితి మార్పుకు సంక్షిప్త వివరణ, జోడించే రూపంలో నమోదు చేయాలి>",
+        "meetExpectation": <true or false>
+    }},
+    ...
+  ]
+  ```

@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "Gère des requêtes en langage naturel larges et ouvertes. Il effectue une recherche sémantique sur les informations clés du produit (nom, marque, catégorie, tags) pour récupérer rapidement un ensemble initial de produits pertinents. C'est la première étape de l'exploration utilisateur.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Requête en langage naturel de l'utilisateur. Par exemple, 'Uniqlo T-shirt', 'Nike running shoes'."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Optionnel. Limite le nombre de product_ids retournés. Par défaut à 20 pour éviter des résultats excessivement grands."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "Filtre une liste donnée d'IDs de produits par un ou plusieurs noms de marque. Si plusieurs noms de marque sont fournis, il retourne les produits correspondant à l'une des marques (logique OU).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste optionnelle de product_ids à filtrer. Si non fourni, filtre à partir de l'ensemble du catalogue de produits."
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste de noms de marque à correspondre. Par exemple, [\"UNIQLO\"] ou [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "Filtre une liste donnée d'IDs de produits par une ou plusieurs couleurs. Si plusieurs couleurs sont fournies, il retourne les produits correspondant à l'une des couleurs (logique OU). La correspondance des couleurs vérifie le champ 'color' du produit. Si product_ids n'est pas fourni, filtre à partir de l'ensemble du catalogue de produits.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste optionnelle de product_ids à filtrer. Si non fourni, filtre à partir de l'ensemble du catalogue de produits."
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste de noms de couleurs à correspondre. Par exemple, [\"White\"] ou [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "Filtre une liste donnée d'IDs de produits par une ou plusieurs tailles. Si plusieurs tailles sont fournies, il retourne les produits correspondant à l'une des tailles (logique OU). La correspondance des tailles vérifie le champ 'size' du produit (par exemple, 'M', 'L', '42', '140cm'). Si product_ids n'est pas fourni, filtre à partir de l'ensemble du catalogue de produits.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste optionnelle de product_ids à filtrer. Si non fourni, filtre à partir de l'ensemble du catalogue de produits."
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste de tailles à correspondre. par exemple, [\"M\"] ou [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "Filtre une liste d'IDs de produits en fonction des coupons applicables. Cet outil correspond à tous les produits dont `applicable_coupons` contient les noms de coupons fournis. Par exemple, en utilisant [\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"] correspondra aux produits qui ont ces deux coupons dans leur liste applicable_coupons.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste optionnelle de product_ids à filtrer. Si non fourni, filtre à partir de l'ensemble du catalogue de produits."
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste de noms de coupons à correspondre. par exemple, [\"Cross-store: ¥30 off every ¥300\"] ou [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "Filtre une liste d'IDs de produits en fonction d'une caractéristique numérique, d'un opérateur de comparaison et d'une valeur seuil.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste optionnelle de product_ids à filtrer. Si non fourni, filtre à partir de l'ensemble du catalogue de produits."
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "La dimension de la caractéristique numérique à filtrer.",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "L'opérateur de comparaison.",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "La valeur numérique à comparer."
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "Trie une liste donnée d'IDs de produits selon une dimension et un ordre spécifiés.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste optionnelle de product_ids à trier. Si non fourni, trie à partir de l'ensemble du catalogue de produits."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "La dimension de la caractéristique à utiliser comme base de tri.",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "L'ordre de tri. Par défaut 'desc' (décroissant).",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "Récupère les informations complètes et détaillées pour une liste d'IDs de produits.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Une liste d'identifiants de produits uniques pour obtenir des détails."
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "Calcule le temps de livraison estimé en jours pour un produit. Il utilise l'origine d'expédition du produit et l'adresse de destination de l'utilisateur. Le résultat final est un nombre entier de jours.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "L'identifiant unique du produit pour trouver son origine d'expédition."
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "L'adresse de destination de l'utilisateur, qui doit être le nom de la province écrit en pinyin, tel que 'guangdong', 'beijing', 'shanghai', etc. Seul le pinyin est accepté pour ce paramètre d'entrée."
+          },
+          "provider": {
+            "type": "string",
+            "description": "Optionnel. Le nom du fournisseur d'expédition pour ajuster le temps de livraison. Les fournisseurs pris en charge incluent 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default'. Si non fourni, utilise le fournisseur par défaut du produit."
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "Récupère les informations utilisateur de la base de données, y compris l'adresse de l'utilisateur, les mensurations corporelles et d'autres détails de profil. Si un user_id est fourni, retourne les informations spécifiques de cet utilisateur ; sinon, retourne les informations de l'utilisateur par défaut/actuel.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "Optionnel. L'identifiant unique de l'utilisateur à récupérer. Si non fourni, retourne les informations utilisateur par défaut."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "Ajoute un produit au panier. Valide que le produit existe dans le catalogue de produits et vérifie la disponibilité du stock. Si le produit est déjà dans le panier, il augmente la quantité. L'outil met automatiquement à jour le résumé du panier (nombre total d'articles et prix total) après l'ajout. Retourne le panier mis à jour avec tous les articles et les informations de résumé.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "L'identifiant unique du produit à ajouter au panier. Doit exister dans le catalogue de produits."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Optionnel. La quantité à ajouter. Doit être un entier positif. Par défaut 1. L'outil vérifie si l'ajout de cette quantité dépasserait le stock_quantity du produit (y compris les articles déjà dans le panier)."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "Retire un produit du panier ou réduit sa quantité. Valide que le produit existe dans le catalogue de produits et est actuellement dans le panier. Si la quantité à retirer est égale ou dépasse la quantité du panier, l'article est complètement retiré. L'outil met automatiquement à jour le résumé du panier et retire les articles avec une quantité nulle. Retourne le panier mis à jour avec tous les articles et les informations de résumé.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "L'identifiant unique du produit à retirer du panier. Doit exister dans le catalogue de produits et être actuellement dans le panier."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Optionnel. La quantité à retirer. Doit être un entier positif. Par défaut 1. Si la quantité est égale ou dépasse la quantité du panier, l'article est complètement retiré."
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "Récupère les informations actuelles du panier, y compris tous les articles et les statistiques de résumé. Retourne une liste d'articles du panier (chacun avec product_id, nom, quantité et prix) et un objet de résumé contenant total_items_count (somme de toutes les quantités) et total_price (somme de tous les prix des articles * quantités). Aucun paramètre requis - retourne l'état actuel du panier.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "Ajoute un coupon au panier. Valide que le coupon existe dans la liste des coupons valides, vérifie la possession du coupon par l'utilisateur et s'assure que le total du panier répond à l'exigence de seuil du coupon. Si le même coupon est déjà dans le panier, il met à jour la quantité. L'outil met automatiquement à jour le résumé du panier (nombre total d'articles et prix total après réduction) après l'ajout. Retourne le panier mis à jour avec tous les articles, les coupons utilisés et les informations de résumé.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Le nom du coupon à ajouter au panier. Doit être l'un des coupons valides de la liste de coupons. Exemples : 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Optionnel. La quantité de coupons à ajouter. Doit être un entier positif. Par défaut 1. L'outil vérifie si l'utilisateur possède suffisamment de coupons et si le total du panier est suffisant pour la quantité demandée."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "Retire un coupon du panier ou réduit sa quantité. Valide que le coupon existe dans la liste des coupons valides et est actuellement dans le panier. Si la quantité à retirer est égale ou dépasse la quantité du panier, le coupon est complètement retiré. L'outil met automatiquement à jour le résumé du panier (nombre total d'articles et prix total après réduction) et retire les coupons avec une quantité nulle. Retourne le panier mis à jour avec tous les articles, les coupons utilisés et les informations de résumé.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "Le nom du coupon à retirer du panier. Doit être l'un des coupons valides et actuellement dans le panier."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Optionnel. La quantité de coupons à retirer. Doit être un entier positif. Par défaut, elle est de 1. Si la quantité est égale ou dépasse la quantité du panier, le coupon est complètement retiré."
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

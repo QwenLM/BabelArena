@@ -1,0 +1,406 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "search_products",
+      "description": "広範でオープンエンドな自然言語クエリを処理します。商品の主要情報（名前、ブランド、カテゴリ、タグ）に対してセマンティック検索を実行し、関連する商品の初期セットを迅速に取得します。これはユーザーによる探索の第一ステップです。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "ユーザーの自然言語クエリ。例：'Uniqlo T-shirt'、'Nike running shoes'。"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "任意。返されるproduct_idsの数を制限します。デフォルトは20で、結果が過度に大きくなるのを防ぎます。"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_brand",
+      "description": "指定された商品IDリストを1つ以上のブランド名でフィルタリングします。複数のブランド名が提供された場合、いずれかのブランドに一致する商品を返します（OR条件）。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "フィルタリング対象のproduct_idsのオプションリスト。提供されない場合は、全商品カタログからフィルタリングします。"
+          },
+          "brand_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "マッチングするブランド名のリスト。例：[\"UNIQLO\"] または [\"Nike\", \"ZARA\"]"
+          }
+        },
+        "required": [
+          "brand_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_color",
+      "description": "指定された商品IDリストを1つ以上の色でフィルタリングします。複数の色が提供された場合、いずれかの色に一致する商品を返します（OR条件）。色の一致は商品の'color'フィールドをチェックします。product_idsが提供されていない場合は、全商品カタログからフィルタリングします。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "フィルタリング対象のproduct_idsのオプションリスト。提供されない場合は、全商品カタログからフィルタリングします。"
+          },
+          "colors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "マッチングする色名のリスト。例：[\"White\"] または [\"Black\", \"Blue\"]"
+          }
+        },
+        "required": [
+          "colors"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_size",
+      "description": "指定された商品IDリストを1つ以上のサイズでフィルタリングします。複数のサイズが提供された場合、いずれかのサイズに一致する商品を返します（OR条件）。サイズの一致は商品の'size'フィールド（例：'M', 'L', '42', '140cm'）をチェックします。product_idsが提供されていない場合は、全商品カタログからフィルタリングします。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "フィルタリング対象のproduct_idsのオプションリスト。提供されない場合は、全商品カタログからフィルタリングします。"
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "一致するサイズのリスト。例: [\"M\"] または [\"S\", \"M\", \"L\"]"
+          }
+        },
+        "required": [
+          "sizes"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_applicable_coupons",
+      "description": "適用可能なクーポンに基づいて商品IDリストをフィルタリングします。このツールは、`applicable_coupons`に指定されたクーポン名を含むすべての商品をマッチングします。例：[\"Cross-store: ¥30 off every ¥300\", \"Same-brand: ¥25 off every ¥200\"]を使用すると、これらの両方のクーポンがapplicable_couponsリストに含まれる商品がマッチします。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "フィルタリング対象のproduct_idsのオプションリスト。提供されない場合は、全商品カタログからフィルタリングします。"
+          },
+          "coupon_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "一致するクーポン名のリスト。例: [\"Cross-store: ¥30 off every ¥300\"] または [\"Same-brand: ¥25 off every ¥200\", \"VIP: ¥200 off every ¥1,000\"]"
+          }
+        },
+        "required": [
+          "coupon_names"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "filter_by_range",
+      "description": "数値型の特徴量、比較演算子、および閾値に基づいて商品IDリストをフィルタリングします。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "フィルタリング対象のproduct_idsのオプションリスト。提供されない場合は、全商品カタログからフィルタリングします。"
+          },
+          "condition_key": {
+            "type": "string",
+            "description": "フィルタリングする数値の特徴次元。",
+            "enum": [
+              "price",
+              "stock_quantity",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "rating.total_reviews"
+            ]
+          },
+          "operator": {
+            "type": "string",
+            "description": "比較演算子。",
+            "enum": [
+              ">",
+              ">=",
+              "<",
+              "<=",
+              "=="
+            ]
+          },
+          "value": {
+            "type": "number",
+            "description": "比較対象の数値。"
+          }
+        },
+        "required": [
+          "condition_key",
+          "operator",
+          "value"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "sort_products",
+      "description": "指定された商品IDリストを、指定された次元と順序に従って並べ替えます。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "オプションのproduct_idsのリストをソートします。提供されていない場合、商品カタログ全体からソートします。"
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "ソートの基準として使用する特徴次元。",
+            "enum": [
+              "price",
+              "sales_volume.monthly",
+              "sales_volume.total",
+              "rating.average_score",
+              "stock_quantity",
+              "name"
+            ]
+          },
+          "order": {
+            "type": "string",
+            "description": "ソート順。デフォルトは 'desc'（降順）。",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "default": "desc"
+          }
+        },
+        "required": [
+          "sort_by"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_product_details",
+      "description": "指定された商品IDリストの完全かつ詳細な情報を取得します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "詳細を取得するためのユニークな商品識別子のリスト。"
+          }
+        },
+        "required": [
+          "product_ids"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculate_transport_time",
+      "description": "商品の推定配達日数（日単位）を計算します。商品の発送元とユーザーの配送先住所を使用します。最終結果は整数の日数です。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "発送元を見つけるための商品のユニーク識別子。"
+          },
+          "destination_address": {
+            "type": "string",
+            "description": "ユーザーの目的地住所。省名はピンインで書かれている必要があります。例: 'guangdong', 'beijing', 'shanghai' など。この入力パラメータにはピンインのみが受け入れられます。"
+          },
+          "provider": {
+            "type": "string",
+            "description": "オプション。配送時間を調整するための配送業者名。サポートされている業者には 'sf_express', 'jd_logistics', 'yto_express', 'zto_express', 'sto_express', 'yunda_express', 'cainiao', 'china_post', 'ems', 'deppon_express', 'default' が含まれます。提供されていない場合、商品のデフォルトの業者を使用します。"
+          }
+        },
+        "required": [
+          "product_id",
+          "destination_address"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_user_info",
+      "description": "データベースからユーザー情報を取得します。これにはユーザーの住所、身体寸法、その他のプロフィール詳細が含まれます。user_idが提供された場合はそのユーザーの情報を返し、提供されていない場合はデフォルト／現在のユーザーの情報を返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "オプション。取得するユーザーのユニーク識別子。提供されていない場合、デフォルトのユーザー情報を返します。"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_product_to_cart",
+      "description": "ショッピングカートに商品を追加します。商品が商品カタログに存在することを検証し、在庫状況を確認します。商品がすでにカート内にある場合は数量を増やします。このツールは追加後に自動的にカートサマリー（合計アイテム数と合計金額）を更新します。すべてのアイテムとサマリー情報を含む更新後のカートを返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "カートに追加する商品のユニーク識別子。商品カタログに存在する必要があります。"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "オプション。追加する数量。正の整数である必要があります。デフォルトは1です。この数量を追加することで、商品の在庫数量（すでにカートにあるアイテムを含む）を超えるかどうかをツールが確認します。"
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_product_from_cart",
+      "description": "ショッピングカートから商品を削除するか、その数量を減らします。商品が商品カタログに存在し、かつ現在カート内にあることを検証します。削除対象の数量がカート内の数量以上の場合、そのアイテムは完全に削除されます。このツールは自動的にカートサマリーを更新し、数量がゼロになったアイテムを削除します。すべてのアイテムとサマリー情報を含む更新後のカートを返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "カートから削除する商品のユニーク識別子。商品カタログに存在し、現在カートにある必要があります。"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "オプション。削除する数量。正の整数である必要があります。デフォルトは1です。数量がカートの数量と同じかそれ以上の場合、アイテムは完全に削除されます。"
+          }
+        },
+        "required": [
+          "product_id"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_cart_info",
+      "description": "現在のショッピングカート情報を取得します。これにはすべてのアイテムとサマリー統計が含まれます。カートアイテムのリスト（各アイテムにはproduct_id、name、quantity、priceが含まれる）と、サマリーオブジェクト（total_items_count：全数量の合計、total_price：各アイテムの価格×数量の合計）を返します。パラメータは不要で、カートの現在の状態を返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_coupon_to_cart",
+      "description": "ショッピングカートにクーポンを追加します。クーポンが有効なクーポンリストに存在することを検証し、ユーザーがそのクーポンを所有していること、およびカート合計がクーポンの利用条件を満たしていることを確認します。同じクーポンがすでにカート内にある場合は、数量を更新します。このツールは追加後に自動的にカートサマリー（割引後の合計アイテム数と合計金額）を更新します。すべてのアイテム、使用済みクーポン、およびサマリー情報を含む更新後のカートを返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "カートに追加するクーポンの名前。クーポンリストからの有効なクーポンの1つである必要があります。例: 'Cross-store: ¥30 off every ¥300', 'Same-brand: ¥25 off every ¥200', 'VIP: ¥200 off every ¥1,000'."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "オプション。追加するクーポンの数量。正の整数である必要があります。デフォルトは1です。ツールはユーザーが十分なクーポンを所有しているか、カートの合計が要求された数量に対して十分であるかを確認します。"
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "delete_coupon_from_cart",
+      "description": "ショッピングカートからクーポンを削除するか、その数量を減らします。クーポンが有効なクーポンリストに存在し、かつ現在カート内にあることを検証します。削除対象の数量がカート内の数量以上の場合、そのクーポンは完全に削除されます。このツールは自動的にカートサマリー（割引後の合計アイテム数と合計金額）を更新し、数量がゼロになったクーポンを削除します。すべてのアイテム、使用済みクーポン、およびサマリー情報を含む更新後のカートを返します。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "coupon_name": {
+            "type": "string",
+            "description": "カートから削除するクーポンの名前。有効なクーポンの1つであり、現在カートにある必要があります。"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "オプションです。削除するクーポンの数量。正の整数でなければなりません。デフォルトは1です。数量がカートの数量と同じかそれ以上の場合、クーポンは完全に削除されます。"
+          }
+        },
+        "required": [
+          "coupon_name"
+        ]
+      }
+    }
+  }
+]

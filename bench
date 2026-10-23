@@ -1,0 +1,1430 @@
+#!/usr/bin/env python3
+"""Unified driver for the multilingual agent benchmark suite.
+
+Wraps four benchmarks that each keep their own runner, their own language
+spelling, and their own model-config format:
+
+    tau3          `tau2 run`,  language via the TAU2_LANGUAGE env var
+    vitabench     `vita run`,  language via --language
+    deepplanning  `run_all.sh`, language via DEEPPLANNING_LANGUAGE
+    claw          `claw-eval batch`, language via --language
+
+This script does not reimplement any of them. It translates one set of
+arguments into what each runner expects, renders the model config into the
+four native formats, and records where each run put its output. Scores are
+produced by each benchmark's own evaluator, unchanged, so numbers stay
+comparable with runs made through the native CLIs.
+
+Usage:
+    bench setup                      # create the four virtualenvs
+    bench check                      # verify data + config, no LLM calls
+    bench languages                  # list supported languages
+    bench run --benchmark all --language japanese --agent-model gpt-4.1
+    bench report --run-id <id>
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Optional
+
+REPO = Path(__file__).resolve().parent
+BENCHMARKS = REPO / "benchmarks"
+CONFIGS = REPO / "configs"
+RESULTS = REPO / "results"
+DATA = REPO / "data"
+RUNTIME = REPO / ".runtime"
+VENVS = REPO / ".venvs"
+
+BENCH_NAMES = ("tau3", "vitabench", "deepplanning", "claw")
+
+# Where `bench fetch-data` pulls the ~14 GB of benchmark data from. Set this to
+# the published dataset before release; until then pass --source <local path>.
+DATA_SOURCE_DEFAULT = ""
+
+# Domains that make up the `standard` release of each benchmark. These are the
+# defaults; --domain narrows them.
+STANDARD_DOMAINS = {
+    "tau3": ["airline", "retail", "telecom", "banking_knowledge"],
+    # `cross` is the cross-domain task set, which vita addresses as the
+    # comma-joined domain list rather than as a domain of its own.
+    "vitabench": ["delivery", "instore", "ota", "cross"],
+    "deepplanning": ["travel", "shopping"],
+    # claw's three splits. They always run together as one batch per language
+    # (the procedure the reported numbers come from), so --domain cannot pick
+    # one of them out -- see _plan_claw.
+    "claw": ["general", "multimodal", "multi_turn"],
+}
+
+# Acceptable interpreters per benchmark, most preferred first. tau3 declares
+# >=3.12,<3.14; deepplanning pins a Hugging Face stack built for 3.10;
+# vitabench declares >=3.10 and rides along with tau3's interpreter; claw
+# declares >=3.11. They cannot share one, which is why each gets its own venv.
+#
+# Listed explicitly rather than falling back to whatever `python3` happens to
+# be: a silent fallback to an out-of-range interpreter fails much later, deep
+# inside a dependency install, where the cause is no longer obvious.
+PYTHON_FOR = {
+    "tau3": ["python3.12", "python3.13"],
+    "vitabench": ["python3.12", "python3.11", "python3.10", "python3.13"],
+    "deepplanning": ["python3.10", "python3.11"],
+    "claw": ["python3.12", "python3.11", "python3.13"],
+}
+
+
+def _find_python(benchmark: str) -> str:
+    for exe in PYTHON_FOR[benchmark]:
+        found = shutil.which(exe)
+        if found:
+            return found
+    die(
+        f"no suitable Python for {benchmark}.\n"
+        f"  tried: {', '.join(PYTHON_FOR[benchmark])}\n"
+        f"  install one of them, or point PATH at it"
+    )
+
+
+# --------------------------------------------------------------------------
+# small helpers
+# --------------------------------------------------------------------------
+
+def die(msg: str, code: int = 1) -> "NoReturn":  # type: ignore[valid-type]
+    print(f"bench: error: {msg}", file=sys.stderr)
+    raise SystemExit(code)
+
+
+def warn(msg: str) -> None:
+    print(f"bench: warning: {msg}", file=sys.stderr)
+
+
+def _load_yaml(path: Path) -> Any:
+    try:
+        import yaml
+    except ImportError:
+        die(
+            "PyYAML is required by bench itself.\n"
+            "  pip install pyyaml   (or run bench from any of the four venvs)"
+        )
+    with path.open(encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+
+# --------------------------------------------------------------------------
+# languages
+# --------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class Language:
+    code: str
+    name: str
+    tau3: Optional[str]
+    vita: Optional[str]
+    deep: Optional[str]
+    claw: Optional[str] = None
+
+    def for_benchmark(self, benchmark: str) -> Optional[str]:
+        return {"tau3": self.tau3, "vitabench": self.vita, "deepplanning": self.deep,
+                "claw": self.claw}[benchmark]
+
+
+class LanguageRegistry:
+    def __init__(self, path: Path):
+        raw = _load_yaml(path)
+        self.languages = [Language(**entry) for entry in raw["languages"]]
+        self._by_code = {lang.code: lang for lang in self.languages}
+        self._by_name = {lang.name: lang for lang in self.languages}
+        self._aliases = {k.lower(): v for k, v in (raw.get("aliases") or {}).items() if v}
+
+    def resolve(self, spec: str) -> Language:
+        key = spec.strip().lower().replace("-", "_")
+        if key in self._aliases:
+            key = self._aliases[key]
+        if key in self._by_code:
+            return self._by_code[key]
+        if key in self._by_name:
+            return self._by_name[key]
+        # tolerate the spaced form ("eastern panjabi")
+        spaced = key.replace("_", " ")
+        for lang in self.languages:
+            if lang.name.replace("_", " ") == spaced:
+                return lang
+        die(
+            f"unknown language {spec!r}.\n"
+            f"  supported: {', '.join(l.code for l in self.languages)}\n"
+            f"  run `bench languages` for the full table"
+        )
+
+    def __iter__(self):
+        return iter(self.languages)
+
+
+# --------------------------------------------------------------------------
+# model config
+# --------------------------------------------------------------------------
+
+_ENV_REF = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+# Anything that looks like a real credential sitting in the config file.
+_BARE_KEY = re.compile(r"(sk-[A-Za-z0-9_\-]{16,}|Bearer\s+[A-Za-z0-9_\-.]{16,})")
+
+
+def _expand(value: Any, missing: set[str]) -> Any:
+    """Recursively expand ${VAR} references using the environment."""
+    if isinstance(value, str):
+        def sub(m: re.Match) -> str:
+            name = m.group(1)
+            if name not in os.environ:
+                missing.add(name)
+                return m.group(0)
+            return os.environ[name]
+        return _ENV_REF.sub(sub, value)
+    if isinstance(value, dict):
+        return {k: _expand(v, missing) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_expand(v, missing) for v in value]
+    return value
+
+
+class ModelConfig:
+    """configs/models.yaml, rendered into each benchmark's native format."""
+
+    def __init__(self, path: Path):
+        if not path.exists():
+            die(
+                f"{path.relative_to(REPO)} not found.\n"
+                f"  cp configs/models.yaml.example configs/models.yaml   # then edit"
+            )
+        self.path = path
+        raw_text = path.read_text(encoding="utf-8")
+        found = _BARE_KEY.search(_ENV_REF.sub("", raw_text))
+        if found:
+            die(
+                f"{path.relative_to(REPO)} appears to contain a literal API key "
+                f"({found.group(0)[:12]}...).\n"
+                f"  Use a ${{ENV_VAR}} reference instead so the file stays safe to commit."
+            )
+        self.raw = _load_yaml(path)
+        self.roles = self.raw.get("roles") or {}
+        self._names = {m["name"] for m in self.raw.get("models", [])}
+        # tau3 and vitabench have no alias layer: whatever a models.yaml entry is
+        # called is sent to the endpoint as the model id. deepplanning does have
+        # one (model_name). So this config keeps friendly names and resolves them
+        # to the real id wherever the target cannot.
+        self._real = {m["name"]: m.get("model_name", m["name"])
+                      for m in self.raw.get("models", [])}
+
+    def real_id(self, name: Optional[str]) -> Optional[str]:
+        """The id the endpoint knows this model by."""
+        return self._real.get(name, name) if name else None
+
+    def require(self, name: str, what: str) -> str:
+        if name not in self._names:
+            die(
+                f"{what} model {name!r} is not defined in {self.path.name}.\n"
+                f"  defined: {', '.join(sorted(self._names)) or '(none)'}"
+            )
+        return name
+
+    def role(self, role: str, override: Optional[str], what: str) -> Optional[str]:
+        name = override or self.roles.get(role)
+        return self.require(name, what) if name else None
+
+    def render(self) -> dict[str, Path]:
+        """Write the three list-of-models config files; return their paths.
+
+        These are the only files that hold an expanded credential -- the runners
+        need a real key on disk. They are written 0600, live under .runtime/
+        (git-ignored), and `bench clean` removes them. Do not copy them around.
+        claw's config is per-run (it is keyed by role, not by model), so it is
+        written later by render_claw().
+        """
+        missing: set[str] = set()
+        cfg = _expand(self.raw, missing)
+        if missing:
+            die(
+                "model config references environment variables that are not set: "
+                + ", ".join(sorted(missing))
+                + "\n  export them, or put them in a .env you source before running"
+            )
+        RUNTIME.mkdir(exist_ok=True)
+        self._cfg = cfg
+
+        import yaml
+
+        # tau3 and vitabench share the same models.yaml schema, but neither has
+        # an alias layer -- the entry name goes on the wire as the model id. Key
+        # the emitted entries by the real id, and drop the alias-only field.
+        # Two roles pointing at one model collapse into one entry, which is all
+        # those runners can express anyway. `claw:` holds claw-only settings and
+        # must not reach a runner that would send it on the wire.
+        by_real: dict[str, dict] = {}
+        for m in cfg.get("models", []):
+            entry = {k: v for k, v in m.items() if k not in ("model_name", "claw")}
+            entry["name"] = m.get("model_name", m["name"])
+            prior = by_real.get(entry["name"])
+            if prior and prior != entry:
+                warn(f"models.yaml: {m['name']!r} and an earlier alias both map to "
+                     f"{entry['name']!r} with different settings; keeping the first")
+                continue
+            by_real[entry["name"]] = entry
+        shared = {"default": cfg.get("default", {}), "models": list(by_real.values())}
+        paths = {}
+        for key, fname in (("tau3", "tau3_models.yaml"), ("vitabench", "vita_models.yaml")):
+            p = RUNTIME / fname
+            p.write_text(yaml.safe_dump(shared, allow_unicode=True, sort_keys=False), encoding="utf-8")
+            p.chmod(0o600)
+            paths[key] = p
+
+        # deepplanning wants JSON keyed by config name, and reads its API key
+        # from an env var rather than from an Authorization header. Rather than
+        # invent a variable per model, publish one and point every model at it.
+        #
+        # It also wants a different base_url shape: it drives the OpenAI SDK,
+        # which appends /chat/completions itself, whereas tau3 and vitabench
+        # POST base_url verbatim. configs/models.yaml carries the full endpoint
+        # (what tau3/vitabench need) and the suffix is stripped here, so one
+        # config serves all three.
+        default = cfg.get("default", {})
+        dp_models: dict[str, Any] = {}
+        for m in cfg.get("models", []):
+            merged = {**default, **m}
+            auth = (merged.get("headers") or {}).get("Authorization", "")
+            token = auth.split(None, 1)[1] if auth.lower().startswith("bearer ") else auth
+            base = str(merged.get("base_url", ""))
+            for suffix in ("/chat/completions", "/completions"):
+                if base.endswith(suffix):
+                    base = base[: -len(suffix)]
+                    break
+            entry = {
+                "model_name": merged.get("model_name", merged["name"]),
+                "model_type": merged.get("model_type", "openai"),
+                "base_url": base,
+                "api_key_env": f"REQUEST_KEY_{_env_safe(merged['name'])}",
+                "temperature": merged.get("temperature", 0.0),
+            }
+            for opt in ("max_tokens", "max_completion_tokens", "extra_body", "reasoning_effort"):
+                if opt in merged:
+                    entry[opt] = merged[opt]
+            dp_models[merged["name"]] = entry
+            # deepplanning resolves the key at call time from this variable.
+            os.environ.setdefault(entry["api_key_env"], token)
+        p = RUNTIME / "deepplanning_models.json"
+        p.write_text(json.dumps({"models": dp_models}, ensure_ascii=False, indent=2), encoding="utf-8")
+        p.chmod(0o600)
+        paths["deepplanning"] = p
+        return paths
+
+    def render_claw(self, agent: str, judge: str, user: str, run_id: str) -> Path:
+        """Write claw's config for one run and return its path.
+
+        claw takes one section per role rather than a list of models: the agent
+        becomes `model`, the evaluator `judge`, the user simulator
+        `user_agent_model`. Call after render(), which publishes every model's
+        key as REQUEST_KEY_<NAME>.
+
+        Unlike the other three files this one holds no credential. claw expands
+        a value that is exactly ${VAR} when it loads the file, so api_key names
+        that variable and the key itself stays in the environment.
+
+        A models.yaml entry may carry a `claw:` mapping, applied last, for
+        settings only claw has: provider (anthropic_native), api_format (vertex,
+        user simulator only), echo_reasoning, input_modalities, or a base_url
+        for a different protocol route.
+        """
+        import yaml
+
+        cfg = self._cfg
+        default = cfg.get("default", {})
+        merged = {m["name"]: {**default, **m} for m in cfg.get("models", [])}
+
+        def section(name: str) -> tuple[dict, dict]:
+            m = merged[name]
+            # claw drives the OpenAI SDK, which appends /chat/completions itself.
+            base = str(m.get("base_url", ""))
+            for suffix in ("/chat/completions", "/completions"):
+                if base.endswith(suffix):
+                    base = base[: -len(suffix)]
+                    break
+            return m, {"api_key": "${REQUEST_KEY_" + _env_safe(name) + "}",
+                       "base_url": base,
+                       "model_id": m.get("model_name", m["name"])}
+
+        def overlay(m: dict, out: dict) -> dict:
+            extra = dict(m.get("claw") or {})
+            if "api_key" in extra:
+                warn(f"models.yaml: {m['name']}.claw.api_key ignored -- claw uses the "
+                     f"key from headers.Authorization like every other benchmark")
+                del extra["api_key"]
+            out.update(extra)
+            return out
+
+        a, model = section(agent)
+        # None is meaningful: claw then omits temperature, which some
+        # endpoints require (they 400 on any value for reasoning models).
+        model["temperature"] = a.get("temperature", 0.0)
+        if a.get("reasoning_effort") is not None:
+            model["reasoning_effort"] = a["reasoning_effort"]
+        if a.get("max_input_tokens"):
+            model["context_window"] = int(a["max_input_tokens"])
+        # claw has no max_tokens field; output limits travel in the request body.
+        body = dict(a.get("extra_body") or {})
+        for opt in ("max_tokens", "max_completion_tokens", "thinking"):
+            if a.get(opt) is not None:
+                body.setdefault(opt, a[opt])
+        if body:
+            model["extra_body"] = body
+
+        j, judge_sec = section(judge)
+        judge_sec["enabled"] = True
+
+        u, user_sec = section(user)
+        if u.get("extra_body"):
+            user_sec["extra_body"] = dict(u["extra_body"])
+
+        doc = {"model": overlay(a, model),
+               "judge": overlay(j, judge_sec),
+               "user_agent_model": overlay(u, user_sec)}
+        RUNTIME.mkdir(exist_ok=True)
+        p = RUNTIME / f"claw_{run_id}.yaml"
+        p.write_text(yaml.safe_dump(doc, allow_unicode=True, sort_keys=False), encoding="utf-8")
+        p.chmod(0o600)
+        return p
+
+
+def _env_safe(name: str) -> str:
+    return re.sub(r"[^A-Za-z0-9]", "_", name).upper()
+
+
+# --------------------------------------------------------------------------
+# run plan
+# --------------------------------------------------------------------------
+
+@dataclass
+class Step:
+    """One benchmark x language invocation."""
+    benchmark: str
+    language: Language
+    argv: list[str]
+    env: dict[str, str]
+    cwd: Path
+    output_hint: str
+    notes: list[str] = field(default_factory=list)
+    trial: Optional[int] = None   # set only on deepplanning's per-trial steps
+
+
+def venv_bin(benchmark: str, exe: str) -> Path:
+    return VENVS / benchmark / "bin" / exe
+
+
+def _domains_for(benchmark: str, requested: Optional[list[str]]) -> Optional[list[str]]:
+    """Which of --domain apply to this benchmark.
+
+    The four have disjoint domain names (airline / delivery / travel / general), so
+    `--benchmark all --domain airline` must mean "airline where it exists",
+    not "pass airline to vitabench and watch it reject the value". Returns None
+    when the benchmark has none of the requested domains, so the caller can skip
+    it with a clear message rather than running its full default set.
+    """
+    known = STANDARD_DOMAINS[benchmark]
+    if not requested:
+        return known
+    keep = [d for d in requested if d in known]
+    return keep or None
+
+
+def _plan_tau3(a, lang, models, cfgs, run_id) -> list[Step]:
+    if lang.tau3 is None:
+        die(f"tau3 does not ship {lang.name!r}")
+    domains = _domains_for("tau3", a.domain)
+    if domains is None:
+        warn(f"skipping tau3: none of {a.domain} is one of its "
+             f"domains ({', '.join(STANDARD_DOMAINS['tau3'])})")
+        return []
+    steps = []
+    for domain in domains:
+        save_to = f"{run_id}/{lang.code}/{domain}"
+        argv = [
+            str(venv_bin("tau3", "tau2")), "run",
+            "--domain", domain,
+            "--agent-llm", models.real_id(models.require(a.agent_model, "agent")),
+            "--num-trials", str(a.num_trials),
+            "--task-subset", a.subset,
+            "--max-concurrency", str(a.concurrency),
+            "--save-to", save_to,
+            # Re-running a --run-id resumes. Without this tau2 stops to ask
+            # y/n on stdin, which hangs or fails a run started in the background.
+            "--auto-resume",
+        ]
+        if a.num_tasks:
+            argv += ["--num-tasks", str(a.num_tasks)]
+        user = models.role("user", a.user_model, "user-simulator")
+        if user:
+            argv += ["--user-llm", models.real_id(user)]
+        # tau3 scores natural-language assertions with an LLM whose default is a
+        # hardcoded gpt-4.1 id. Left unset, every task dies with
+        # "Model 'gpt-4.1-2025-04-14' not found in models.yaml".
+        evaluator = models.role("evaluator", a.evaluator_model, "evaluator")
+        if evaluator:
+            argv += ["--evaluator-llm", models.real_id(evaluator)]
+        env = {
+            "TAU2_LANGUAGE": lang.tau3,
+            "TAU2_MODEL_CONFIG_PATH": str(cfgs["tau3"]),
+            "TAU2_DATA_DIR": str(DATA / "tau3"),
+        }
+        # banking_knowledge builds a BM25 index and would otherwise try to
+        # download its tokenizer mid-run. Pass through an offline checkpoint
+        # when the environment names one.
+        saved = _tokenizer_env()
+        for var in ("TAU2_BM25_TOKENIZER_PATH", "TAU2_BM25_TOKENIZER_OFFLINE",
+                    "TAU2_BM25_TOKENIZER_CACHE"):
+            value = os.environ.get(var) or saved.get(var)
+            if value:
+                env[var] = value
+        notes = []
+        if domain == "banking_knowledge":
+            notes.append("needs the `knowledge` extra (retrieval pipeline)")
+        steps.append(Step("tau3", lang, argv, env,
+                          BENCHMARKS / "tau3",
+                          f"data/tau3/simulations/{save_to}/results.json",
+                          notes))
+    return steps
+
+
+def _plan_vitabench(a, lang, models, cfgs, run_id) -> list[Step]:
+    if lang.vita is None:
+        die(f"vitabench does not ship {lang.name!r} (German is tau3-only)")
+    domains = _domains_for("vitabench", a.domain)
+    if domains is None:
+        warn(f"skipping vitabench: none of {a.domain} is one of its "
+             f"domains ({', '.join(STANDARD_DOMAINS['vitabench'])})")
+        return []
+    steps = []
+    for domain in domains:
+        # `cross` is expressed as the comma-joined domain list.
+        dom_arg = "delivery,instore,ota" if domain == "cross" else domain
+        save_to = f"{run_id}__{lang.code}__{domain}.json"
+        argv = [
+            str(venv_bin("vitabench", "vita")), "run",
+            "--domain", dom_arg,
+            "--agent-llm", models.real_id(models.require(a.agent_model, "agent")),
+            "--language", lang.vita,
+            "--num-trials", str(a.num_trials),
+            "--task-subset", a.subset,
+            "--max-concurrency", str(a.concurrency),
+            "--save-to", save_to,
+        ]
+        user = models.role("user", a.user_model, "user-simulator")
+        if a.num_tasks:
+            argv += ["--num-tasks", str(a.num_tasks)]
+        if user:
+            argv += ["--user-llm", models.real_id(user)]
+        evaluator = models.role("evaluator", a.evaluator_model, "evaluator")
+        if evaluator:
+            argv += ["--evaluator-llm", models.real_id(evaluator)]
+        steps.append(Step("vitabench", lang, argv,
+                          {"VITA_MODEL_CONFIG_PATH": str(cfgs["vitabench"]),
+                           "VITA_DATA_DIR": str(DATA / "vitabench"),
+                           # resume a re-run --run-id without a y/n prompt, as tau3
+                           "VITA_AUTO_RESUME": "1"},
+                          BENCHMARKS / "vitabench",
+                          f"data/vitabench/simulations/{save_to}",
+                          ["scored by an LLM judge -- keep --evaluator-model fixed "
+                           "across the systems you compare"]))
+    return steps
+
+
+def _plan_deepplanning(a, lang, models, cfgs, run_id) -> list[Step]:
+    if lang.deep is None:
+        die(f"deepplanning does not ship {lang.name!r} (German is tau3-only)")
+    domains = _domains_for("deepplanning", a.domain)
+    if domains is None:
+        warn(f"skipping deepplanning: none of {a.domain} is one of its "
+             f"domains ({', '.join(STANDARD_DOMAINS['deepplanning'])})")
+        return []
+    base_env = {
+        "DOMAINS": " ".join(domains),
+        "BENCHMARK_MODEL": models.require(a.agent_model, "agent"),
+        "BENCHMARK_TASK_SUBSET": a.subset,
+        "DEEPPLANNING_LANGUAGE": lang.deep,
+        "DEEPPLANNING_MODELS_CONFIG": str(cfgs["deepplanning"]),
+        "DEEPPLANNING_DATA_DIR": str(DATA / "deepplanning"),
+        "SHOPPING_WORKERS": str(a.concurrency),
+        "TRAVEL_WORKERS": str(a.concurrency),
+        **{k: (os.environ.get(k) or v) for k, v in _tokenizer_env().items()
+           if k.startswith("SHOPPING_")},
+        "PATH": f"{VENVS / 'deepplanning' / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}",
+    }
+    conv = models.role("conversion", a.conversion_model, "conversion")
+    if conv:
+        base_env["TRAVEL_CONVERSION_MODEL"] = conv
+    if a.shopping_levels:
+        base_env["SHOPPING_LEVELS"] = a.shopping_levels
+
+    notes = ["travel runs inference -> conversion -> evaluation; "
+             "the conversion model reformats plans before scoring"]
+
+    # deepplanning has no --num-trials flag, so N trials = N isolated runs of
+    # run_all.sh. Each trial writes into its own directory via the two knobs the
+    # domain scripts already expose -- TRAVEL_OUTPUT_DIR (travel) and
+    # DEEPPLANNING_RUN_DIR (shopping's external-runtime mode) -- so trials never
+    # overwrite each other and pass^k can line cases up across trials by id.
+    def trial_env(base: dict, trial: int) -> dict:
+        root = RESULTS / run_id / "deepplanning" / lang.code / f"trial{trial}"
+        return {**base,
+                "TRAVEL_OUTPUT_DIR": str(root / "travel"),
+                "DEEPPLANNING_RUN_DIR": str(root / "shopping")}
+
+    def out_hint(trial: int) -> str:
+        return f"results/{run_id}/deepplanning/{lang.code}/trial{trial}"
+
+    if not a.num_tasks:
+        return [Step("deepplanning", lang, ["bash", "run_all.sh"],
+                     trial_env(base_env, t), BENCHMARKS / "deepplanning",
+                     out_hint(t), notes if t == 1 else [], trial=t)
+                for t in range(1, a.num_trials + 1)]
+
+    # --num-tasks smoke path: deepplanning has no --num-tasks, so a smoke run
+    # selects explicit IDs (they outrank the subset). DEEPPLANNING_TASK_IDS is
+    # ONE flat list read by both domains, and they number cases differently
+    # (travel 0..119, shopping 1..50), so a merged list names cases one domain
+    # lacks and aborts -- emit one step per (trial, domain) with only its IDs.
+    subsets = DATA / "deepplanning" / "task_subsets" / a.subset
+    levels = (a.shopping_levels or "1").split()
+
+    def first_ids(unit: str) -> list[str]:
+        f = subsets / f"{unit}.txt"
+        if not f.exists():
+            return []
+        ids = [ln.strip() for ln in f.read_text(encoding="utf-8").splitlines()
+               if ln.strip() and not ln.startswith("#")]
+        return ids[:a.num_tasks]
+
+    steps: list[Step] = []
+    for t in range(1, a.num_trials + 1):
+        for domain in domains:
+            units = ["travel"] if domain == "travel" else [f"shopping_level{n}" for n in levels]
+            picked: list[str] = []
+            seen: set[str] = set()
+            for unit in units:
+                for i in first_ids(unit):
+                    if i not in seen:
+                        seen.add(i)
+                        picked.append(i)
+            step_env = {**trial_env(base_env, t), "DOMAINS": domain}
+            if picked:
+                step_env["DEEPPLANNING_TASK_IDS"] = ",".join(picked)
+            if domain == "shopping":
+                step_env["SHOPPING_LEVELS"] = a.shopping_levels or "1"
+            steps.append(Step("deepplanning", lang, ["bash", "run_all.sh"], step_env,
+                              BENCHMARKS / "deepplanning", out_hint(t),
+                              notes if (domain == "travel" and t == 1) else [], trial=t))
+    return steps
+
+
+def _claw_smoke_subset(subset: str, n: int) -> str:
+    """Generate the task subset a claw --num-tasks run uses; return its name.
+
+    claw has no --num-tasks, only --task-subset, so a smoke run gets a subset of
+    its own: the first N ids of each split of the requested one. Every split
+    keeps at least one task because claw rejects an empty manifest. The
+    `smoke-` prefix keeps it from ever shadowing a frozen subset, and these
+    directories are git-ignored.
+    """
+    claw = BENCHMARKS / "claw"
+    name = f"smoke-{subset}-{n}"
+    out = claw / "task_subsets" / name
+    for split, prefix in (("general", "T"), ("multimodal", "M"), ("multi_turn", "C")):
+        if subset == "full":
+            ids = sorted(d.name for d in (claw / "tasks").iterdir()
+                         if d.name.startswith(prefix) and (d / "task.yaml").exists())
+        else:
+            src = claw / "task_subsets" / subset / f"{split}.txt"
+            if not src.exists():
+                die(f"claw has no task subset {subset!r} (missing {src.relative_to(REPO)})")
+            ids = [ln.strip() for ln in src.read_text(encoding="utf-8").splitlines()
+                   if ln.strip() and not ln.lstrip().startswith("#")]
+        if not ids:
+            die(f"claw subset {subset!r} has no {split} tasks to sample from")
+        out.mkdir(parents=True, exist_ok=True)
+        (out / f"{split}.txt").write_text("\n".join(ids[:n]) + "\n", encoding="utf-8")
+    return name
+
+
+def _plan_claw(a, lang, models, cfgs, run_id) -> list[Step]:
+    if lang.claw is None:
+        die(f"claw does not ship {lang.name!r}")
+    domains = _domains_for("claw", a.domain)
+    if domains is None:
+        warn(f"skipping claw: none of {a.domain} is one of its "
+             f"splits ({', '.join(STANDARD_DOMAINS['claw'])})")
+        return []
+    if len(domains) != len(STANDARD_DOMAINS['claw']):
+        warn(f"skipping claw: its splits run together as one batch, so --domain "
+             f"cannot select {', '.join(domains)} on its own")
+        return []
+
+    agent = models.require(a.agent_model, "agent")
+    judge = models.role("evaluator", a.evaluator_model, "evaluator")
+    if not judge:
+        die("claw scores with an LLM judge: set roles.evaluator or pass --evaluator-model")
+    user = models.role("user", a.user_model, "user-simulator")
+    if not user:
+        die("claw's multi_turn split needs a user simulator: set roles.user "
+            "or pass --user-model")
+    cfg = models.render_claw(agent, judge, user, run_id)
+
+    subset = _claw_smoke_subset(a.subset, a.num_tasks) if a.num_tasks else a.subset
+    # --continue makes the output directory ours (without it claw invents a
+    # timestamped one) and makes a re-run resume: each task is filled up to N
+    # graded trials, finished ones are skipped. claw insists it already exists.
+    trace_dir = RESULTS / run_id / "claw" / lang.code
+    trace_dir.mkdir(parents=True, exist_ok=True)
+    argv = [
+        str(venv_bin("claw", "claw-eval")), "batch",
+        "--tasks-dir", "tasks",
+        "--task-subset", subset,
+        "--language", lang.claw,
+        "--config", str(cfg),
+        "--trials", str(a.num_trials),
+        "--parallel", str(a.concurrency),
+        "--port-base-offset", str(a.claw_port_offset),
+        "--continue", str(trace_dir),
+    ]
+    notes = []
+    if a.claw_no_sandbox:
+        notes.append("--claw-no-sandbox: tools run without Docker; scores are not "
+                     "comparable with sandboxed runs")
+    else:
+        argv.append("--sandbox")
+        notes.append("needs Docker and the claw-eval-agent:latest image (`bench setup --only claw`)")
+    notes.append("scored by an LLM judge -- keep --evaluator-model fixed "
+                 "across the systems you compare")
+    # Traces strip media and are rehydrated from tasks/<id>/fixtures when graded.
+    # claw finds that directory by walking up from the trace, which fails once
+    # traces live under results/ instead of inside its own tree; point it there.
+    env = {"CLAW_EVAL_FIXTURES_ROOT": str(BENCHMARKS / "claw" / "tasks")}
+    # claw scales every task's time limit by this variable. It would reach claw
+    # from the caller's shell either way; copying it into the step puts it in
+    # the manifest, since a longer limit changes scores.
+    mult = os.environ.get("CLAW_EVAL_TIMEOUT_MULT", "").strip()
+    if mult and mult != "1":
+        env["CLAW_EVAL_TIMEOUT_MULT"] = mult
+        notes.append(f"CLAW_EVAL_TIMEOUT_MULT={mult}: task time limits scaled x{mult}; "
+                     "scores are not comparable with default-limit runs")
+    out = f"results/{run_id}/claw/{lang.code}/batch_results.json"
+    # Second pass: grade any trace whose agent run finished but whose judge
+    # call failed, then fill trials that are still short. On a clean first pass
+    # it only rewrites batch_results.json / batch_summary.json from the traces.
+    return [
+        Step("claw", lang, argv, env, BENCHMARKS / "claw", out, notes),
+        Step("claw", lang, argv + ["--regrade"], env, BENCHMARKS / "claw", out,
+             ["regrade pass: grades traces the judge missed, refills short tasks"]),
+    ]
+
+
+PLANNERS = {"tau3": _plan_tau3, "vitabench": _plan_vitabench,
+            "deepplanning": _plan_deepplanning, "claw": _plan_claw}
+
+
+# --------------------------------------------------------------------------
+# commands
+# --------------------------------------------------------------------------
+
+def cmd_languages(a) -> int:
+    reg = LanguageRegistry(CONFIGS / "languages.yaml")
+    hdr = (f"{'code':<5} {'name':<16} {'tau3':<16} {'vitabench':<12} "
+           f"{'deepplanning':<16} {'claw'}")
+    print(hdr)
+    print("-" * len(hdr))
+    for lang in reg:
+        cell = lambda v: v if v else "--"
+        print(f"{lang.code:<5} {lang.name:<16} {cell(lang.tau3):<16} "
+              f"{cell(lang.vita):<12} {cell(lang.deep):<16} {cell(lang.claw)}")
+    common = sum(1 for l in reg if all(l.for_benchmark(b) for b in BENCH_NAMES))
+    print(f"\n{common} languages common to all four; "
+          f"{len(list(reg)) - common} partial ('--' = not shipped).")
+    return 0
+
+
+def cmd_check(a) -> int:
+    """Verify the tree is runnable without making a single LLM call."""
+    reg = LanguageRegistry(CONFIGS / "languages.yaml")
+    problems: list[str] = []
+    notes: list[str] = []
+
+    def ok(label: str, good: bool, detail: str = "") -> None:
+        print(f"  [{'ok' if good else 'FAIL'}] {label}{(' -- ' + detail) if detail else ''}")
+        if not good:
+            problems.append(label)
+
+    print("data:")
+    checks = [
+        ("tau3 domains", DATA / "tau3/tau2/domains"),
+        ("tau3 task subsets", DATA / "tau3/task_subsets/standard"),
+        ("vitabench domains", DATA / "vitabench/vita/domains"),
+        ("vitabench task subsets", DATA / "vitabench/task_subsets/standard"),
+        ("deepplanning travel db", DATA / "deepplanning/travelplanning/database"),
+        ("deepplanning shopping db", DATA / "deepplanning/shoppingplanning/database_level1"),
+        ("deepplanning task subsets", DATA / "deepplanning/task_subsets/standard"),
+        ("claw tasks", BENCHMARKS / "claw/tasks"),
+        ("claw task subsets", BENCHMARKS / "claw/task_subsets/standard"),
+    ]
+    for label, path in checks:
+        ok(label, path.exists(), "" if path.exists() else f"missing {path.relative_to(REPO)}")
+
+    print("\nper-language data:")
+    # Probe the files evaluation actually anchors on, not just the ones that are
+    # easy to translate. tau3 in particular once carried policy/tasks/tools for a
+    # language with no localized database behind them -- a language that looks
+    # present but cannot be scored. Every probe below must include a database.
+    # English is the baseline in tau3 and in deepplanning's shopping databases:
+    # its files carry no language suffix (db.json, database_level1). Suffixing
+    # them would report the baseline as missing.
+    def _sfx(is_baseline: bool, tag: str) -> str:
+        return "" if is_baseline else f"_{tag}"
+
+    # claw localizes per task: every task in the standard subset needs a
+    # task_<code>.yaml, except in the language it was written in (en or zh),
+    # where task.yaml itself is the baseline. Read each source language once.
+    claw_src: dict[str, str] = {}
+    claw_root = BENCHMARKS / "claw"
+    for split in STANDARD_DOMAINS['claw']:
+        f = claw_root / "task_subsets/standard" / f"{split}.txt"
+        if not f.exists():
+            continue
+        for tid in (ln.strip() for ln in f.read_text(encoding="utf-8").splitlines()):
+            if tid and not tid.startswith("#"):
+                y = claw_root / "tasks" / tid / "task.yaml"
+                doc = (_load_yaml(y) or {}) if y.exists() else {}
+                claw_src[tid] = str((doc.get("prompt") or {}).get("language") or "").lower()
+
+    probes = {
+        "tau3": lambda l: (lambda s: [
+            DATA / f"tau3/tau2/domains/airline/db{s}.json",
+            DATA / f"tau3/tau2/domains/airline/tasks{s}.json",
+            DATA / f"tau3/tau2/domains/retail/db{s}.json",
+            DATA / f"tau3/tau2/domains/telecom/db{s}.toml",
+            DATA / f"tau3/tau2/domains/telecom/user_db{s}.toml",
+            DATA / f"tau3/tau2/domains/banking_knowledge/db{s}.json",
+        ])(_sfx(l.code == "en", l.tau3)),
+        "vitabench": lambda l: [
+            DATA / f"vitabench/vita/domains/{d}/tasks_{l.code}.json"
+            for d in ("delivery", "instore", "ota", "cross_domain")
+        ],
+        "deepplanning": lambda l: [
+            BENCHMARKS / f"deepplanning/travelplanning/data/travelplanning_query_{l.code}.json",
+            DATA / f"deepplanning/travelplanning/database/database_{l.code}",
+            DATA / ("deepplanning/shoppingplanning/database_level1"
+                    + _sfx(l.code == "en", l.code)),
+        ],
+        "claw": lambda l: [
+            claw_root / "tasks" / tid / ("task.yaml" if src == l.claw else f"task_{l.claw}.yaml")
+            for tid, src in claw_src.items()
+        ],
+    }
+    for bench_name, probe in probes.items():
+        broken: list[str] = []
+        for l in reg:
+            if l.for_benchmark(bench_name) is None:
+                continue
+            gone = [p for p in probe(l) if not p.exists()]
+            if gone:
+                broken.append(f"{l.code}({len(gone)} missing, e.g. {gone[0].name})")
+        ok(f"{bench_name}: all {sum(1 for l in reg if l.for_benchmark(bench_name))} "
+           f"languages complete", not broken,
+           "; ".join(broken[:4]) if broken else "")
+
+    print("\nenvironments:")
+    for name in BENCH_NAMES:
+        exe = {"tau3": "tau2", "vitabench": "vita", "deepplanning": "python",
+               "claw": "claw-eval"}[name]
+        p = venv_bin(name, exe)
+        present = p.exists()
+        print(f"  [{'ok' if present else '--'}] {name} venv"
+              f"{'' if present else '  (run `bench setup`)'}")
+        if not present:
+            notes.append(f"{name} venv not built")
+    # claw's paper numbers ran its tools inside a Docker sandbox.
+    docker = shutil.which("docker")
+    image = bool(docker) and subprocess.run(
+        [docker, "image", "inspect", "claw-eval-agent:latest"],
+        capture_output=True).returncode == 0
+    print(f"  [{'ok' if image else '--'}] claw sandbox image claw-eval-agent:latest"
+          f"{'' if image else '  (needs Docker; `bench setup --only claw`)'}")
+    if not image:
+        notes.append("claw sandbox image not built (or pass --claw-no-sandbox)")
+
+    print("\nconfig:")
+    cfg_path = CONFIGS / "models.yaml"
+    if cfg_path.exists():
+        models = ModelConfig(cfg_path)
+        ok("models.yaml parses, no literal keys", True)
+        for role in ("user", "evaluator", "conversion"):
+            name = models.roles.get(role)
+            ok(f"role {role} -> {name or '(unset)'}", bool(name and name in models._names))
+    else:
+        print("  [--] configs/models.yaml absent  (cp configs/models.yaml.example ...)")
+        notes.append("models.yaml absent")
+
+    print()
+    if problems:
+        print(f"{len(problems)} problem(s): " + "; ".join(problems))
+        return 1
+    if notes:
+        print("runnable once you finish: " + "; ".join(notes))
+        return 0
+    print("all checks passed -- ready to run")
+    return 0
+
+
+def _create_venv(py: str, target: Path) -> None:
+    """Create a virtualenv, falling back to the `virtualenv` tool.
+
+    Debian and Ubuntu ship `python3.X` without ensurepip (it lives in a separate
+    python3.X-venv package), so `python -m venv` fails on a stock system with a
+    message about apt. `virtualenv` vendors its own pip and does not need it, so
+    prefer failing over to it rather than telling the user to become root.
+    """
+    r = subprocess.run([py, "-m", "venv", str(target)],
+                       capture_output=True, text=True)
+    if r.returncode == 0:
+        return
+    shutil.rmtree(target, ignore_errors=True)
+    vv = shutil.which("virtualenv")
+    if vv:
+        print(f"  python -m venv unavailable for {py}; using virtualenv")
+        subprocess.run([vv, "-p", py, str(target)], check=True)
+        return
+    die(
+        f"cannot create a virtualenv with {py}.\n"
+        f"  {(r.stderr or r.stdout).strip().splitlines()[0] if (r.stderr or r.stdout).strip() else ''}\n"
+        f"  Install the matching venv package (e.g. apt install python3.10-venv)\n"
+        f"  or `pip install virtualenv` and re-run."
+    )
+
+
+def _save_tokenizer_env(**pairs: str) -> None:
+    """Persist what setup prepared so `bench run` does not need re-exporting.
+
+    Both tokenizers are configured through environment variables, and setup used
+    to only print the `export` lines. Anyone who ran setup, opened a new shell
+    and then ran a benchmark hit "tokenizer is not prepared" for something that
+    had in fact just been prepared. Recording it here closes that gap; a real
+    environment variable still wins, so a deliberate override keeps working.
+    """
+    RUNTIME.mkdir(exist_ok=True)
+    path = RUNTIME / "tokenizers.json"
+    stored = {}
+    if path.exists():
+        try:
+            stored = json.loads(path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            stored = {}
+    stored.update({k: v for k, v in pairs.items() if v})
+    path.write_text(json.dumps(stored, indent=2), encoding="utf-8")
+
+
+def _tokenizer_env() -> dict[str, str]:
+    """What setup recorded, for `bench run` to pass down."""
+    path = RUNTIME / "tokenizers.json"
+    if not path.exists():
+        return {}
+    try:
+        return {k: str(v) for k, v in json.loads(path.read_text(encoding="utf-8")).items()}
+    except json.JSONDecodeError:
+        return {}
+
+
+def _prepare_knowledge_tokenizer(venv: Path, src: Path, a) -> None:
+    """Pre-fetch the BM25 tokenizer tau3's banking_knowledge domain needs.
+
+    That domain builds a BM25 index over its document corpus and pulls
+    Qwen/Qwen3-0.6B from Hugging Face the first time it runs. Behind a
+    TLS-inspecting proxy the download fails and every banking task dies, so
+    fetch it here -- or point --tokenizer-model at a local Qwen3 checkpoint,
+    which the whole Qwen3 family shares a tokenizer with.
+    """
+    if a.tokenizer_model:
+        print(f"  banking_knowledge tokenizer: using {a.tokenizer_model}")
+        _save_tokenizer_env(TAU2_BM25_TOKENIZER_PATH=a.tokenizer_model,
+                            TAU2_BM25_TOKENIZER_OFFLINE="1")
+        return
+    print("  pre-fetching the banking_knowledge BM25 tokenizer ...")
+    r = subprocess.run([str(venv / "bin" / "tau2"), "knowledge",
+                        "prefetch-tokenizer"], cwd=src)
+    if r.returncode != 0:
+        warn("could not pre-fetch the banking_knowledge tokenizer. If that was a "
+             "TLS/certificate error, re-run setup with --tokenizer-model "
+             "/path/to/a/local/Qwen3-checkpoint, or drop the domain with "
+             "--domain airline retail telecom")
+
+
+def _prepare_shopping_tokenizer(venv: Path, src: Path, a) -> None:
+    """Pin the BM25 tokenizer deepplanning's shopping domain needs.
+
+    Shopping refuses to run until this has been done: it never downloads a
+    tokenizer mid-benchmark, so an unprepared cache fails the whole level with
+    "Shopping BM25 tokenizer is not prepared".
+
+    By default the tokenizer comes from Hugging Face. Behind a TLS-inspecting
+    proxy that fails with a self-signed-certificate error, so point
+    --tokenizer-model at a local copy of the model directory and the download is
+    skipped entirely.
+    """
+    cache = a.tokenizer_cache or os.environ.get("SHOPPING_BM25_TOKENIZER_CACHE_DIR") \
+        or str(REPO / ".cache" / "tokenizer")
+    argv = [str(venv / "bin" / "python"),
+            str(src / "scripts" / "prepare_shopping_tokenizer.py"),
+            "--cache-dir", cache]
+    if a.tokenizer_model:
+        argv += ["--model", a.tokenizer_model, "--revision",
+                 a.tokenizer_revision or "local"]
+    print("  preparing the shopping BM25 tokenizer ...")
+    r = subprocess.run(argv, cwd=src)
+    if r.returncode != 0:
+        warn("tokenizer preparation failed -- deepplanning's shopping domain will "
+             "refuse to run. If the failure was a TLS/certificate error, re-run "
+             "`bench setup --only deepplanning --force` with "
+             "--tokenizer-model /path/to/a/local/Qwen3-8B")
+    else:
+        print(f"  tokenizer cache: {cache}")
+        _save_tokenizer_env(SHOPPING_BM25_TOKENIZER_CACHE_DIR=cache)
+        if a.tokenizer_model:
+            _save_tokenizer_env(SHOPPING_BM25_TOKENIZER=a.tokenizer_model,
+                                SHOPPING_BM25_TOKENIZER_REVISION=a.tokenizer_revision or "local")
+
+
+def _build_claw_image(venv: Path, src: Path) -> None:
+    """Build the Docker image claw's --sandbox runs agent tools in.
+
+    Skipped, with a warning rather than a failure, when Docker is absent or the
+    image already exists: everything else claw needs is installed by then, and
+    `bench run --claw-no-sandbox` still works without it.
+    """
+    docker = shutil.which("docker")
+    if not docker:
+        warn("docker not found -- claw's --sandbox needs it. Install Docker and "
+             "re-run `bench setup --only claw`, or run with --claw-no-sandbox")
+        return
+    if subprocess.run([docker, "image", "inspect", "claw-eval-agent:latest"],
+                      capture_output=True).returncode == 0:
+        print("  sandbox image claw-eval-agent:latest present")
+        return
+    print("  building the claw sandbox image (claw-eval-agent:latest) ...")
+    r = subprocess.run([str(venv / "bin" / "claw-eval"), "build-image"], cwd=src)
+    if r.returncode != 0:
+        warn("`claw-eval build-image` failed -- claw runs need --claw-no-sandbox "
+             "until it is built")
+
+
+def cmd_setup(a) -> int:
+    VENVS.mkdir(exist_ok=True)
+    for name in (a.only or BENCH_NAMES):
+        py = _find_python(name)
+        target = VENVS / name
+        src = BENCHMARKS / name
+        print(f"\n=== {name} ({py}) ===")
+        if target.exists() and not a.force:
+            # The venv is the expensive part, but the tokenizer step is separate
+            # and cheap -- and re-running setup to fix a tokenizer is the natural
+            # thing to try. Skip the install, still (re)prepare the tokenizers.
+            print("  venv exists, skipping install (use --force to rebuild)")
+            if not a.dry_run:
+                if name == "tau3":
+                    _prepare_knowledge_tokenizer(target, src, a)
+                elif name == "deepplanning":
+                    _prepare_shopping_tokenizer(target, src, a)
+                elif name == "claw":
+                    _build_claw_image(target, src)
+            continue
+        if a.dry_run:
+            print(f"  would create {target} with {py}")
+            continue
+        _create_venv(py, target)
+        pip = str(target / "bin" / "pip")
+        subprocess.run([pip, "install", "-q", "--upgrade", "pip", "wheel"], check=True)
+        if name == "deepplanning":
+            subprocess.run([pip, "install", "-q", "-r", str(src / "requirements.txt")], check=True)
+            # qwen-agent reaches soundfile through qwen_agent.utils.utils, but
+            # neither its own metadata nor requirements.txt declares it, so
+            # importing travelplanning/tools/ fails without this.
+            subprocess.run([pip, "install", "-q", "soundfile"], check=True)
+            _prepare_shopping_tokenizer(target, src, a)
+        elif name == "claw":
+            # mock: the FastAPI services tasks call into; sandbox: the Docker
+            # client --sandbox drives.
+            subprocess.run([pip, "install", "-q", "-e", f"{src}[mock,sandbox]"], check=True)
+            _build_claw_image(target, src)
+        else:
+            subprocess.run([pip, "install", "-q", "-e", str(src)], check=True)
+        if name == "tau3":
+            # Two extras, both mandatory here even though this release is
+            # text-only:
+            #   knowledge -- the banking_knowledge retrieval pipeline.
+            #   voice     -- not for running voice, but because tau2's import
+            #                graph reaches it unconditionally. agent/__init__.py,
+            #                agent/base/, runner/batch.py and user/ all import
+            #                tau2.voice at module level (~35 sites), so `tau2
+            #                run --domain airline` cannot even start without it.
+            #                Chasing ModuleNotFoundError one package at a time is
+            #                a trap; install the extra and move on.
+            subprocess.run([pip, "install", "-q",
+                            "rank-bm25", "openai", "transformers",       # knowledge
+                            "scipy", "websockets>=13.0", "pyaudio", "jiwer",
+                            "pydub", "tqdm", "aiohttp", "elevenlabs",
+                            "deepgram-sdk", "google-genai", "boto3",
+                            "google-auth"],                              # voice
+                           check=True)
+            _prepare_knowledge_tokenizer(target, src, a)
+        print(f"  built {target}")
+    return 0
+
+
+def cmd_run(a) -> int:
+    reg = LanguageRegistry(CONFIGS / "languages.yaml")
+    models = ModelConfig(CONFIGS / "models.yaml")
+    cfgs = models.render()
+
+    benches = BENCH_NAMES if a.benchmark == "all" else (a.benchmark,)
+    langs = (list(reg) if a.language.strip().lower() == "all"
+             else [reg.resolve(s) for s in a.language.split(",")])
+    run_id = a.run_id or time.strftime("%Y%m%d_%H%M%S")
+
+    steps: list[Step] = []
+    for lang in langs:
+        for name in benches:
+            if a.benchmark == "all" and lang.for_benchmark(name) is None:
+                warn(f"skipping {name} for {lang.name}: not shipped")
+                continue
+            steps += PLANNERS[name](a, lang, models, cfgs, run_id)
+
+    if not steps:
+        die("nothing to run")
+
+    out_dir = RESULTS / run_id
+    out_dir.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "run_id": run_id,
+        "agent_model": a.agent_model,
+        "subset": a.subset,
+        "num_trials": a.num_trials,
+        "languages": [l.code for l in langs],
+        "benchmarks": list(benches),
+        "steps": [],
+    }
+
+    print(f"run {run_id}: {len(steps)} step(s)\n")
+    failures = 0
+    for i, step in enumerate(steps, 1):
+        head = (f"[{i}/{len(steps)}] {step.benchmark} / {step.language.code}"
+                + (f" / trial {step.trial}" if step.trial is not None else ""))
+        print(f"{head}\n  $ {' '.join(step.argv)}")
+        for k, v in sorted(step.env.items()):
+            if k != "PATH":
+                print(f"    {k}={v}")
+        for note in step.notes:
+            print(f"    note: {note}")
+        step_row = {
+            "benchmark": step.benchmark,
+            "language": step.language.code,
+            "argv": step.argv,
+            "env": {k: v for k, v in step.env.items() if k != "PATH"},
+            "output": step.output_hint,
+        }
+        if step.trial is not None:
+            step_row["trial"] = step.trial
+        manifest["steps"].append(step_row)
+        if a.dry_run:
+            print("    (dry run -- not executed)\n")
+            continue
+        env = {**os.environ, **step.env}
+        rc = subprocess.run(step.argv, cwd=step.cwd, env=env).returncode
+        status = "ok" if rc == 0 else f"FAILED (exit {rc})"
+        manifest["steps"][-1]["exit_code"] = rc
+        failures += rc != 0
+        print(f"    -> {status}\n")
+
+    (out_dir / "manifest.json").write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"manifest: {(out_dir / 'manifest.json').relative_to(REPO)}")
+    if a.dry_run:
+        print("dry run complete -- nothing was executed")
+        return 0
+    if failures:
+        print(f"{failures} step(s) failed")
+        return 1
+    print(f"all steps finished. `bench report --run-id {run_id}` to collect scores.")
+
+    if a.lang_consistency:
+        # A separate measurement from task reward, and a separate bill: it makes
+        # one judge call per task. Opt-in for that reason.
+        print("\nauditing language consistency ...")
+        ns = argparse.Namespace(
+            run_id=run_id, granularity=a.lang_granularity,
+            concurrency=a.concurrency, judge_model=a.lang_judge_model,
+            max_tasks_per_language=a.lang_max_tasks, dry_run=False)
+        return cmd_lang_check(ns)
+    return 0
+
+
+# Where each benchmark's bulk data comes from (relative to the source tree) and
+# where it lands. claw's tasks are the exception that stays inside the code
+# tree: its mock services, its per-language peer graders and its subset lookup
+# all resolve paths relative to its own checkout, and a peer grader that cannot
+# be found silently falls back to the zh grader. Relocating tasks/ would mean
+# patching claw, so it is fetched in place and git-ignored instead.
+_BULK_DEST = {
+    "tau3": ("tau3", DATA / "tau3"),
+    "vitabench": ("vitabench", DATA / "vitabench"),
+    "deepplanning": ("deepplanning", DATA / "deepplanning"),
+    "claw": ("claw/tasks", BENCHMARKS / "claw" / "tasks"),
+}
+
+# The marker each benchmark's bulk data leaves behind, used to tell "fetched"
+# from "fresh clone". Never a directory that git also populates.
+_BULK_MARKER = {
+    "tau3": DATA / "tau3/tau2/domains/airline/db.json",
+    "vitabench": DATA / "vitabench/vita/domains/delivery/tasks.json",
+    "deepplanning": DATA / "deepplanning/travelplanning/database/database_en",
+    "claw": BENCHMARKS / "claw/tasks/C01zh_mortgage_prepay/task.yaml",
+}
+
+
+def _has_bulk_data(name: str) -> bool:
+    return _BULK_MARKER[name].exists()
+
+
+def cmd_fetch_data(a) -> int:
+    """Download the benchmark data into data/.
+
+    The data is ~14 GB -- far past what GitHub accepts -- so the repository
+    carries only code plus the frozen task_subsets/ lists, and the bulk is
+    fetched here. Three runners are pointed at data/ through TAU2_DATA_DIR /
+    VITA_DATA_DIR / DEEPPLANNING_DATA_DIR, which `bench run` sets for you;
+    claw's tasks/ is filled in place under benchmarks/claw/ (see _BULK_DEST).
+    """
+    source = a.source or os.getenv("REQUEST_DATA_SOURCE") or DATA_SOURCE_DEFAULT
+    DATA.mkdir(exist_ok=True)
+
+    if not source:
+        die(
+            "no data source configured yet.\n"
+            "  Set DATA_SOURCE_DEFAULT in bench, pass --source <url-or-path>,\n"
+            "  or export REQUEST_DATA_SOURCE. A local path is copied; an https URL\n"
+            "  or a huggingface.co dataset id is downloaded."
+        )
+
+    local = Path(source).expanduser()
+    if local.is_dir():
+        print(f"copying benchmark data from {local}")
+        for name in BENCH_NAMES:
+            rel, dst = _BULK_DEST[name]
+            src = local / rel
+            if not src.is_dir():
+                warn(f"{src} not found, skipping")
+                continue
+            # Test for the bulk payload, not for the directory. data/<name>/
+            # always exists in a fresh clone -- the frozen task_subsets/ lists
+            # are committed there -- so an exists() check would report every
+            # clone as already fetched and copy nothing.
+            if _has_bulk_data(name) and not a.force:
+                print(f"  {name}: already present, skipping (use --force)")
+                continue
+            if a.dry_run:
+                print(f"  would copy {src} -> {dst}")
+                continue
+            print(f"  {name} ...", flush=True)
+            shutil.copytree(src, dst, dirs_exist_ok=True)
+        return 0 if a.dry_run else cmd_check(a)
+
+    die(
+        f"remote fetch from {source!r} is not wired up yet.\n"
+        "  Publish the data first, then set DATA_SOURCE_DEFAULT in bench.\n"
+        "  Meanwhile `--source /path/to/data` copies from a local staging tree."
+    )
+
+
+def cmd_lang_check(a) -> int:
+    """Audit what language the agent actually replied in.
+
+    Task reward and language consistency are different measurements: an agent
+    can score full reward while answering a Thai user in English. This runs the
+    second one over a finished run.
+    """
+    argv = [sys.executable, str(REPO / "scripts" / "lang_consistency.py"),
+            "--run-id", a.run_id, "--granularity", a.granularity,
+            "--concurrency", str(a.concurrency)]
+    if a.judge_model:
+        argv += ["--judge-model", a.judge_model]
+    if a.max_tasks_per_language:
+        argv += ["--max-tasks-per-language", str(a.max_tasks_per_language)]
+    if getattr(a, "dry_run", False):
+        argv += ["--dry-run"]
+    return subprocess.run(argv).returncode
+
+
+def cmd_clean(a) -> int:
+    """Remove generated state: rendered configs, and optionally run output.
+
+    .runtime/ holds the per-benchmark model configs with the API key expanded
+    into them. They are git-ignored and mode 0600, but they are still a real
+    credential sitting on disk, so clear them when you are done -- especially
+    before archiving or sharing a working tree.
+    """
+    removed = []
+    for target in (RUNTIME,):
+        if target.exists():
+            shutil.rmtree(target)
+            removed.append(str(target.relative_to(REPO)))
+    if a.configs and (CONFIGS / "models.yaml").exists():
+        (CONFIGS / "models.yaml").unlink()
+        removed.append("configs/models.yaml")
+    if a.results and RESULTS.exists():
+        shutil.rmtree(RESULTS)
+        removed.append("results/")
+    if a.venvs and VENVS.exists():
+        shutil.rmtree(VENVS)
+        removed.append(".venvs/")
+    print("removed: " + (", ".join(removed) if removed else "nothing to remove"))
+    if not a.results:
+        print("run output under results/ kept (pass --results to drop it)")
+    return 0
+
+
+def cmd_report(a) -> int:
+    """Each benchmark's own headline metric, then pass^1 / pass^3 on one scale."""
+    rc = 0
+    for script in ("report.py", "passk_report.py"):
+        rc |= subprocess.run([sys.executable, str(REPO / "scripts" / script),
+                              "--run-id", a.run_id]).returncode
+        print()
+    return rc
+
+
+# --------------------------------------------------------------------------
+
+def main() -> int:
+    # Python block-buffers stdout when it is not a terminal, so under `nohup
+    # bench run ... > log` the step-by-step progress stays invisible until the
+    # process exits -- exactly the case where you most want to watch it.
+    try:
+        sys.stdout.reconfigure(line_buffering=True)
+        sys.stderr.reconfigure(line_buffering=True)
+    except AttributeError:      # pragma: no cover -- very old interpreters
+        pass
+
+    p = argparse.ArgumentParser(prog="bench", description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = p.add_subparsers(dest="cmd", required=True)
+
+    sub.add_parser("languages", help="list supported languages and their per-benchmark spellings")
+
+    c = sub.add_parser("check", help="verify data and config without calling any model")
+    c.set_defaults(fn=cmd_check)
+
+    s = sub.add_parser("setup", help="build the four virtualenvs")
+    s.add_argument("--only", nargs="+", choices=BENCH_NAMES)
+    s.add_argument("--force", action="store_true", help="rebuild venvs that already exist")
+    s.add_argument("--dry-run", action="store_true")
+    s.add_argument("--tokenizer-model",
+                   help="local directory holding the Qwen3-8B tokenizer, for "
+                        "deepplanning's shopping BM25 index. Use this when the "
+                        "Hugging Face download is blocked (TLS interception)")
+    s.add_argument("--tokenizer-revision", default="local")
+    s.add_argument("--tokenizer-cache",
+                   help="where to place the prepared tokenizer "
+                        "(default: .cache/tokenizer)")
+    s.set_defaults(fn=cmd_setup)
+
+    r = sub.add_parser("run", help="run one or more benchmarks")
+    r.add_argument("--benchmark", "-b", default="all", choices=(*BENCH_NAMES, "all"))
+    r.add_argument("--language", "-l", required=True,
+                   help="language code or name; comma-separated for several, "
+                        "or 'all' for the 23 languages")
+    r.add_argument("--agent-model", required=True, help="the system under evaluation")
+    r.add_argument("--user-model", help="override the user simulator (default: roles.user)")
+    r.add_argument("--evaluator-model", help="override the LLM judge (default: roles.evaluator)")
+    r.add_argument("--conversion-model", help="override deepplanning's plan converter")
+    r.add_argument("--domain", nargs="+", help="restrict to these domains")
+    r.add_argument("--subset", default="standard",
+                   help="'standard' (default, the frozen, roughly half-size release "
+                        "subset), 'full', or a custom subset name")
+    r.add_argument("--num-tasks", type=int,
+                   help="run only the first N tasks of the selected subset. For "
+                        "smoke tests -- the default is the whole subset "
+                        "(212/200/120/167 tasks per language). claw takes the "
+                        "first N of each of its three splits")
+    r.add_argument("--shopping-levels",
+                   help="deepplanning shopping levels, e.g. '1' or '1 2 3' "
+                        "(default: all three; just level 1 under --num-tasks)")
+    r.add_argument("--num-trials", type=int, default=3,
+                   help="independent trials per task (default 3, as in the paper: "
+                        "pass^3 needs three). 1 is enough for a smoke test")
+    r.add_argument("--concurrency", type=int, default=4)
+    r.add_argument("--claw-no-sandbox", action="store_true",
+                   help="run claw's tools on the host instead of in Docker. Scores "
+                        "are not comparable with sandboxed (published) runs")
+    r.add_argument("--claw-port-offset", type=int, default=0,
+                   help="shift claw's mock-service ports (9100+) so two runs can "
+                        "share a host")
+    r.add_argument("--run-id", help="reuse an id to resume; default is a timestamp")
+    r.add_argument("--dry-run", action="store_true",
+                   help="print exactly what would run, execute nothing")
+    r.add_argument("--lang-consistency", action="store_true",
+                   help="after the run, judge whether the agent actually replied "
+                        "in the requested language (one judge call per task)")
+    r.add_argument("--lang-granularity", choices=("task", "language"),
+                   default="task",
+                   help="task (default): judge each task and report the rate; "
+                        "language: one truncated blob per language")
+    r.add_argument("--lang-judge-model",
+                   help="override roles.lang_judge for the consistency audit")
+    r.add_argument("--lang-max-tasks", type=int,
+                   help="sample at most N tasks per language when auditing")
+    r.set_defaults(fn=cmd_run)
+
+    f = sub.add_parser("fetch-data", help="download the benchmark data into data/")
+    f.add_argument("--source", help="dataset id, URL, or local directory to copy from")
+    f.add_argument("--force", action="store_true", help="overwrite data already present")
+    f.add_argument("--dry-run", action="store_true")
+    f.set_defaults(fn=cmd_fetch_data)
+
+    lc = sub.add_parser("lang-check",
+                        help="audit language consistency of a finished run")
+    lc.add_argument("--run-id", required=True)
+    lc.add_argument("--granularity", choices=("task", "language"), default="task")
+    lc.add_argument("--judge-model")
+    lc.add_argument("--max-tasks-per-language", type=int)
+    lc.add_argument("--concurrency", type=int, default=8)
+    lc.add_argument("--dry-run", action="store_true",
+                    help="show what would be judged, call nothing")
+    lc.set_defaults(fn=cmd_lang_check)
+
+    cl = sub.add_parser("clean",
+                        help="remove .runtime/ (rendered configs holding your key)")
+    cl.add_argument("--configs", action="store_true",
+                    help="also delete configs/models.yaml")
+    cl.add_argument("--results", action="store_true", help="also delete results/")
+    cl.add_argument("--venvs", action="store_true", help="also delete .venvs/")
+    cl.set_defaults(fn=cmd_clean)
+
+    rp = sub.add_parser("report", help="collect scores from a finished run")
+    rp.add_argument("--run-id", required=True)
+    rp.set_defaults(fn=cmd_report)
+
+    a = p.parse_args()
+    if a.cmd == "languages":
+        return cmd_languages(a)
+    return a.fn(a)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

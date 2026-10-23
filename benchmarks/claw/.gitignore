@@ -1,0 +1,42 @@
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.eggs/
+.DS_Store
+.venv/
+uv.lock
+.vscode/
+
+# Secrets and local endpoints
+.env
+configs/
+
+# Generated traces and run output
+model_traces/
+traces/
+traces_*/
+traces/**/*.png
+traces_*/**/*.png
+eval_logs/
+logs/
+results/
+tmp/
+
+# Large fixture files stay on Hugging Face
+tasks/*/fixtures/*.mp4
+tasks/*/fixtures/*.webm
+# recursive (**/) so media/ and other subdir binaries are caught too
+tasks/*/fixtures_*/**/*.mp4
+tasks/*/fixtures_*/**/*.webm
+tasks/*/fixtures_*/**/*.pdf
+tasks/*/fixtures_*/**/*.png
+tasks/*/fixtures_*/**/*.jpg
+tasks/*/fixtures_*/**/*.jpeg
+tasks/*/fixtures_*/**/*.gif
+tasks/*/fixtures_*/**/*.webp
+tasks/*/fixtures_*/**/*.db
+tasks/*/fixtures_*/**/*.sqlite
+tasks/*/fixtures_*/**/*.zip
+tasks/*/fixtures_*/**/*.bin
